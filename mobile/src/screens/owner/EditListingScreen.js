@@ -1,0 +1,703 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import {
+  getParkingSpace,
+  updateParkingSpace,
+  deleteParkingImage,
+  addParkingImages,
+} from "../../api/services";
+import { COLORS, PARKING_SIZES, AMENITIES } from "../../constants/config";
+
+const EditListingScreen = ({ route, navigation }) => {
+  const { parkingId } = route.params;
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    pricePerHour: "",
+    parkingSize: "sedan",
+    amenities: [],
+    accessInstructions: "",
+    status: "available",
+    location: {
+      address: "",
+      coordinates: { latitude: 0, longitude: 0 },
+    },
+  });
+
+  useEffect(() => {
+    fetchListing();
+  }, [parkingId]);
+
+  const fetchListing = async () => {
+    try {
+      setLoading(true);
+      const result = await getParkingSpace(parkingId);
+      const parking = result.data;
+
+      setFormData({
+        title: parking.title || "",
+        description: parking.description || "",
+        pricePerHour: parking.pricePerHour?.toString() || "",
+        parkingSize: parking.parkingSize || "sedan",
+        amenities: parking.amenities || [],
+        accessInstructions: parking.accessInstructions || "",
+        status: parking.status || "available",
+        location: {
+          address: parking.location?.address || "",
+          coordinates: {
+            latitude: parking.location?.coordinates?.[1] || 0,
+            longitude: parking.location?.coordinates?.[0] || 0,
+          },
+        },
+      });
+      setImages(parking.images || []);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load listing");
+      navigation.goBack();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickImages = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow access to your photo library",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - images.length,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setNewImages(
+        [...newImages, ...result.assets].slice(0, 5 - images.length),
+      );
+    }
+  };
+
+  const removeExistingImage = async (imageId, index) => {
+    Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteParkingImage(parkingId, imageId);
+            setImages(images.filter((_, i) => i !== index));
+          } catch (error) {
+            Alert.alert("Error", "Failed to remove image");
+          }
+        },
+      },
+    ]);
+  };
+
+  const removeNewImage = (index) => {
+    setNewImages(newImages.filter((_, i) => i !== index));
+  };
+
+  const toggleAmenity = (amenity) => {
+    const current = formData.amenities;
+    if (current.includes(amenity)) {
+      setFormData({
+        ...formData,
+        amenities: current.filter((a) => a !== amenity),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        amenities: [...current, amenity],
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.title.trim()) {
+      Alert.alert("Error", "Please enter a title");
+      return;
+    }
+    if (!formData.pricePerHour || parseFloat(formData.pricePerHour) <= 0) {
+      Alert.alert("Error", "Please enter a valid price");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      // Update basic info
+      await updateParkingSpace(parkingId, {
+        title: formData.title,
+        description: formData.description,
+        pricePerHour: parseFloat(formData.pricePerHour),
+        parkingSize: formData.parkingSize,
+        amenities: formData.amenities,
+        accessInstructions: formData.accessInstructions,
+        status: formData.status,
+        address: formData.location.address,
+      });
+
+      // Upload new images if any
+      if (newImages.length > 0) {
+        const imageFormData = new FormData();
+        newImages.forEach((image, index) => {
+          imageFormData.append("images", {
+            uri: image.uri,
+            type: "image/jpeg",
+            name: `image_${index}.jpg`,
+          });
+        });
+        await addParkingImages(parkingId, imageFormData);
+      }
+
+      Alert.alert("Success", "Listing updated successfully", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to update listing",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.cancelButton}>Cancel</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Edit Listing</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving}>
+          <Text
+            style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+          >
+            {saving ? "Saving..." : "Save"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Status Toggle */}
+        <View style={styles.statusContainer}>
+          <Text style={styles.label}>Listing Status</Text>
+          <View style={styles.statusToggle}>
+            <TouchableOpacity
+              style={[
+                styles.statusOption,
+                formData.status === "available" && styles.statusOptionActive,
+              ]}
+              onPress={() => setFormData({ ...formData, status: "available" })}
+            >
+              <Text
+                style={[
+                  styles.statusOptionText,
+                  formData.status === "available" &&
+                    styles.statusOptionTextActive,
+                ]}
+              >
+                Available
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.statusOption,
+                formData.status === "unavailable" &&
+                  styles.statusOptionInactive,
+              ]}
+              onPress={() =>
+                setFormData({ ...formData, status: "unavailable" })
+              }
+            >
+              <Text
+                style={[
+                  styles.statusOptionText,
+                  formData.status === "unavailable" &&
+                    styles.statusOptionTextInactive,
+                ]}
+              >
+                Unavailable
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Images */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>
+            Photos ({images.length + newImages.length}/5)
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.imagesContainer}>
+              {images.map((image, index) => (
+                <View key={image._id || index} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: image.url }}
+                    style={styles.previewImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeExistingImage(image._id, index)}
+                  >
+                    <Text style={styles.removeImageText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {newImages.map((image, index) => (
+                <View key={`new_${index}`} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.previewImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeNewImage(index)}
+                  >
+                    <Text style={styles.removeImageText}>✕</Text>
+                  </TouchableOpacity>
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>New</Text>
+                  </View>
+                </View>
+              ))}
+              {images.length + newImages.length < 5 && (
+                <TouchableOpacity
+                  style={styles.addImageButton}
+                  onPress={pickImages}
+                >
+                  <Text style={styles.addImageIcon}>📷</Text>
+                  <Text style={styles.addImageText}>Add Photo</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Basic Info */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Title *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.title}
+            onChangeText={(text) => setFormData({ ...formData, title: text })}
+            placeholder="e.g., Spacious Driveway Near Downtown"
+            placeholderTextColor={COLORS.gray[400]}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Description</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={formData.description}
+            onChangeText={(text) =>
+              setFormData({ ...formData, description: text })
+            }
+            placeholder="Describe your parking space..."
+            placeholderTextColor={COLORS.gray[400]}
+            multiline
+            numberOfLines={4}
+          />
+        </View>
+
+        {/* Size */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Parking Size</Text>
+          <View style={styles.sizeOptions}>
+            {PARKING_SIZES.map((size) => (
+              <TouchableOpacity
+                key={size.value}
+                style={[
+                  styles.sizeOption,
+                  formData.parkingSize === size.value &&
+                    styles.sizeOptionActive,
+                ]}
+                onPress={() =>
+                  setFormData({ ...formData, parkingSize: size.value })
+                }
+              >
+                <Text style={styles.sizeIcon}>{size.icon}</Text>
+                <Text
+                  style={[
+                    styles.sizeLabel,
+                    formData.parkingSize === size.value &&
+                      styles.sizeLabelActive,
+                  ]}
+                >
+                  {size.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Price */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Price per Hour ($) *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.pricePerHour}
+            onChangeText={(text) =>
+              setFormData({ ...formData, pricePerHour: text })
+            }
+            placeholder="0.00"
+            placeholderTextColor={COLORS.gray[400]}
+            keyboardType="decimal-pad"
+          />
+        </View>
+
+        {/* Amenities */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Amenities</Text>
+          <View style={styles.amenitiesGrid}>
+            {AMENITIES.map((amenity) => (
+              <TouchableOpacity
+                key={amenity.value}
+                style={[
+                  styles.amenityOption,
+                  formData.amenities.includes(amenity.value) &&
+                    styles.amenityOptionActive,
+                ]}
+                onPress={() => toggleAmenity(amenity.value)}
+              >
+                <Text style={styles.amenityIcon}>{amenity.icon}</Text>
+                <Text
+                  style={[
+                    styles.amenityLabel,
+                    formData.amenities.includes(amenity.value) &&
+                      styles.amenityLabelActive,
+                  ]}
+                >
+                  {amenity.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Access Instructions */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Access Instructions</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={formData.accessInstructions}
+            onChangeText={(text) =>
+              setFormData({ ...formData, accessInstructions: text })
+            }
+            placeholder="How should guests access the parking space?"
+            placeholderTextColor={COLORS.gray[400]}
+            multiline
+            numberOfLines={3}
+          />
+        </View>
+
+        {/* Location */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Address</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.location.address}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                location: { ...formData.location, address: text },
+              })
+            }
+            placeholder="Enter address"
+            placeholderTextColor={COLORS.gray[400]}
+          />
+        </View>
+
+        {/* Map Preview */}
+        {formData.location.coordinates.latitude !== 0 && (
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={{
+                ...formData.location.coordinates,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+            >
+              <Marker coordinate={formData.location.coordinates} />
+            </MapView>
+          </View>
+        )}
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  cancelButton: {
+    fontSize: 16,
+    color: COLORS.gray[600],
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.gray[800],
+  },
+  saveButton: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  saveButtonDisabled: {
+    color: COLORS.gray[400],
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  statusContainer: {
+    marginBottom: 24,
+  },
+  statusToggle: {
+    flexDirection: "row",
+    backgroundColor: COLORS.gray[100],
+    borderRadius: 12,
+    padding: 4,
+  },
+  statusOption: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  statusOptionActive: {
+    backgroundColor: COLORS.secondary,
+  },
+  statusOptionInactive: {
+    backgroundColor: COLORS.gray[400],
+  },
+  statusOptionText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.gray[600],
+  },
+  statusOptionTextActive: {
+    color: COLORS.white,
+  },
+  statusOptionTextInactive: {
+    color: COLORS.white,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.gray[700],
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: COLORS.gray[50],
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.gray[800],
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    gap: 12,
+    paddingVertical: 8,
+  },
+  imageWrapper: {
+    position: "relative",
+  },
+  previewImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.error,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeImageText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  newBadge: {
+    position: "absolute",
+    bottom: 4,
+    left: 4,
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: COLORS.white,
+  },
+  addImageButton: {
+    width: 100,
+    height: 100,
+    borderWidth: 2,
+    borderColor: COLORS.gray[200],
+    borderStyle: "dashed",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addImageIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  addImageText: {
+    fontSize: 12,
+    color: COLORS.gray[500],
+  },
+  sizeOptions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  sizeOption: {
+    flex: 1,
+    backgroundColor: COLORS.gray[50],
+    borderWidth: 2,
+    borderColor: COLORS.gray[200],
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  sizeOptionActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary + "10",
+  },
+  sizeIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  sizeLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.gray[600],
+  },
+  sizeLabelActive: {
+    color: COLORS.primary,
+  },
+  amenitiesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  amenityOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  amenityOptionActive: {
+    backgroundColor: COLORS.primary + "20",
+    borderColor: COLORS.primary,
+  },
+  amenityIcon: {
+    marginRight: 6,
+  },
+  amenityLabel: {
+    fontSize: 13,
+    color: COLORS.gray[600],
+  },
+  amenityLabelActive: {
+    color: COLORS.primary,
+    fontWeight: "500",
+  },
+  mapContainer: {
+    height: 150,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  bottomSpacer: {
+    height: 40,
+  },
+});
+
+export default EditListingScreen;

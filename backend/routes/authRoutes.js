@@ -1,0 +1,31 @@
+const express = require("express");
+const router = express.Router();
+const {
+  register,
+  login,
+  sendOTP,
+  verifyOTP,
+  getMe,
+  updateDetails,
+  updatePassword,
+  logout,
+  switchRole,
+} = require("../controllers/authController");
+const { protect } = require("../middleware/auth");
+const {
+  registerValidation,
+  loginValidation,
+  validate,
+} = require("../middleware/validators");
+
+router.post("/register", registerValidation, validate, register);
+router.post("/login", loginValidation, validate, login);
+router.post("/send-otp", sendOTP);
+router.post("/verify-otp", verifyOTP);
+router.get("/me", protect, getMe);
+router.put("/updatedetails", protect, updateDetails);
+router.put("/updatepassword", protect, updatePassword);
+router.get("/logout", protect, logout);
+router.put("/switch-role", protect, switchRole);
+
+module.exports = router;

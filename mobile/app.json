@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "Parking App",
+    "slug": "parking-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4F46E5"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.parkingapp.mobile",
+      "config": {
+        "googleMapsApiKey": "AIzaSyBF1cfg0RytU-lbuqnFET0VFoS9aOhvyXAv"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to find nearby parking spaces.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to your location to find nearby parking spaces.",
+        "NSCameraUsageDescription": "This app needs access to your camera to upload photos of parking spaces.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4F46E5"
+      },
+      "package": "com.parkingapp.mobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBF1cfg0RytU-lbuqnFET0VFoS9aOhvyXAv"
+        }
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Parking App to use your location."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Parking App to access your photos.",
+          "cameraPermission": "Allow Parking App to access your camera."
+        }
+      ],
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ]
+  }
+}
