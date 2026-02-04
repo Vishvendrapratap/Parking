@@ -100,6 +100,20 @@ export const SocketProvider = ({ children }) => {
     [socket, connected],
   );
 
+  const sendMessage = useCallback(
+    (receiverId, text, parkingSpaceId, conversationId) => {
+      if (socket && connected) {
+        socket.emit("send_message", {
+          receiverId,
+          text,
+          parkingSpaceId,
+          conversationId,
+        });
+      }
+    },
+    [socket, connected],
+  );
+
   const onNewMessage = useCallback(
     (callback) => {
       if (socket) {
@@ -169,12 +183,14 @@ export const SocketProvider = ({ children }) => {
   const value = {
     socket,
     connected,
+    isConnected: connected, // alias for compatibility
     unreadMessages,
     setUnreadMessages,
     joinConversation,
     leaveConversation,
     sendTypingStart,
     sendTypingStop,
+    sendMessage,
     onNewMessage,
     onUserTyping,
     onUserStoppedTyping,

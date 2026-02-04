@@ -66,17 +66,25 @@ const initializeSocket = (server) => {
     socket.on("send_message", (data) => {
       const { conversationId, receiverId, message } = data;
 
-      // Emit to receiver
+      // Add sender info to message if not present
+      const messageWithSender = {
+        ...message,
+        sender: message.sender || { _id: socket.userId },
+      };
+
+      // Emit to receiver's personal room
       io.to(`user_${receiverId}`).emit("new_message", {
         conversationId,
-        message,
+        message: messageWithSender,
       });
 
-      // Also emit to conversation room
-      socket.to(`conversation_${conversationId}`).emit("new_message", {
-        conversationId,
-        message,
-      });
+      // Also emit to conversation room (excluding sender)
+      if (conversationId) {
+        socket.to(`conversation_${conversationId}`).emit("new_message", {
+          conversationId,
+          message: messageWithSender,
+        });
+      }
     });
 
     // Handle message read

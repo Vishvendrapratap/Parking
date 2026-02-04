@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,63 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { getConversations } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { COLORS } from "../constants/config";
 import Icon from "../components/Icon";
 
 const ChatListScreen = ({ navigation }) => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Fetch conversations when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchConversations();
+    }, [])
+  );
+
+  // Listen for new messages to update conversation list
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    if (!socket) return;
+
+    const handleNewMessage = (data) => {
+      const message = data.message || data;
+      const conversationId = data.conversationId;
+
+      // Update the conversation in the list
+      setConversations((prev) => {
+        const updated = prev.map((conv) => {
+          if (conv._id === conversationId) {
+            return {
+              ...conv,
+              lastMessage: message,
+              updatedAt: message.createdAt || new Date().toISOString(),
+              unreadCount: (conv.unreadCount || 0) + 1,
+            };
+          }
+          return conv;
+        });
+
+        // Sort by most recent
+        return updated.sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        );
+      });
+    };
+
+    socket.on("new_message", handleNewMessage);
+
+    return () => {
+      socket.off("new_message", handleNewMessage);
+    };
+  }, [socket]);
 
   const fetchConversations = async () => {
     try {

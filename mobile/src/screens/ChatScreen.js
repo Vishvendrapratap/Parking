@@ -22,7 +22,7 @@ const ChatScreen = ({ route, navigation }) => {
   const { conversationId, receiverId, receiverName, parkingSpaceId } =
     route.params;
   const { user } = useAuth();
-  const { socket, isConnected, sendMessage: sendSocketMessage } = useSocket();
+  const { socket, isConnected, onNewMessage, onUserTyping, onUserStoppedTyping } = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,58 +31,73 @@ const ChatScreen = ({ route, navigation }) => {
   const [sending, setSending] = useState(false);
   const typingTimeoutRef = useRef(null);
   const flatListRef = useRef(null);
+  const currentConversationId = useRef(conversationId);
+
+  // Update ref when conversationId changes
+  useEffect(() => {
+    currentConversationId.current = conversationId;
+  }, [conversationId]);
 
   useEffect(() => {
     fetchMessages();
-    setupSocketListeners();
-
-    return () => {
-      cleanupSocketListeners();
-    };
   }, [conversationId, receiverId]);
 
-  const setupSocketListeners = () => {
+  // Socket listeners using context methods
+  useEffect(() => {
     if (!socket) return;
+
+    // Join conversation room
+    if (conversationId) {
+      socket.emit("join_conversation", conversationId);
+    }
+
+    // Handle new messages
+    const handleNewMessage = (data) => {
+      // Handle both formats: { message } or direct message object
+      const message = data.message || data;
+      
+      // Only add if it's for this conversation and not from current user
+      if (message.sender?._id !== user?._id && message.sender !== user?._id) {
+        // Check if message belongs to current conversation
+        if (!data.conversationId || data.conversationId === currentConversationId.current) {
+          setMessages((prevMessages) => {
+            // Avoid duplicates
+            const exists = prevMessages.some(m => m._id === message._id);
+            if (exists) return prevMessages;
+            return [...prevMessages, message];
+          });
+          scrollToBottom();
+        }
+      }
+    };
+
+    // Handle typing indicators
+    const handleTypingStart = (data) => {
+      if (data.userId !== user?._id && data.conversationId === currentConversationId.current) {
+        setIsTyping(true);
+      }
+    };
+
+    const handleTypingStop = (data) => {
+      if (data.userId !== user?._id && data.conversationId === currentConversationId.current) {
+        setIsTyping(false);
+      }
+    };
 
     socket.on("new_message", handleNewMessage);
-    socket.on("typing_start", handleTypingStart);
-    socket.on("typing_stop", handleTypingStop);
+    socket.on("user_typing", handleTypingStart);
+    socket.on("user_stopped_typing", handleTypingStop);
 
-    if (conversationId) {
-      socket.emit("join_conversation", { conversationId });
-    }
-  };
-
-  const cleanupSocketListeners = () => {
-    if (!socket) return;
-
-    socket.off("new_message", handleNewMessage);
-    socket.off("typing_start", handleTypingStart);
-    socket.off("typing_stop", handleTypingStop);
-
-    if (conversationId) {
-      socket.emit("leave_conversation", { conversationId });
-    }
-  };
-
-  const handleNewMessage = (message) => {
-    if (message.sender._id !== user?._id) {
-      setMessages((prevMessages) => [...prevMessages, message]);
-      scrollToBottom();
-    }
-  };
-
-  const handleTypingStart = ({ userId }) => {
-    if (userId !== user?._id) {
-      setIsTyping(true);
-    }
-  };
-
-  const handleTypingStop = ({ userId }) => {
-    if (userId !== user?._id) {
-      setIsTyping(false);
-    }
-  };
+    return () => {
+      socket.off("new_message", handleNewMessage);
+      socket.off("user_typing", handleTypingStart);
+      socket.off("user_stopped_typing", handleTypingStop);
+      
+      if (conversationId) {
+        socket.emit("leave_conversation", conversationId);
+      }
+    };
+  }, [socket, conversationId, user?._id]);
 
   const fetchMessages = async () => {
     try {
@@ -121,15 +136,23 @@ const ChatScreen = ({ route, navigation }) => {
     scrollToBottom();
 
     try {
-      await sendMessageAPI(receiverId, newMessage.text, parkingSpaceId);
+      const result = await sendMessageAPI(receiverId, newMessage.text, parkingSpaceId);
+      
+      // Update conversation ID if this is a new conversation
+      if (result.data?.conversation && !currentConversationId.current) {
+        currentConversationId.current = result.data.conversation;
+      }
 
+      // Emit socket event for real-time delivery
       if (socket && isConnected) {
-        sendSocketMessage(
+        socket.emit("send_message", {
+          conversationId: currentConversationId.current || conversationId,
           receiverId,
-          newMessage.text,
-          parkingSpaceId,
-          conversationId,
-        );
+          message: {
+            ...newMessage,
+            _id: result.data?._id || tempId,
+          },
+        });
       }
     } catch (error) {
       console.error("Error sending message:", error);
