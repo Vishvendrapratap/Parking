@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import * as SecureStore from "expo-secure-store";
 import { api, setAuthToken } from "../api/axios";
 
@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firebaseConfirmation, setFirebaseConfirmation] = useState(null);
+  const confirmationRef = useRef(null);
 
   useEffect(() => {
     loadStoredAuth();
@@ -111,19 +113,33 @@ export const AuthProvider = ({ children }) => {
 
   const sendOTP = async (phone) => {
     try {
-      const response = await api.post("/auth/send-otp", { phone });
-      return { success: true, message: response.data.message };
+      // Format phone number (ensure it has country code)
+      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
+      
+      // Send OTP via backend (using configured SMS provider)
+      const response = await api.post("/auth/send-otp", { phone: formattedPhone });
+      
+      // Store phone for later verification
+      confirmationRef.current = { phone: formattedPhone };
+      
+      return { success: true, message: response.data.message || "OTP sent successfully" };
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to send OTP",
-      };
+      console.error("Send OTP error:", error);
+      let message = error.response?.data?.message || "Failed to send OTP";
+      return { success: false, message };
     }
   };
 
   const verifyOTP = async (phone, otp) => {
     try {
-      const response = await api.post("/auth/verify-otp", { phone, otp });
+      // Format phone number
+      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
+      
+      // Verify OTP via backend
+      const response = await api.post("/auth/verify-otp", {
+        phone: formattedPhone,
+        otp,
+      });
 
       const { token: newToken, user: userData } = response.data;
 
@@ -133,13 +149,16 @@ export const AuthProvider = ({ children }) => {
       setToken(newToken);
       setUser(userData);
       setAuthToken(newToken);
+      
+      // Clear confirmation
+      confirmationRef.current = null;
+      setFirebaseConfirmation(null);
 
       return { success: true, user: userData };
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "OTP verification failed",
-      };
+      console.error("Verify OTP error:", error);
+      let message = error.response?.data?.message || "OTP verification failed";
+      return { success: false, message };
     }
   };
 

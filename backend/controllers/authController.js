@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { verifyFirebaseToken } = require("../config/firebase");
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -320,4 +321,71 @@ const sendTokenResponse = (user, statusCode, res) => {
       isVerified: user.isVerified,
     },
   });
+};
+
+// @desc    Authenticate with Firebase (Phone Auth)
+// @route   POST /api/auth/firebase-auth
+// @access  Public
+exports.firebaseAuth = async (req, res) => {
+  try {
+    const { firebaseToken, phone } = req.body;
+
+    if (!firebaseToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Firebase token is required",
+      });
+    }
+
+    // Verify the Firebase token
+    let decodedToken;
+    try {
+      decodedToken = await verifyFirebaseToken(firebaseToken);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Firebase token",
+      });
+    }
+
+    // Get phone number from decoded token or request
+    const phoneNumber = decodedToken.phone_number || phone;
+
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number not found",
+      });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ phone: phoneNumber });
+
+    if (!user) {
+      // Create new user
+      user = await User.create({
+        phone: phoneNumber,
+        name: "New User",
+        role: "seeker",
+        isVerified: true,
+        firebaseUid: decodedToken.uid,
+      });
+    } else {
+      // Update existing user with Firebase UID if not set
+      if (!user.firebaseUid) {
+        user.firebaseUid = decodedToken.uid;
+        user.isVerified = true;
+        await user.save();
+      }
+    }
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    console.error("Firebase auth error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error authenticating with Firebase",
+      error: error.message,
+    });
+  }
 };

@@ -5,6 +5,7 @@ const {
   login,
   sendOTP,
   verifyOTP,
+  firebaseAuth,
   getMe,
   updateDetails,
   updatePassword,
@@ -22,6 +23,7 @@ router.post("/register", registerValidation, validate, register);
 router.post("/login", loginValidation, validate, login);
 router.post("/send-otp", sendOTP);
 router.post("/verify-otp", verifyOTP);
+router.post("/firebase-auth", firebaseAuth);
 router.get("/me", protect, getMe);
 router.put("/updatedetails", protect, updateDetails);
 router.put("/updatepassword", protect, updatePassword);
