@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#4F46E5"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.parkingapp.mobile",

@@ -59,11 +59,14 @@ const AddListingScreen = ({ navigation }) => {
         },
       }));
       // Animate map to current location
-      mapRef.current?.animateToRegion({
-        ...coords,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 1000);
+      mapRef.current?.animateToRegion(
+        {
+          ...coords,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        1000,
+      );
     }
   };
 
@@ -119,11 +122,14 @@ const AddListingScreen = ({ navigation }) => {
         },
       });
       // Animate map to current location
-      mapRef.current?.animateToRegion({
-        ...coords,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 1000);
+      mapRef.current?.animateToRegion(
+        {
+          ...coords,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        1000,
+      );
     }
   };
 

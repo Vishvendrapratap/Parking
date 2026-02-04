@@ -73,11 +73,11 @@ exports.getParkingSpaces = async (req, res) => {
 
       total = await ParkingSpace.countDocuments(query);
     } catch (geoError) {
-      // If geospatial query fails (e.g., no index or no documents), 
+      // If geospatial query fails (e.g., no index or no documents),
       // fall back to simple query without location
       console.error("Geospatial query failed, falling back:", geoError.message);
       delete query["location.coordinates"];
-      
+
       parkingSpaces = await ParkingSpace.find(query)
         .populate("owner", "name avatar rating")
         .skip((page - 1) * limit)
@@ -144,7 +144,10 @@ exports.createParkingSpace = async (req, res) => {
     if (req.body.latitude && req.body.longitude && !req.body.location) {
       req.body.location = {
         type: "Point",
-        coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)],
+        coordinates: [
+          parseFloat(req.body.longitude),
+          parseFloat(req.body.latitude),
+        ],
         address: req.body.address || "",
       };
       delete req.body.latitude;
@@ -153,11 +156,17 @@ exports.createParkingSpace = async (req, res) => {
     }
 
     // Handle location.coordinates sent as { latitude, longitude } object
-    if (req.body.location && req.body.location.coordinates && 
-        typeof req.body.location.coordinates === "object" && 
-        !Array.isArray(req.body.location.coordinates)) {
+    if (
+      req.body.location &&
+      req.body.location.coordinates &&
+      typeof req.body.location.coordinates === "object" &&
+      !Array.isArray(req.body.location.coordinates)
+    ) {
       const { latitude, longitude } = req.body.location.coordinates;
-      req.body.location.coordinates = [parseFloat(longitude), parseFloat(latitude)];
+      req.body.location.coordinates = [
+        parseFloat(longitude),
+        parseFloat(latitude),
+      ];
       req.body.location.type = "Point";
     }
 

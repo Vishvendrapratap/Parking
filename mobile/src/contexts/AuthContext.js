@@ -50,12 +50,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, phone, password) => {
     try {
       console.log("Attempting login with:", { email, phone });
-      
+
       // Build request body, only include non-null values
       const requestBody = { password };
       if (email) requestBody.email = email;
       if (phone) requestBody.phone = phone;
-      
+
       const response = await api.post("/auth/login", requestBody);
 
       console.log("Login response:", response.data);
@@ -75,7 +75,8 @@ export const AuthProvider = ({ children }) => {
       console.log("Error code:", error.code);
       return {
         success: false,
-        message: error.response?.data?.message || error.message || "Login failed",
+        message:
+          error.response?.data?.message || error.message || "Login failed",
       };
     }
   };
