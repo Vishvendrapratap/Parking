@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import * as SecureStore from "expo-secure-store";
 import { api, setAuthToken } from "../api/axios";
 
@@ -115,14 +121,19 @@ export const AuthProvider = ({ children }) => {
     try {
       // Format phone number (ensure it has country code)
       const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
-      
+
       // Send OTP via backend (using configured SMS provider)
-      const response = await api.post("/auth/send-otp", { phone: formattedPhone });
-      
+      const response = await api.post("/auth/send-otp", {
+        phone: formattedPhone,
+      });
+
       // Store phone for later verification
       confirmationRef.current = { phone: formattedPhone };
-      
-      return { success: true, message: response.data.message || "OTP sent successfully" };
+
+      return {
+        success: true,
+        message: response.data.message || "OTP sent successfully",
+      };
     } catch (error) {
       console.error("Send OTP error:", error);
       let message = error.response?.data?.message || "Failed to send OTP";
@@ -134,7 +145,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Format phone number
       const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
-      
+
       // Verify OTP via backend
       const response = await api.post("/auth/verify-otp", {
         phone: formattedPhone,
@@ -149,7 +160,7 @@ export const AuthProvider = ({ children }) => {
       setToken(newToken);
       setUser(userData);
       setAuthToken(newToken);
-      
+
       // Clear confirmation
       confirmationRef.current = null;
       setFirebaseConfirmation(null);

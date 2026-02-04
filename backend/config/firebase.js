@@ -18,7 +18,9 @@ const initializeFirebase = () => {
   try {
     // Option 1: Use service account from environment variable (recommended for production)
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      const serviceAccount = JSON.parse(
+        process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+      );
       firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
