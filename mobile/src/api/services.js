@@ -162,7 +162,7 @@ export const getUnreadCount = async () => {
 // ==================== USERS ====================
 
 export const getMyProfile = async () => {
-  const response = await api.get('/auth/me');
+  const response = await api.get("/auth/me");
   return response.data;
 };
 

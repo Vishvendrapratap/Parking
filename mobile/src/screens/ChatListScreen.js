@@ -60,7 +60,10 @@ const ChatListScreen = ({ navigation }) => {
       return conversation.participant;
     }
     // Fallback for older format with participants array
-    if (!conversation?.participants || !Array.isArray(conversation.participants)) {
+    if (
+      !conversation?.participants ||
+      !Array.isArray(conversation.participants)
+    ) {
       return null;
     }
     return conversation.participants.find((p) => p._id !== user?._id);
