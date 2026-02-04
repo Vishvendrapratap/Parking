@@ -6,6 +6,7 @@ import {
   parkingService,
 } from "../../api/services";
 import toast from "react-hot-toast";
+import Icon from "../../components/Icon";
 
 const OwnerDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -51,7 +52,7 @@ const OwnerDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <Icon name="spinner" className="text-primary-600" size="3xl" />
       </div>
     );
   }
@@ -113,15 +114,17 @@ const OwnerDashboard = () => {
             </h2>
             <Link
               to="/owner/bookings"
-              className="text-primary-600 text-sm hover:underline"
+              className="text-primary-600 text-sm hover:underline flex items-center gap-1"
             >
-              View All →
+              View All <Icon name="forward" size="sm" />
             </Link>
           </div>
 
           {pendingBookings.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">📋</div>
+              <div className="text-4xl mb-2 text-primary-600">
+                <Icon name="clipboard" size="2xl" />
+              </div>
               <p>No pending requests</p>
             </div>
           ) : (
@@ -175,15 +178,17 @@ const OwnerDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-800">My Listings</h2>
             <Link
               to="/owner/listings"
-              className="text-primary-600 text-sm hover:underline"
+              className="text-primary-600 text-sm hover:underline flex items-center gap-1"
             >
-              View All →
+              View All <Icon name="forward" size="sm" />
             </Link>
           </div>
 
           {recentListings.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">🅿️</div>
+              <div className="text-4xl mb-2 text-primary-600">
+                <Icon name="parking" size="2xl" />
+              </div>
               <p>No listings yet</p>
               <Link
                 to="/owner/listings/new"
@@ -208,8 +213,8 @@ const OwnerDashboard = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">
-                        🅿️
+                      <div className="w-full h-full flex items-center justify-center text-2xl text-primary-600">
+                        <Icon name="parking" size="xl" />
                       </div>
                     )}
                   </div>
@@ -245,8 +250,8 @@ const OwnerDashboard = () => {
           to="/owner/listings/new"
           className="card hover:shadow-lg transition-shadow flex items-center gap-4"
         >
-          <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-            <span className="text-2xl">➕</span>
+          <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600">
+            <Icon name="plus" size="xl" />
           </div>
           <div>
             <p className="font-semibold text-gray-800">Add New Listing</p>
@@ -258,8 +263,8 @@ const OwnerDashboard = () => {
           to="/owner/earnings"
           className="card hover:shadow-lg transition-shadow flex items-center gap-4"
         >
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <span className="text-2xl">💰</span>
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+            <Icon name="money" size="xl" />
           </div>
           <div>
             <p className="font-semibold text-gray-800">View Earnings</p>
@@ -271,8 +276,8 @@ const OwnerDashboard = () => {
           to="/messages"
           className="card hover:shadow-lg transition-shadow flex items-center gap-4"
         >
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <span className="text-2xl">💬</span>
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+            <Icon name="chat" size="xl" />
           </div>
           <div>
             <p className="font-semibold text-gray-800">Messages</p>

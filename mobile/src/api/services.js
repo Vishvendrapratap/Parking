@@ -75,6 +75,11 @@ export const getBookings = async (params = {}) => {
   return response.data;
 };
 
+export const getMyBookings = async (params = {}) => {
+  const response = await api.get("/bookings", { params });
+  return response.data;
+};
+
 export const getBooking = async (id) => {
   const response = await api.get(`/bookings/${id}`);
   return response.data;
@@ -155,6 +160,11 @@ export const getUnreadCount = async () => {
 };
 
 // ==================== USERS ====================
+
+export const getMyProfile = async () => {
+  const response = await api.get('/auth/me');
+  return response.data;
+};
 
 export const getUserProfile = async (id) => {
   const response = await api.get(`/users/${id}/profile`);

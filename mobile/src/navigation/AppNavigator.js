@@ -6,6 +6,7 @@ import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS } from "../constants/config";
+import { TabIcon } from "../components/Icon";
 
 // Auth Screens
 import LoginScreen from "../screens/auth/LoginScreen";
@@ -36,23 +37,6 @@ import MyListingsScreen from "../screens/owner/MyListingsScreen";
 // Profile
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
-
-// Tab bar icons
-const TabIcon = ({ name, focused }) => {
-  const icons = {
-    Home: "🗺️",
-    Search: "🔍",
-    Bookings: "📋",
-    Chat: "💬",
-    Profile: "👤",
-    Dashboard: "📊",
-    Listings: "🅿️",
-  };
-
-  return (
-    <Text style={{ fontSize: focused ? 26 : 22 }}>{icons[name] || "📍"}</Text>
-  );
-};
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();

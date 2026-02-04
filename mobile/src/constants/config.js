@@ -33,32 +33,40 @@ export const PARKING_SIZES = [
     value: "small",
     label: "Small Car",
     description: "Smart Car, Mini Cooper, Fiat 500",
-    icon: "🚗",
+    icon: "car",
   },
   {
     value: "sedan",
     label: "Sedan",
     description: "Honda Civic, Toyota Camry, BMW 3 Series",
-    icon: "🚙",
+    icon: "carSide",
   },
   {
     value: "suv",
     label: "SUV / Large",
     description: "Ford F-150, Chevy Tahoe, Range Rover",
-    icon: "🚐",
+    icon: "van",
   },
 ];
 
 // Amenities
 export const AMENITIES = [
-  { value: "covered", label: "Covered", icon: "🏠" },
-  { value: "security_camera", label: "Security Camera", icon: "📹" },
-  { value: "gated", label: "Gated", icon: "🚧" },
-  { value: "ev_charging", label: "EV Charging", icon: "⚡" },
-  { value: "well_lit", label: "Well Lit", icon: "💡" },
-  { value: "handicap_accessible", label: "Handicap Accessible", icon: "♿" },
-  { value: "24_7_access", label: "24/7 Access", icon: "🕐" },
-  { value: "security_guard", label: "Security Guard", icon: "👮" },
+  { value: "covered", label: "Covered", icon: "covered" },
+  {
+    value: "security_camera",
+    label: "Security Camera",
+    icon: "securityCamera",
+  },
+  { value: "gated", label: "Gated", icon: "gate" },
+  { value: "ev_charging", label: "EV Charging", icon: "evCharging" },
+  { value: "well_lit", label: "Well Lit", icon: "lightbulb" },
+  {
+    value: "handicap_accessible",
+    label: "Handicap Accessible",
+    icon: "wheelchair",
+  },
+  { value: "24_7_access", label: "24/7 Access", icon: "24hours" },
+  { value: "security_guard", label: "Security Guard", icon: "guard" },
 ];
 
 // Booking statuses
@@ -92,6 +100,11 @@ export const COLORS = {
     700: "#374151",
     800: "#1F2937",
     900: "#111827",
+  },
+  text: {
+    primary: "#1F2937",
+    secondary: "#6B7280",
+    light: "#9CA3AF",
   },
   success: "#10B981",
   warning: "#F59E0B",

@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
-import { getUserProfile } from "../api/services";
+import { getMyProfile } from "../api/services";
 import { COLORS } from "../constants/config";
+import Icon from "../components/Icon";
 
 const ProfileScreen = ({ navigation }) => {
   const { user, logout, switchRole } = useAuth();
@@ -26,7 +27,7 @@ const ProfileScreen = ({ navigation }) => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const result = await getUserProfile();
+      const result = await getMyProfile();
       setProfile(result.data);
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -87,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
               style={styles.editAvatarButton}
               onPress={() => navigation.navigate("EditProfile")}
             >
-              <Text style={styles.editAvatarText}>✏️</Text>
+              <Icon name="edit" size="sm" color={COLORS.white} />
             </TouchableOpacity>
           </View>
 
@@ -95,19 +96,30 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.email}>{displayUser?.email}</Text>
 
           <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>
-              {displayUser?.activeRole === "owner"
-                ? "🏠 Space Owner"
-                : "🔍 Parking Seeker"}
-            </Text>
+            <View style={styles.roleContent}>
+              <Icon
+                name={displayUser?.activeRole === "owner" ? "home" : "search"}
+                size="sm"
+                color={COLORS.primary}
+              />
+              <Text style={styles.roleText}>
+                {displayUser?.activeRole === "owner"
+                  ? " Space Owner"
+                  : " Parking Seeker"}
+              </Text>
+            </View>
           </View>
 
           {/* Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                ⭐ {displayUser?.rating?.toFixed(1) || "New"}
-              </Text>
+              <View style={styles.statValueRow}>
+                <Icon name="star" size="sm" color={COLORS.accent} />
+                <Text style={styles.statValue}>
+                  {" "}
+                  {displayUser?.rating?.toFixed(1) || "New"}
+                </Text>
+              </View>
               <Text style={styles.statLabel}>Rating</Text>
             </View>
             <View style={styles.statDivider} />
@@ -133,17 +145,21 @@ const ProfileScreen = ({ navigation }) => {
             style={styles.menuItem}
             onPress={() => navigation.navigate("EditProfile")}
           >
-            <Text style={styles.menuIcon}>👤</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="user" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Edit Profile</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleSwitchRole}>
-            <Text style={styles.menuIcon}>🔄</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="sync" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>
               Switch to {user?.activeRole === "seeker" ? "Owner" : "Seeker"}
             </Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           {user?.activeRole === "owner" && (
@@ -152,18 +168,30 @@ const ProfileScreen = ({ navigation }) => {
                 style={styles.menuItem}
                 onPress={() => navigation.navigate("MyListings")}
               >
-                <Text style={styles.menuIcon}>🅿️</Text>
+                <View style={styles.menuIcon}>
+                  <Icon
+                    name="parking"
+                    size="lg"
+                    color={COLORS.text.secondary}
+                  />
+                </View>
                 <Text style={styles.menuText}>My Listings</Text>
-                <Text style={styles.menuArrow}>›</Text>
+                <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => navigation.navigate("OwnerDashboard")}
               >
-                <Text style={styles.menuIcon}>📊</Text>
+                <View style={styles.menuIcon}>
+                  <Icon
+                    name="chartBar"
+                    size="lg"
+                    color={COLORS.text.secondary}
+                  />
+                </View>
                 <Text style={styles.menuText}>Dashboard</Text>
-                <Text style={styles.menuArrow}>›</Text>
+                <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
               </TouchableOpacity>
             </>
           )}
@@ -171,41 +199,53 @@ const ProfileScreen = ({ navigation }) => {
 
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>💳</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="creditCard" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Payment Methods</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>🔔</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="bell" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Notifications</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>🔒</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="lock" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Privacy & Security</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>❓</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="help" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Help Center</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>📄</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="file" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Terms of Service</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuIcon}>🛡️</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="shield" size="lg" color={COLORS.text.secondary} />
+            </View>
             <Text style={styles.menuText}>Privacy Policy</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
         </View>
 

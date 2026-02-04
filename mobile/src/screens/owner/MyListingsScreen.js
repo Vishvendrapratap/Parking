@@ -16,6 +16,7 @@ import {
   deleteParkingSpace,
 } from "../../api/services";
 import { COLORS, PARKING_SIZES } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const MyListingsScreen = ({ navigation }) => {
   const [listings, setListings] = useState([]);
@@ -92,11 +93,11 @@ const MyListingsScreen = ({ navigation }) => {
         <View style={styles.listingImage}>
           {item.images?.[0] ? (
             <View style={styles.imagePlaceholder}>
-              <Text style={styles.imageIcon}>🅿️</Text>
+              <Icon name="parking" size="2xl" color={COLORS.primary} />
             </View>
           ) : (
             <View style={styles.imagePlaceholder}>
-              <Text style={styles.imageIcon}>🅿️</Text>
+              <Icon name="parking" size="2xl" color={COLORS.primary} />
             </View>
           )}
         </View>
@@ -106,9 +107,13 @@ const MyListingsScreen = ({ navigation }) => {
           <Text style={styles.listingTitle} numberOfLines={1}>
             {item.title}
           </Text>
-          <Text style={styles.listingAddress} numberOfLines={1}>
-            📍 {item.location?.address}
-          </Text>
+          <View style={styles.listingAddressRow}>
+            <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
+            <Text style={styles.listingAddress} numberOfLines={1}>
+              {" "}
+              {item.location?.address}
+            </Text>
+          </View>
 
           <View style={styles.listingMeta}>
             <Text style={styles.listingSize}>
@@ -118,12 +123,20 @@ const MyListingsScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.listingStats}>
-            <Text style={styles.statText}>
-              ⭐ {item.rating?.toFixed(1) || "New"}
-            </Text>
-            <Text style={styles.statText}>
-              📅 {item.totalBookings || 0} bookings
-            </Text>
+            <View style={styles.statRow}>
+              <Icon name="star" size="xs" color={COLORS.accent} />
+              <Text style={styles.statText}>
+                {" "}
+                {item.rating?.toFixed(1) || "New"}
+              </Text>
+            </View>
+            <View style={styles.statRow}>
+              <Icon name="calendar" size="xs" color={COLORS.text.secondary} />
+              <Text style={styles.statText}>
+                {" "}
+                {item.totalBookings || 0} bookings
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -174,15 +187,14 @@ const MyListingsScreen = ({ navigation }) => {
               navigation.navigate("EditListing", { parkingId: item._id })
             }
           >
-            <Text style={styles.actionButtonText}>✏️ Edit</Text>
+            <Icon name="edit" size="sm" color={COLORS.primary} />
+            <Text style={styles.actionButtonText}> Edit</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}
             onPress={() => handleDelete(item)}
           >
-            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>
-              🗑️
-            </Text>
+            <Icon name="trash" size="sm" color={COLORS.error} />
           </TouchableOpacity>
         </View>
       </View>
@@ -193,8 +205,12 @@ const MyListingsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+        <TouchableOpacity
+          style={styles.backButtonContainer}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrowLeft" size="md" color={COLORS.text.primary} />
+          <Text style={styles.backButton}> Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Listings</Text>
         <TouchableOpacity onPress={() => navigation.navigate("AddListing")}>
@@ -219,7 +235,7 @@ const MyListingsScreen = ({ navigation }) => {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🏠</Text>
+              <Icon name="home" size="4xl" color={COLORS.gray[300]} />
               <Text style={styles.emptyText}>No listings yet</Text>
               <Text style={styles.emptySubtext}>
                 Start earning by listing your parking space

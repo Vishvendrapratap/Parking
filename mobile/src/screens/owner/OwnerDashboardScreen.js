@@ -14,6 +14,7 @@ import { getOwnerDashboard } from "../../api/services";
 import { useAuth } from "../../contexts/AuthContext";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { COLORS } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const { width } = Dimensions.get("window");
 
@@ -78,21 +79,21 @@ const OwnerDashboardScreen = ({ navigation }) => {
         {/* Stats Overview */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>🅿️</Text>
+            <Icon name="parking" size="2xl" color={COLORS.primary} />
             <Text style={styles.statValue}>
               {dashboard?.totalListings || 0}
             </Text>
             <Text style={styles.statLabel}>Active Listings</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>📅</Text>
+            <Icon name="calendar" size="2xl" color={COLORS.primary} />
             <Text style={styles.statValue}>
               {dashboard?.totalBookings || 0}
             </Text>
             <Text style={styles.statLabel}>Total Bookings</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>⭐</Text>
+            <Icon name="star" size="2xl" color={COLORS.accent} />
             <Text style={styles.statValue}>
               {dashboard?.rating?.toFixed(1) || "N/A"}
             </Text>
@@ -103,7 +104,10 @@ const OwnerDashboardScreen = ({ navigation }) => {
         {/* Earnings Card */}
         <View style={styles.earningsCard}>
           <View style={styles.earningsHeader}>
-            <Text style={styles.earningsTitle}>💰 Earnings</Text>
+            <View style={styles.earningsTitleRow}>
+              <Icon name="money" size="lg" color={COLORS.white} />
+              <Text style={styles.earningsTitle}> Earnings</Text>
+            </View>
             <Text style={styles.earningsPeriod}>
               {format(startOfMonth(new Date()), "MMM d")} -{" "}
               {format(endOfMonth(new Date()), "MMM d, yyyy")}
@@ -129,7 +133,10 @@ const OwnerDashboardScreen = ({ navigation }) => {
         {/* Pending Bookings */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>⏳ Pending Requests</Text>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="clock" size="lg" color={COLORS.text.primary} />
+              <Text style={styles.sectionTitle}> Pending Requests</Text>
+            </View>
             <TouchableOpacity onPress={() => navigation.navigate("Bookings")}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
@@ -176,7 +183,10 @@ const OwnerDashboardScreen = ({ navigation }) => {
         {/* My Listings */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🏠 My Listings</Text>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="home" size="lg" color={COLORS.text.primary} />
+              <Text style={styles.sectionTitle}> My Listings</Text>
+            </View>
             <TouchableOpacity onPress={() => navigation.navigate("MyListings")}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
@@ -191,15 +201,23 @@ const OwnerDashboardScreen = ({ navigation }) => {
                 }
               >
                 <View style={styles.listingImage}>
-                  <Text style={styles.listingIcon}>🅿️</Text>
+                  <Icon name="parking" size="xl" color={COLORS.primary} />
                 </View>
                 <View style={styles.listingInfo}>
                   <Text style={styles.listingTitle} numberOfLines={1}>
                     {listing.title}
                   </Text>
-                  <Text style={styles.listingAddress} numberOfLines={1}>
-                    📍 {listing.location?.address}
-                  </Text>
+                  <View style={styles.listingAddressRow}>
+                    <Icon
+                      name="mapMarker"
+                      size="xs"
+                      color={COLORS.text.secondary}
+                    />
+                    <Text style={styles.listingAddress} numberOfLines={1}>
+                      {" "}
+                      {listing.location?.address}
+                    </Text>
+                  </View>
                   <View style={styles.listingMeta}>
                     <Text style={styles.listingPrice}>
                       ${listing.pricePerHour}/hr
@@ -218,7 +236,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
                     <Text style={styles.listingStatus}>{listing.status}</Text>
                   </View>
                 </View>
-                <Text style={styles.listingArrow}>›</Text>
+                <Icon name="chevronRight" size="md" color={COLORS.text.light} />
               </TouchableOpacity>
             ))
           ) : (
@@ -239,14 +257,20 @@ const OwnerDashboardScreen = ({ navigation }) => {
         {/* Recent Reviews */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>💬 Recent Reviews</Text>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="comment" size="lg" color={COLORS.text.primary} />
+              <Text style={styles.sectionTitle}> Recent Reviews</Text>
+            </View>
           </View>
           {dashboard?.recentReviews?.length > 0 ? (
             dashboard.recentReviews.slice(0, 2).map((review) => (
               <View key={review._id} style={styles.reviewItem}>
                 <View style={styles.reviewHeader}>
                   <Text style={styles.reviewerName}>{review.user?.name}</Text>
-                  <Text style={styles.reviewRating}>⭐ {review.rating}</Text>
+                  <View style={styles.reviewRatingRow}>
+                    <Icon name="star" size="sm" color={COLORS.accent} />
+                    <Text style={styles.reviewRating}> {review.rating}</Text>
+                  </View>
                 </View>
                 <Text style={styles.reviewText} numberOfLines={2}>
                   {review.comment}

@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getMyBookings } from "../api/services";
 import { format } from "date-fns";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
+import Icon from "../components/Icon";
 
 const BookingsScreen = ({ navigation }) => {
   const [bookings, setBookings] = useState([]);
@@ -43,7 +44,7 @@ const BookingsScreen = ({ navigation }) => {
   };
 
   const getStatusColor = (status) => {
-    const statusInfo = BOOKING_STATUSES.find((s) => s.value === status);
+    const statusInfo = BOOKING_STATUSES[status];
     return statusInfo?.color || COLORS.gray[500];
   };
 
@@ -77,9 +78,13 @@ const BookingsScreen = ({ navigation }) => {
           <Text style={styles.parkingTitle} numberOfLines={1}>
             {item.parkingSpace?.title}
           </Text>
-          <Text style={styles.parkingAddress} numberOfLines={1}>
-            📍 {item.parkingSpace?.location?.address}
-          </Text>
+          <View style={styles.parkingAddressRow}>
+            <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
+            <Text style={styles.parkingAddress} numberOfLines={1}>
+              {" "}
+              {item.parkingSpace?.location?.address}
+            </Text>
+          </View>
         </View>
         <View
           style={[
@@ -97,28 +102,39 @@ const BookingsScreen = ({ navigation }) => {
 
       <View style={styles.bookingDetails}>
         <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>📅 Date</Text>
+          <View style={styles.detailLabelRow}>
+            <Icon name="calendar" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.detailLabel}> Date</Text>
+          </View>
           <Text style={styles.detailValue}>
             {format(new Date(item.startTime), "MMM d, yyyy")}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>🕐 Time</Text>
+          <View style={styles.detailLabelRow}>
+            <Icon name="clock" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.detailLabel}> Time</Text>
+          </View>
           <Text style={styles.detailValue}>
             {format(new Date(item.startTime), "h:mm a")} -{" "}
             {format(new Date(item.endTime), "h:mm a")}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>💰 Total</Text>
+          <View style={styles.detailLabelRow}>
+            <Icon name="money" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.detailLabel}> Total</Text>
+          </View>
           <Text style={styles.detailValue}>${item.totalPrice?.toFixed(2)}</Text>
         </View>
       </View>
 
       {item.vehicleInfo?.licensePlate && (
         <View style={styles.vehicleInfo}>
+          <Icon name="car" size="sm" color={COLORS.text.secondary} />
           <Text style={styles.vehicleText}>
-            🚗 {item.vehicleInfo.make} {item.vehicleInfo.model} •{" "}
+            {" "}
+            {item.vehicleInfo.make} {item.vehicleInfo.model} •{" "}
             {item.vehicleInfo.licensePlate}
           </Text>
         </View>
@@ -181,7 +197,7 @@ const BookingsScreen = ({ navigation }) => {
           onRefresh={handleRefresh}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>📋</Text>
+              <Icon name="clipboard" size="4xl" color={COLORS.gray[300]} />
               <Text style={styles.emptyText}>No {activeTab} bookings</Text>
               <Text style={styles.emptySubtext}>
                 {activeTab === "upcoming"

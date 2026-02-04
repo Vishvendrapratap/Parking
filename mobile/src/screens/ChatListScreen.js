@@ -13,6 +13,7 @@ import { getConversations } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { COLORS } from "../constants/config";
+import Icon from "../components/Icon";
 
 const ChatListScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -54,6 +55,14 @@ const ChatListScreen = ({ navigation }) => {
   };
 
   const getOtherParticipant = (conversation) => {
+    // Backend returns 'participant' (singular) for the other user
+    if (conversation?.participant) {
+      return conversation.participant;
+    }
+    // Fallback for older format with participants array
+    if (!conversation?.participants || !Array.isArray(conversation.participants)) {
+      return null;
+    }
     return conversation.participants.find((p) => p._id !== user?._id);
   };
 
@@ -61,14 +70,17 @@ const ChatListScreen = ({ navigation }) => {
     const otherUser = getOtherParticipant(item);
     const hasUnread = item.unreadCount > 0;
 
+    // Don't render if no other user found
+    if (!otherUser) return null;
+
     return (
       <TouchableOpacity
         style={styles.conversationItem}
         onPress={() =>
           navigation.navigate("ChatRoom", {
             conversationId: item._id,
-            receiverId: otherUser?._id,
-            receiverName: otherUser?.name,
+            receiverId: otherUser._id,
+            receiverName: otherUser.name,
             parkingSpaceId: item.parkingSpace?._id,
           })
         }
@@ -103,9 +115,13 @@ const ChatListScreen = ({ navigation }) => {
           </View>
 
           {item.parkingSpace && (
-            <Text style={styles.parkingName} numberOfLines={1}>
-              📍 {item.parkingSpace.title}
-            </Text>
+            <View style={styles.parkingNameRow}>
+              <Icon name="mapMarker" size="xs" color={COLORS.primary} />
+              <Text style={styles.parkingName} numberOfLines={1}>
+                {" "}
+                {item.parkingSpace.title}
+              </Text>
+            </View>
           )}
 
           <Text
@@ -145,7 +161,7 @@ const ChatListScreen = ({ navigation }) => {
         onRefresh={handleRefresh}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>💬</Text>
+            <Icon name="comment" size="4xl" color={COLORS.gray[300]} />
             <Text style={styles.emptyText}>No conversations yet</Text>
             <Text style={styles.emptySubtext}>
               Start chatting with parking owners{"\n"}when you view their

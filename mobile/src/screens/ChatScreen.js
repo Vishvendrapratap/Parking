@@ -16,6 +16,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 import { COLORS } from "../constants/config";
 import { format } from "date-fns";
+import Icon from "../components/Icon";
 
 const ChatScreen = ({ route, navigation }) => {
   const { conversationId, receiverId, receiverName, parkingSpaceId } =
@@ -127,13 +128,13 @@ const ChatScreen = ({ route, navigation }) => {
           receiverId,
           newMessage.text,
           parkingSpaceId,
-          conversationId
+          conversationId,
         );
       }
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prevMessages) =>
-        prevMessages.filter((m) => m._id !== tempId)
+        prevMessages.filter((m) => m._id !== tempId),
       );
     } finally {
       setSending(false);
@@ -206,7 +207,7 @@ const ChatScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>←</Text>
+          <Icon name="arrowLeft" size="lg" color={COLORS.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerName}>{receiverName}</Text>

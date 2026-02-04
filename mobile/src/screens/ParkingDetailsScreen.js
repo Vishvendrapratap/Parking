@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { getParkingSpace } from "../api/services";
 import { COLORS, PARKING_SIZES, AMENITIES } from "../constants/config";
+import Icon from "../components/Icon";
 
 const { width } = Dimensions.get("window");
 
@@ -82,10 +83,10 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Icon name="arrowLeft" size="lg" color={COLORS.white} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
-            <Text style={styles.shareButtonText}>📤</Text>
+            <Icon name="share" size="lg" color={COLORS.white} />
           </TouchableOpacity>
         </View>
 
@@ -112,7 +113,7 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
             </ScrollView>
           ) : (
             <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderIcon}>🅿️</Text>
+              <Icon name="parking" size="4xl" color={COLORS.primary} />
             </View>
           )}
           {parking.images?.length > 1 && (
@@ -145,13 +146,19 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          <Text style={styles.address}>
-            📍 {parking.location.formattedAddress || parking.location.address}
-          </Text>
+          <View style={styles.addressRow}>
+            <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.address}>
+              {" "}
+              {parking.location.formattedAddress || parking.location.address}
+            </Text>
+          </View>
 
           <View style={styles.ratingRow}>
+            <Icon name="star" size="sm" color={COLORS.accent} />
             <Text style={styles.rating}>
-              ⭐ {parking.rating?.toFixed(1) || "New"}
+              {" "}
+              {parking.rating?.toFixed(1) || "New"}
             </Text>
             <Text style={styles.reviews}>
               ({parking.totalReviews || 0} reviews)
@@ -239,7 +246,8 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
               style={styles.navigateButton}
               onPress={openNavigation}
             >
-              <Text style={styles.navigateButtonText}>🧭 Get Directions</Text>
+              <Icon name="directions" size="md" color={COLORS.white} />
+              <Text style={styles.navigateButtonText}> Get Directions</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -255,13 +263,18 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
             </View>
             <View style={styles.ownerInfo}>
               <Text style={styles.ownerName}>{parking.owner.name}</Text>
-              <Text style={styles.ownerRating}>
-                ⭐ {parking.owner.rating?.toFixed(1) || "New"} (
-                {parking.owner.totalReviews || 0} reviews)
-              </Text>
+              <View style={styles.ownerRatingRow}>
+                <Icon name="star" size="sm" color={COLORS.accent} />
+                <Text style={styles.ownerRating}>
+                  {" "}
+                  {parking.owner.rating?.toFixed(1) || "New"} (
+                  {parking.owner.totalReviews || 0} reviews)
+                </Text>
+              </View>
             </View>
             <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
-              <Text style={styles.chatButtonText}>💬 Chat</Text>
+              <Icon name="comment" size="md" color={COLORS.white} />
+              <Text style={styles.chatButtonText}> Chat</Text>
             </TouchableOpacity>
           </View>
         </View>

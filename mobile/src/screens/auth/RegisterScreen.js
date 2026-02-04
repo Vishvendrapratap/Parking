@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useAuth();
@@ -67,7 +68,8 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.backButtonText}>← Back</Text>
+              <Icon name="arrowLeft" size="md" color={COLORS.primary} />
+              <Text style={styles.backButtonText}> Back</Text>
             </TouchableOpacity>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join our parking community</Text>
@@ -84,7 +86,11 @@ const RegisterScreen = ({ navigation }) => {
                 ]}
                 onPress={() => setRole("seeker")}
               >
-                <Text style={styles.roleIcon}>🔍</Text>
+                <Icon
+                  name="search"
+                  size="xl"
+                  color={role === "seeker" ? COLORS.primary : COLORS.gray[400]}
+                />
                 <Text
                   style={[
                     styles.roleText,
@@ -101,7 +107,11 @@ const RegisterScreen = ({ navigation }) => {
                 ]}
                 onPress={() => setRole("owner")}
               >
-                <Text style={styles.roleIcon}>🏠</Text>
+                <Icon
+                  name="home"
+                  size="xl"
+                  color={role === "owner" ? COLORS.primary : COLORS.gray[400]}
+                />
                 <Text
                   style={[
                     styles.roleText,

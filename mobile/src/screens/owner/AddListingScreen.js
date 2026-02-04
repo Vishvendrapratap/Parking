@@ -21,6 +21,7 @@ import {
   AMENITIES,
   DEFAULT_LOCATION,
 } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const AddListingScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
@@ -276,7 +277,7 @@ const AddListingScreen = ({ navigation }) => {
                   style={styles.removeImageButton}
                   onPress={() => removeImage(index)}
                 >
-                  <Text style={styles.removeImageText}>✕</Text>
+                  <Icon name="times" size="sm" color={COLORS.white} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -285,7 +286,7 @@ const AddListingScreen = ({ navigation }) => {
                 style={styles.addImageButton}
                 onPress={pickImages}
               >
-                <Text style={styles.addImageIcon}>📷</Text>
+                <Icon name="camera" size="2xl" color={COLORS.gray[400]} />
                 <Text style={styles.addImageText}>Add Photo</Text>
               </TouchableOpacity>
             )}
@@ -431,7 +432,8 @@ const AddListingScreen = ({ navigation }) => {
           style={styles.useLocationButton}
           onPress={useCurrentLocation}
         >
-          <Text style={styles.useLocationText}>📍 Use Current Location</Text>
+          <Icon name="crosshairs" size="md" color={COLORS.primary} />
+          <Text style={styles.useLocationText}> Use Current Location</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -4,6 +4,7 @@ import { chatService } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 import toast from "react-hot-toast";
+import Icon from "../components/Icon";
 
 const ChatPage = () => {
   const [searchParams] = useSearchParams();
@@ -171,7 +172,7 @@ const ChatPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <Icon name="spinner" className="text-primary-600" size="3xl" />
       </div>
     );
   }
@@ -191,7 +192,9 @@ const ChatPage = () => {
         {conversations.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-4 text-center">
             <div>
-              <div className="text-4xl mb-2">💬</div>
+              <div className="text-4xl mb-2 text-primary-600">
+                <Icon name="chat" size="3xl" />
+              </div>
               <p className="text-gray-500">No conversations yet</p>
             </div>
           </div>
@@ -251,7 +254,7 @@ const ChatPage = () => {
               onClick={() => setSelectedConversation(null)}
               className="md:hidden text-gray-600"
             >
-              ←
+              <Icon name="back" />
             </button>
             <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
               <span className="text-primary-600 font-semibold">
@@ -354,7 +357,9 @@ const ChatPage = () => {
       ) : (
         <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="text-6xl mb-4">💬</div>
+            <div className="text-6xl mb-4 text-primary-600">
+              <Icon name="chat" size="4xl" />
+            </div>
             <p className="text-gray-500">
               Select a conversation to start messaging
             </p>

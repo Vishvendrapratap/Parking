@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const LoginScreen = ({ navigation }) => {
   const { login, sendOTP } = useAuth();
@@ -62,7 +63,9 @@ const LoginScreen = ({ navigation }) => {
       >
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.logo}>🅿️</Text>
+            <View style={styles.logoContainer}>
+              <Icon name="parking" size="4xl" color={COLORS.primary} />
+            </View>
             <Text style={styles.title}>Parking App</Text>
             <Text style={styles.subtitle}>Find & share parking spaces</Text>
           </View>

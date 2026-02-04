@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { parkingService } from "../../api/services";
 import toast from "react-hot-toast";
+import Icon from "../../components/Icon";
 
 const AddListingPage = () => {
   const navigate = useNavigate();
@@ -33,23 +34,23 @@ const AddListingPage = () => {
   });
 
   const parkingTypes = [
-    { id: "driveway", label: "Driveway", icon: "🏠" },
-    { id: "garage", label: "Garage", icon: "🚗" },
-    { id: "lot", label: "Parking Lot", icon: "🅿️" },
-    { id: "street", label: "Street Parking", icon: "🛣️" },
-    { id: "underground", label: "Underground", icon: "⬇️" },
+    { id: "driveway", label: "Driveway", icon: "home" },
+    { id: "garage", label: "Garage", icon: "garage" },
+    { id: "lot", label: "Parking Lot", icon: "parking" },
+    { id: "street", label: "Street Parking", icon: "road" },
+    { id: "underground", label: "Underground", icon: "underground" },
   ];
 
   const vehicleSizes = ["motorcycle", "sedan", "suv", "truck", "rv"];
 
   const amenitiesList = [
-    { id: "covered", label: "Covered", icon: "🏠" },
-    { id: "security", label: "Security Camera", icon: "📹" },
-    { id: "ev_charging", label: "EV Charging", icon: "⚡" },
-    { id: "lighting", label: "Lighting", icon: "💡" },
-    { id: "wheelchair", label: "Wheelchair Access", icon: "♿" },
-    { id: "gated", label: "Gated Access", icon: "🚧" },
-    { id: "247_access", label: "24/7 Access", icon: "🕐" },
+    { id: "covered", label: "Covered", icon: "covered" },
+    { id: "security", label: "Security Camera", icon: "securityCamera" },
+    { id: "ev_charging", label: "EV Charging", icon: "evCharging" },
+    { id: "lighting", label: "Lighting", icon: "lightbulb" },
+    { id: "wheelchair", label: "Wheelchair Access", icon: "wheelchair" },
+    { id: "gated", label: "Gated Access", icon: "gate" },
+    { id: "247_access", label: "24/7 Access", icon: "24hours" },
   ];
 
   const handleChange = (e) => {
@@ -212,7 +213,9 @@ const AddListingPage = () => {
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    <div className="text-2xl mb-1">{type.icon}</div>
+                    <div className="text-2xl mb-1 text-primary-600">
+                      <Icon name={type.icon} />
+                    </div>
                     <div className="text-sm font-medium">{type.label}</div>
                   </button>
                 ))}
@@ -449,7 +452,7 @@ const AddListingPage = () => {
                         : "border-gray-200 text-gray-600"
                     }`}
                   >
-                    <span>{amenity.icon}</span>
+                    <Icon name={amenity.icon} />
                     {amenity.label}
                   </button>
                 ))}
@@ -480,16 +483,18 @@ const AddListingPage = () => {
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-sm"
+                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-sm flex items-center justify-center"
                   >
-                    ×
+                    <Icon name="times" size="xs" />
                   </button>
                 </div>
               ))}
 
               {images.length < 5 && (
                 <label className="aspect-video bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
-                  <span className="text-3xl text-gray-400">+</span>
+                  <span className="text-3xl text-gray-400">
+                    <Icon name="plus" size="xl" />
+                  </span>
                   <span className="text-sm text-gray-500">Add Photo</span>
                   <input
                     type="file"

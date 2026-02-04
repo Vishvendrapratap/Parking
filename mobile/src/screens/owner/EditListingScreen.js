@@ -20,6 +20,7 @@ import {
   addParkingImages,
 } from "../../api/services";
 import { COLORS, PARKING_SIZES, AMENITIES } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const EditListingScreen = ({ route, navigation }) => {
   const { parkingId } = route.params;
@@ -277,10 +278,11 @@ const EditListingScreen = ({ route, navigation }) => {
                     style={styles.removeImageButton}
                     onPress={() => removeExistingImage(image._id, index)}
                   >
-                    <Text style={styles.removeImageText}>✕</Text>
+                    <Icon name="times" size="sm" color={COLORS.white} />
                   </TouchableOpacity>
                 </View>
-              ))}
+              ))
+}}
               {newImages.map((image, index) => (
                 <View key={`new_${index}`} style={styles.imageWrapper}>
                   <Image
@@ -291,7 +293,7 @@ const EditListingScreen = ({ route, navigation }) => {
                     style={styles.removeImageButton}
                     onPress={() => removeNewImage(index)}
                   >
-                    <Text style={styles.removeImageText}>✕</Text>
+                    <Icon name="times" size="sm" color={COLORS.white} />
                   </TouchableOpacity>
                   <View style={styles.newBadge}>
                     <Text style={styles.newBadgeText}>New</Text>
@@ -303,7 +305,7 @@ const EditListingScreen = ({ route, navigation }) => {
                   style={styles.addImageButton}
                   onPress={pickImages}
                 >
-                  <Text style={styles.addImageIcon}>📷</Text>
+                  <Icon name="camera" size="2xl" color={COLORS.gray[400]} />
                   <Text style={styles.addImageText}>Add Photo</Text>
                 </TouchableOpacity>
               )}

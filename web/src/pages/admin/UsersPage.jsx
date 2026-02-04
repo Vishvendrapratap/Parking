@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { adminService } from "../../api/services";
 import toast from "react-hot-toast";
+import Icon from "../../components/Icon";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -79,7 +80,7 @@ const UsersPage = () => {
                 className="input-field pl-10 w-full"
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                🔍
+                <Icon name="search" />
               </span>
             </div>
           </form>

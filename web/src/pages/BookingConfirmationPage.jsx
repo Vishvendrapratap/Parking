@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import Icon from "../components/Icon";
 
 const BookingConfirmationPage = () => {
   const { id } = useParams();
@@ -8,7 +9,7 @@ const BookingConfirmationPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">✓</span>
+          <Icon name="circleCheck" className="text-green-600" size="4xl" />
         </div>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-2">

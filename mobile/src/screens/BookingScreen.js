@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { format, addHours } from "date-fns";
 import { createBooking, checkParkingAvailability } from "../api/services";
 import { COLORS, PARKING_SIZES } from "../constants/config";
+import Icon from "../components/Icon";
 
 const BookingScreen = ({ route, navigation }) => {
   const { parking } = route.params;
@@ -89,8 +90,12 @@ const BookingScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+        <TouchableOpacity
+          style={styles.backButtonContainer}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrowLeft" size="md" color={COLORS.text.primary} />
+          <Text style={styles.backButton}> Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Confirm Booking</Text>
         <View style={{ width: 50 }} />
@@ -100,9 +105,13 @@ const BookingScreen = ({ route, navigation }) => {
         {/* Parking Summary */}
         <View style={styles.card}>
           <Text style={styles.parkingTitle}>{parking.title}</Text>
-          <Text style={styles.parkingAddress}>
-            📍 {parking.location.address}
-          </Text>
+          <View style={styles.parkingAddressRow}>
+            <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.parkingAddress}>
+              {" "}
+              {parking.location.address}
+            </Text>
+          </View>
           <View style={styles.parkingMeta}>
             <Text style={styles.parkingSize}>
               {PARKING_SIZES.find((s) => s.value === parking.parkingSize)?.icon}{" "}
@@ -145,7 +154,7 @@ const BookingScreen = ({ route, navigation }) => {
                 {format(startTime, "MMM d, h:mm a")}
               </Text>
             </View>
-            <Text style={styles.timeArrow}>→</Text>
+            <Icon name="arrowRight" size="lg" color={COLORS.text.secondary} />
             <View style={styles.timeItem}>
               <Text style={styles.timeLabel}>End</Text>
               <Text style={styles.timeValue}>

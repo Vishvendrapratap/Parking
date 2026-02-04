@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { format } from "date-fns";
 import { COLORS } from "../constants/config";
+import Icon from "../components/Icon";
 
 const BookingConfirmationScreen = ({ route, navigation }) => {
   const { booking } = route.params;
@@ -20,7 +21,7 @@ const BookingConfirmationScreen = ({ route, navigation }) => {
       <View style={styles.content}>
         {/* Success Icon */}
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>✅</Text>
+          <Icon name="checkCircle" size="4xl" color={COLORS.secondary} />
         </View>
 
         {/* Success Message */}

@@ -4,6 +4,7 @@ import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { parkingService, chatService } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
+import Icon from "../components/Icon";
 
 const ParkingDetailsPage = () => {
   const { id } = useParams();
@@ -63,19 +64,19 @@ const ParkingDetailsPage = () => {
   };
 
   const amenityIcons = {
-    covered: "🏠",
-    security: "📹",
-    ev_charging: "⚡",
-    lighting: "💡",
-    wheelchair: "♿",
-    gated: "🚧",
-    "247_access": "🕐",
+    covered: "covered",
+    security: "securityCamera",
+    ev_charging: "evCharging",
+    lighting: "lightbulb",
+    wheelchair: "wheelchair",
+    gated: "gate",
+    "247_access": "24hours",
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <Icon name="spinner" className="text-primary-600" size="3xl" />
       </div>
     );
   }
@@ -122,8 +123,8 @@ const ParkingDetailsPage = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-6xl">
-                  🅿️
+                <div className="w-full h-full flex items-center justify-center text-6xl text-primary-600">
+                  <Icon name="parking" size="5xl" />
                 </div>
               )}
             </div>
@@ -158,7 +159,7 @@ const ParkingDetailsPage = () => {
             </h1>
             <div className="flex items-center gap-4 text-gray-600">
               <div className="flex items-center">
-                <span className="text-yellow-500 mr-1">★</span>
+                <Icon name="star" className="text-yellow-500 mr-1" />
                 <span className="font-medium">
                   {space.rating?.average?.toFixed(1) || "New"}
                 </span>
@@ -231,7 +232,10 @@ const ParkingDetailsPage = () => {
                     key={amenity}
                     className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg"
                   >
-                    <span>{amenityIcons[amenity] || "✓"}</span>
+                    <Icon
+                      name={amenityIcons[amenity] || "check"}
+                      className="text-primary-600"
+                    />
                     <span className="text-gray-700 capitalize">
                       {amenity.replace(/_/g, " ")}
                     </span>
@@ -346,7 +350,7 @@ const ParkingDetailsPage = () => {
             {/* Availability */}
             <div className="mb-6 p-4 bg-green-50 rounded-lg">
               <div className="flex items-center gap-2 text-green-700">
-                <span>✓</span>
+                <Icon name="circleCheck" />
                 <span className="font-medium">Available Now</span>
               </div>
             </div>
@@ -399,15 +403,15 @@ const ParkingDetailsPage = () => {
             {/* Quick Info */}
             <div className="mt-6 pt-6 border-t space-y-3 text-sm">
               <div className="flex items-center gap-2 text-gray-600">
-                <span>⏰</span>
+                <Icon name="clock" />
                 <span>Instant Booking Available</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
-                <span>❌</span>
+                <Icon name="circleXmark" />
                 <span>Free Cancellation (24h before)</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
-                <span>🔒</span>
+                <Icon name="lock" />
                 <span>Secure Payment</span>
               </div>
             </div>

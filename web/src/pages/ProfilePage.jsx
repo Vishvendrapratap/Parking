@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { userService } from "../api/services";
 import toast from "react-hot-toast";
+import Icon from "../components/Icon";
 
 const ProfilePage = () => {
   const { user, updateUser, switchRole, logout } = useAuth();
@@ -87,7 +88,7 @@ const ProfilePage = () => {
                 )}
               </div>
               <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-700">
-                <span className="text-white text-sm">📷</span>
+                <Icon name="camera" className="text-white" size="sm" />
                 <input
                   type="file"
                   accept="image/*"
@@ -103,7 +104,7 @@ const ProfilePage = () => {
             <p className="text-gray-500">{user?.email}</p>
 
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
-              <span>{user?.activeRole === "owner" ? "🏠" : "🚗"}</span>
+              <Icon name={user?.activeRole === "owner" ? "home" : "car"} />
               <span className="capitalize">{user?.activeRole}</span>
             </div>
 
@@ -246,35 +247,35 @@ const ProfilePage = () => {
                 href="#"
                 className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg"
               >
-                <span>🔔</span>
+                <Icon name="bell" className="text-gray-500" />
                 <span className="text-gray-700">Notification Settings</span>
               </a>
               <a
                 href="#"
                 className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg"
               >
-                <span>💳</span>
+                <Icon name="creditCard" className="text-gray-500" />
                 <span className="text-gray-700">Payment Methods</span>
               </a>
               <a
                 href="#"
                 className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg"
               >
-                <span>🔒</span>
+                <Icon name="lock" className="text-gray-500" />
                 <span className="text-gray-700">Change Password</span>
               </a>
               <a
                 href="#"
                 className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg"
               >
-                <span>❓</span>
+                <Icon name="help" className="text-gray-500" />
                 <span className="text-gray-700">Help & Support</span>
               </a>
               <button
                 onClick={logout}
                 className="flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg w-full text-left text-red-600"
               >
-                <span>🚪</span>
+                <Icon name="signOut" />
                 <span>Logout</span>
               </button>
             </div>

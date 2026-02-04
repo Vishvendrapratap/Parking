@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/config";
+import Icon from "../../components/Icon";
 
 const OTPScreen = ({ route, navigation }) => {
   const { phone } = route.params;
@@ -87,11 +88,12 @@ const OTPScreen = ({ route, navigation }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Icon name="arrowLeft" size="md" color={COLORS.primary} />
+          <Text style={styles.backButtonText}> Back</Text>
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={styles.icon}>📱</Text>
+          <Icon name="mobile" size="4xl" color={COLORS.primary} />
           <Text style={styles.title}>Verify Phone</Text>
           <Text style={styles.subtitle}>
             Enter the 6-digit code sent to{"\n"}

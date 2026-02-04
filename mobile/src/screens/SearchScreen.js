@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { searchNearbyParking } from "../api/services";
 import { useLocation } from "../hooks/useLocation";
 import { COLORS, PARKING_SIZES } from "../constants/config";
+import Icon from "../components/Icon";
 
 const SearchScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
@@ -62,11 +63,11 @@ const SearchScreen = ({ navigation }) => {
       <View style={styles.parkingImageContainer}>
         {item.images?.[0] ? (
           <View style={styles.parkingImage}>
-            <Text style={styles.placeholderIcon}>🅿️</Text>
+            <Icon name="parking" size="2xl" color={COLORS.primary} />
           </View>
         ) : (
           <View style={styles.parkingImage}>
-            <Text style={styles.placeholderIcon}>🅿️</Text>
+            <Icon name="parking" size="2xl" color={COLORS.primary} />
           </View>
         )}
       </View>
@@ -74,16 +75,24 @@ const SearchScreen = ({ navigation }) => {
         <Text style={styles.parkingTitle} numberOfLines={1}>
           {item.title}
         </Text>
-        <Text style={styles.parkingAddress} numberOfLines={1}>
-          📍 {item.location.address}
-        </Text>
+        <View style={styles.parkingAddressRow}>
+          <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
+          <Text style={styles.parkingAddress} numberOfLines={1}>
+            {" "}
+            {item.location.address}
+          </Text>
+        </View>
         <View style={styles.parkingMeta}>
           <Text style={styles.parkingSize}>
             {PARKING_SIZES.find((s) => s.value === item.parkingSize)?.label}
           </Text>
-          <Text style={styles.parkingRating}>
-            ⭐ {item.rating?.toFixed(1) || "New"}
-          </Text>
+          <View style={styles.parkingRatingRow}>
+            <Icon name="star" size="xs" color={COLORS.accent} />
+            <Text style={styles.parkingRating}>
+              {" "}
+              {item.rating?.toFixed(1) || "New"}
+            </Text>
+          </View>
         </View>
       </View>
       <View style={styles.priceContainer}>
@@ -98,7 +107,7 @@ const SearchScreen = ({ navigation }) => {
       {/* Search Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Icon name="search" size="md" color={COLORS.gray[400]} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search for parking..."
@@ -112,7 +121,7 @@ const SearchScreen = ({ navigation }) => {
           style={styles.filterButton}
           onPress={() => setShowFilters(!showFilters)}
         >
-          <Text style={styles.filterIcon}>⚙️</Text>
+          <Icon name="filter" size="lg" color={COLORS.text.primary} />
         </TouchableOpacity>
       </View>
 
@@ -190,7 +199,8 @@ const SearchScreen = ({ navigation }) => {
         style={styles.searchNearMeButton}
         onPress={handleSearch}
       >
-        <Text style={styles.searchNearMeText}>📍 Search Near Me</Text>
+        <Icon name="mapMarker" size="md" color={COLORS.white} />
+        <Text style={styles.searchNearMeText}> Search Near Me</Text>
       </TouchableOpacity>
 
       {/* Results */}
@@ -207,7 +217,7 @@ const SearchScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🔍</Text>
+              <Icon name="search" size="4xl" color={COLORS.gray[300]} />
               <Text style={styles.emptyText}>No parking spaces found</Text>
               <Text style={styles.emptySubtext}>
                 Try searching near your location or adjusting filters

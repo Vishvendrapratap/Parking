@@ -8,6 +8,7 @@ import {
 } from "@react-google-maps/api";
 import { parkingService } from "../api/services";
 import toast from "react-hot-toast";
+import Icon from "../components/Icon";
 
 const mapContainerStyle = {
   width: "100%",
@@ -41,11 +42,11 @@ const SearchPage = () => {
   });
 
   const amenitiesList = [
-    { id: "covered", label: "Covered", icon: "🏠" },
-    { id: "security", label: "Security Camera", icon: "📹" },
-    { id: "ev_charging", label: "EV Charging", icon: "⚡" },
-    { id: "lighting", label: "Lighting", icon: "💡" },
-    { id: "wheelchair", label: "Wheelchair Access", icon: "♿" },
+    { id: "covered", label: "Covered", icon: "covered" },
+    { id: "security", label: "Security Camera", icon: "securityCamera" },
+    { id: "ev_charging", label: "EV Charging", icon: "evCharging" },
+    { id: "lighting", label: "Lighting", icon: "lightbulb" },
+    { id: "wheelchair", label: "Wheelchair Access", icon: "wheelchair" },
   ];
 
   const vehicleTypes = ["sedan", "suv", "truck", "motorcycle", "rv"];
@@ -134,16 +135,16 @@ const SearchPage = () => {
                 className="input-field pl-10"
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                🔍
+                <Icon name="search" />
               </span>
             </div>
           </form>
 
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="mt-3 text-sm text-primary-600 font-medium flex items-center"
+            className="mt-3 text-sm text-primary-600 font-medium flex items-center gap-1"
           >
-            {showFilters ? "▲" : "▼"} Filters
+            <Icon name={showFilters ? "up" : "down"} /> Filters
           </button>
 
           {/* Filters Panel */}
@@ -214,7 +215,7 @@ const SearchPage = () => {
                           : "bg-gray-100 text-gray-600 border-gray-200"
                       } border`}
                     >
-                      <span>{amenity.icon}</span>
+                      <Icon name={amenity.icon} />
                       {amenity.label}
                     </button>
                   ))}
@@ -236,11 +237,13 @@ const SearchPage = () => {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <Icon name="spinner" className="text-primary-600" size="2xl" />
             </div>
           ) : parkingSpaces.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              <div className="text-4xl mb-2">🅿️</div>
+              <div className="text-4xl mb-2 text-primary-600">
+                <Icon name="parking" size="3xl" />
+              </div>
               <p>No parking spaces found</p>
               <p className="text-sm">Try adjusting your search or filters</p>
             </div>
@@ -262,8 +265,8 @@ const SearchPage = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl">
-                          🅿️
+                        <div className="w-full h-full flex items-center justify-center text-2xl text-primary-600">
+                          <Icon name="parking" size="xl" />
                         </div>
                       )}
                     </div>
@@ -279,7 +282,7 @@ const SearchPage = () => {
                           ${space.pricing?.hourly}/hr
                         </span>
                         <div className="flex items-center text-sm text-gray-500">
-                          <span className="text-yellow-500">★</span>
+                          <Icon name="star" className="text-yellow-500" />
                           <span className="ml-1">
                             {space.rating?.average?.toFixed(1) || "New"}
                           </span>

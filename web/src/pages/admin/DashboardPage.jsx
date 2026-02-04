@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { adminService } from "../../api/services";
 import toast from "react-hot-toast";
+import Icon from "../../components/Icon";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -34,7 +35,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <Icon name="spinner" className="text-primary-600" size="3xl" />
       </div>
     );
   }
@@ -89,9 +90,9 @@ const AdminDashboard = () => {
             </h2>
             <Link
               to="/admin/users"
-              className="text-primary-600 text-sm hover:underline"
+              className="text-primary-600 text-sm hover:underline flex items-center gap-1"
             >
-              View All →
+              View All <Icon name="forward" size="sm" />
             </Link>
           </div>
 
@@ -159,9 +160,9 @@ const AdminDashboard = () => {
             </h2>
             <Link
               to="/admin/bookings"
-              className="text-primary-600 text-sm hover:underline"
+              className="text-primary-600 text-sm hover:underline flex items-center gap-1"
             >
-              View All →
+              View All <Icon name="forward" size="sm" />
             </Link>
           </div>
 
@@ -210,28 +211,36 @@ const AdminDashboard = () => {
           to="/admin/users"
           className="card hover:shadow-lg transition-shadow text-center"
         >
-          <span className="text-3xl mb-2 block">👥</span>
+          <span className="text-3xl mb-2 block text-blue-600">
+            <Icon name="users" size="2xl" />
+          </span>
           <p className="font-medium text-gray-800">Manage Users</p>
         </Link>
         <Link
           to="/admin/listings"
           className="card hover:shadow-lg transition-shadow text-center"
         >
-          <span className="text-3xl mb-2 block">🅿️</span>
+          <span className="text-3xl mb-2 block text-green-600">
+            <Icon name="parking" size="2xl" />
+          </span>
           <p className="font-medium text-gray-800">Manage Listings</p>
         </Link>
         <Link
           to="/admin/bookings"
           className="card hover:shadow-lg transition-shadow text-center"
         >
-          <span className="text-3xl mb-2 block">📋</span>
+          <span className="text-3xl mb-2 block text-purple-600">
+            <Icon name="clipboard" size="2xl" />
+          </span>
           <p className="font-medium text-gray-800">Manage Bookings</p>
         </Link>
         <Link
           to="/admin/reports"
           className="card hover:shadow-lg transition-shadow text-center"
         >
-          <span className="text-3xl mb-2 block">📊</span>
+          <span className="text-3xl mb-2 block text-orange-600">
+            <Icon name="chart" size="2xl" />
+          </span>
           <p className="font-medium text-gray-800">Reports</p>
         </Link>
       </div>

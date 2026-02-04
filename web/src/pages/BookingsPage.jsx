@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { bookingService } from "../api/services";
 import toast from "react-hot-toast";
+import Icon from "../components/Icon";
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -94,11 +95,13 @@ const BookingsPage = () => {
       {/* Bookings List */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <Icon name="spinner" className="text-primary-600" size="2xl" />
         </div>
       ) : bookings.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📅</div>
+          <div className="text-6xl mb-4 text-primary-600">
+            <Icon name="calendar" size="4xl" />
+          </div>
           <h3 className="text-lg font-medium text-gray-800 mb-2">
             No {activeTab} bookings
           </h3>
@@ -128,8 +131,8 @@ const BookingsPage = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">
-                      🅿️
+                    <div className="w-full h-full flex items-center justify-center text-2xl text-primary-600">
+                      <Icon name="parking" size="xl" />
                     </div>
                   )}
                 </div>

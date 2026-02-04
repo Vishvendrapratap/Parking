@@ -14,6 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { format } from "date-fns";
 import { getBooking, updateBookingStatus } from "../api/services";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
+import Icon from "../components/Icon";
 
 const BookingDetailsScreen = ({ route, navigation }) => {
   const { bookingId } = route.params;
@@ -79,7 +80,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   };
 
   const getStatusColor = (status) => {
-    const statusInfo = BOOKING_STATUSES.find((s) => s.value === status);
+    const statusInfo = BOOKING_STATUSES[status];
     return statusInfo?.color || COLORS.gray[500];
   };
 
@@ -108,8 +109,12 @@ const BookingDetailsScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+        <TouchableOpacity
+          style={styles.backButtonContainer}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrowLeft" size="md" color={COLORS.text.primary} />
+          <Text style={styles.backButton}> Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Booking Details</Text>
         <View style={{ width: 50 }} />
@@ -129,9 +134,13 @@ const BookingDetailsScreen = ({ route, navigation }) => {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Parking Space</Text>
           <Text style={styles.parkingTitle}>{booking.parkingSpace.title}</Text>
-          <Text style={styles.parkingAddress}>
-            📍 {booking.parkingSpace.location.address}
-          </Text>
+          <View style={styles.parkingAddressRow}>
+            <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
+            <Text style={styles.parkingAddress}>
+              {" "}
+              {booking.parkingSpace.location.address}
+            </Text>
+          </View>
 
           {/* Mini Map */}
           <View style={styles.mapContainer}>
@@ -161,10 +170,12 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               style={styles.actionButton}
               onPress={openNavigation}
             >
-              <Text style={styles.actionButtonText}>🧭 Directions</Text>
+              <Icon name="directions" size="md" color={COLORS.primary} />
+              <Text style={styles.actionButtonText}> Directions</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton} onPress={handleChat}>
-              <Text style={styles.actionButtonText}>💬 Chat Owner</Text>
+              <Icon name="comment" size="md" color={COLORS.primary} />
+              <Text style={styles.actionButtonText}> Chat Owner</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -183,7 +194,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               </Text>
             </View>
             <View style={styles.timeDivider}>
-              <Text style={styles.arrow}>→</Text>
+              <Icon name="arrowRight" size="lg" color={COLORS.text.secondary} />
               <Text style={styles.duration}>{booking.duration} hr</Text>
             </View>
             <View style={styles.timeItem}>
@@ -203,7 +214,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Vehicle Information</Text>
             <View style={styles.vehicleCard}>
-              <Text style={styles.vehicleIcon}>🚗</Text>
+              <Icon name="car" size="2xl" color={COLORS.primary} />
               <View style={styles.vehicleDetails}>
                 <Text style={styles.vehiclePlate}>
                   {booking.vehicleInfo.licensePlate}
@@ -272,11 +283,15 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               { backgroundColor: COLORS.secondary + "20" },
             ]}
           >
-            <Text
-              style={[styles.paymentStatusText, { color: COLORS.secondary }]}
-            >
-              💳 {booking.paymentStatus || "Pay at Location"}
-            </Text>
+            <View style={styles.paymentStatusContent}>
+              <Icon name="creditCard" size="md" color={COLORS.secondary} />
+              <Text
+                style={[styles.paymentStatusText, { color: COLORS.secondary }]}
+              >
+                {" "}
+                {booking.paymentStatus || "Pay at Location"}
+              </Text>
+            </View>
           </View>
         </View>
 

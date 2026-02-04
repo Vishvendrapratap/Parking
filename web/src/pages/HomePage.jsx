@@ -1,29 +1,30 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import Icon from "../components/Icon";
 
 const HomePage = () => {
   const [searchLocation, setSearchLocation] = useState("");
 
   const features = [
     {
-      icon: "🔍",
+      icon: "search",
       title: "Easy Search",
       description:
         "Find available parking spots near your destination with real-time availability.",
     },
     {
-      icon: "💰",
+      icon: "money",
       title: "Save Money",
       description:
         "Compare prices and find the best deals from local homeowners.",
     },
     {
-      icon: "🔒",
+      icon: "lock",
       title: "Secure Booking",
       description: "Book with confidence using our secure payment system.",
     },
     {
-      icon: "💬",
+      icon: "chat",
       title: "Direct Chat",
       description: "Communicate directly with space owners for any questions.",
     },
@@ -118,9 +119,11 @@ const HomePage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="card text-center hover:shadow-lg transition-shadow"
+                className="card text-center hover:shadow-lg transition-shadow p-6"
               >
-                <div className="text-4xl mb-4">{feature.icon}</div>
+                <div className="text-4xl mb-4 text-primary-600">
+                  <Icon name={feature.icon} size="3xl" />
+                </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   {feature.title}
                 </h3>
@@ -174,15 +177,15 @@ const HomePage = () => {
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-2">✓</span>
+                  <Icon name="check" className="text-green-500 mr-2" />
                   Set your own rates and availability
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-2">✓</span>
+                  <Icon name="check" className="text-green-500 mr-2" />
                   Get paid securely through the platform
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <span className="text-green-500 mr-2">✓</span>
+                  <Icon name="check" className="text-green-500 mr-2" />
                   Manage bookings easily from your dashboard
                 </li>
               </ul>
@@ -192,7 +195,9 @@ const HomePage = () => {
             </div>
             <div className="flex-1">
               <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-                <div className="text-6xl mb-4">🏠</div>
+                <div className="text-6xl mb-4 text-primary-600">
+                  <Icon name="home" size="5xl" />
+                </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
                   Earn Up To
                 </h3>

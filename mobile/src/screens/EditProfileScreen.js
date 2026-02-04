@@ -15,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { updateUserProfile, getUserProfile } from "../api/services";
 import { COLORS } from "../constants/config";
+import Icon from "../components/Icon";
 
 const EditProfileScreen = ({ navigation }) => {
   const { user, updateUser } = useAuth();
@@ -152,7 +153,7 @@ const EditProfileScreen = ({ navigation }) => {
               </View>
             )}
             <View style={styles.cameraIcon}>
-              <Text style={styles.cameraIconText}>📷</Text>
+              <Icon name="camera" size="md" color={COLORS.white} />
             </View>
           </TouchableOpacity>
           <Text style={styles.changePhotoText}>Change Photo</Text>

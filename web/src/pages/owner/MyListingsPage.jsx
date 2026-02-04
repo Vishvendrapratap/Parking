@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { parkingService } from "../../api/services";
 import toast from "react-hot-toast";
+import Icon from "../../components/Icon";
 
 const MyListingsPage = () => {
   const [listings, setListings] = useState([]);
@@ -58,7 +59,7 @@ const MyListingsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <Icon name="spinner" className="text-primary-600" size="3xl" />
       </div>
     );
   }
@@ -96,7 +97,9 @@ const MyListingsPage = () => {
 
       {filteredListings.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🅿️</div>
+          <div className="text-6xl mb-4 text-primary-600">
+            <Icon name="parking" size="4xl" />
+          </div>
           <h3 className="text-lg font-medium text-gray-800 mb-2">
             No listings found
           </h3>
@@ -125,8 +128,8 @@ const MyListingsPage = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl">
-                    🅿️
+                  <div className="w-full h-full flex items-center justify-center text-4xl text-primary-600">
+                    <Icon name="parking" size="2xl" />
                   </div>
                 )}
               </div>
@@ -156,7 +159,7 @@ const MyListingsPage = () => {
                   ${listing.pricing?.hourly}/hr
                 </span>
                 <div className="flex items-center text-sm text-gray-500">
-                  <span className="text-yellow-500">★</span>
+                  <Icon name="star" className="text-yellow-500" />
                   <span className="ml-1">
                     {listing.rating?.average?.toFixed(1) || "New"}
                   </span>
@@ -204,7 +207,7 @@ const MyListingsPage = () => {
                   onClick={() => handleDelete(listing._id)}
                   className="py-2 px-3 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 text-sm"
                 >
-                  🗑️
+                  <Icon name="trash" />
                 </button>
               </div>
             </div>

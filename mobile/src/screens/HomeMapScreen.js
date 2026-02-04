@@ -13,6 +13,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "../hooks/useLocation";
 import { searchNearbyParking } from "../api/services";
 import { COLORS, DEFAULT_LOCATION } from "../constants/config";
+import Icon from "../components/Icon";
 
 const { width, height } = Dimensions.get("window");
 
@@ -98,16 +99,16 @@ const HomeMapScreen = ({ navigation }) => {
     }
   };
 
-  const getSizeIcon = (size) => {
+  const getSizeIconName = (size) => {
     switch (size) {
       case "small":
-        return "🚗";
+        return "car";
       case "sedan":
-        return "🚙";
+        return "carSide";
       case "suv":
-        return "🚐";
+        return "truck";
       default:
-        return "🅿️";
+        return "parking";
     }
   };
 
@@ -120,7 +121,8 @@ const HomeMapScreen = ({ navigation }) => {
           style={styles.searchButton}
           onPress={() => navigation.navigate("Search")}
         >
-          <Text style={styles.searchButtonText}>🔍 Search</Text>
+          <Icon name="search" size="sm" color={COLORS.white} />
+          <Text style={styles.searchButtonText}> Search</Text>
         </TouchableOpacity>
       </View>
 
@@ -165,7 +167,7 @@ const HomeMapScreen = ({ navigation }) => {
 
         {/* Recenter Button */}
         <TouchableOpacity style={styles.recenterButton} onPress={recenterMap}>
-          <Text style={styles.recenterButtonText}>📍</Text>
+          <Icon name="crosshairs" size="lg" color={COLORS.primary} />
         </TouchableOpacity>
 
         {/* Refresh Button */}
@@ -173,7 +175,8 @@ const HomeMapScreen = ({ navigation }) => {
           style={styles.refreshButton}
           onPress={() => fetchNearbyParking(region.latitude, region.longitude)}
         >
-          <Text style={styles.refreshButtonText}>🔄 Search this area</Text>
+          <Icon name="sync" size="md" color={COLORS.white} />
+          <Text style={styles.refreshButtonText}> Search this area</Text>
         </TouchableOpacity>
       </View>
 
@@ -181,9 +184,11 @@ const HomeMapScreen = ({ navigation }) => {
       {selectedParking && (
         <View style={styles.parkingCard}>
           <View style={styles.parkingCardHeader}>
-            <Text style={styles.parkingSizeIcon}>
-              {getSizeIcon(selectedParking.parkingSize)}
-            </Text>
+            <Icon
+              name={getSizeIconName(selectedParking.parkingSize)}
+              size="2xl"
+              color={COLORS.primary}
+            />
             <View style={styles.parkingCardInfo}>
               <Text style={styles.parkingTitle} numberOfLines={1}>
                 {selectedParking.title}
