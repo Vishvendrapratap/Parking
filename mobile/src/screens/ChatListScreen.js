@@ -28,7 +28,7 @@ const ChatListScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchConversations();
-    }, [])
+    }, []),
   );
 
   // Listen for new messages to update conversation list
@@ -55,7 +55,7 @@ const ChatListScreen = ({ navigation }) => {
 
         // Sort by most recent
         return updated.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
         );
       });
     };

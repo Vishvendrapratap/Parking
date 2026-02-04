@@ -22,7 +22,13 @@ const ChatScreen = ({ route, navigation }) => {
   const { conversationId, receiverId, receiverName, parkingSpaceId } =
     route.params;
   const { user } = useAuth();
-  const { socket, isConnected, onNewMessage, onUserTyping, onUserStoppedTyping } = useSocket();
+  const {
+    socket,
+    isConnected,
+    onNewMessage,
+    onUserTyping,
+    onUserStoppedTyping,
+  } = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,14 +61,17 @@ const ChatScreen = ({ route, navigation }) => {
     const handleNewMessage = (data) => {
       // Handle both formats: { message } or direct message object
       const message = data.message || data;
-      
+
       // Only add if it's for this conversation and not from current user
       if (message.sender?._id !== user?._id && message.sender !== user?._id) {
         // Check if message belongs to current conversation
-        if (!data.conversationId || data.conversationId === currentConversationId.current) {
+        if (
+          !data.conversationId ||
+          data.conversationId === currentConversationId.current
+        ) {
           setMessages((prevMessages) => {
             // Avoid duplicates
-            const exists = prevMessages.some(m => m._id === message._id);
+            const exists = prevMessages.some((m) => m._id === message._id);
             if (exists) return prevMessages;
             return [...prevMessages, message];
           });
@@ -73,13 +82,19 @@ const ChatScreen = ({ route, navigation }) => {
 
     // Handle typing indicators
     const handleTypingStart = (data) => {
-      if (data.userId !== user?._id && data.conversationId === currentConversationId.current) {
+      if (
+        data.userId !== user?._id &&
+        data.conversationId === currentConversationId.current
+      ) {
         setIsTyping(true);
       }
     };
 
     const handleTypingStop = (data) => {
-      if (data.userId !== user?._id && data.conversationId === currentConversationId.current) {
+      if (
+        data.userId !== user?._id &&
+        data.conversationId === currentConversationId.current
+      ) {
         setIsTyping(false);
       }
     };
@@ -92,7 +107,7 @@ const ChatScreen = ({ route, navigation }) => {
       socket.off("new_message", handleNewMessage);
       socket.off("user_typing", handleTypingStart);
       socket.off("user_stopped_typing", handleTypingStop);
-      
+
       if (conversationId) {
         socket.emit("leave_conversation", conversationId);
       }
@@ -136,8 +151,12 @@ const ChatScreen = ({ route, navigation }) => {
     scrollToBottom();
 
     try {
-      const result = await sendMessageAPI(receiverId, newMessage.text, parkingSpaceId);
-      
+      const result = await sendMessageAPI(
+        receiverId,
+        newMessage.text,
+        parkingSpaceId,
+      );
+
       // Update conversation ID if this is a new conversation
       if (result.data?.conversation && !currentConversationId.current) {
         currentConversationId.current = result.data.conversation;
@@ -461,4 +480,3 @@ const styles = StyleSheet.create({
 });
 
 export default ChatScreen;
-
