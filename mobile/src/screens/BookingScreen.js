@@ -108,7 +108,6 @@ const BookingScreen = ({ route, navigation }) => {
           <View style={styles.parkingAddressRow}>
             <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
             <Text style={styles.parkingAddress}>
-              {" "}
               {parking.location.address}
             </Text>
           </View>
@@ -312,7 +311,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200],
   },
@@ -323,14 +322,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   content: {
     flex: 1,
     padding: 16,
   },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -338,12 +337,18 @@ const styles = StyleSheet.create({
   parkingTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  parkingAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
   },
   parkingAddress: {
     fontSize: 14,
     color: COLORS.gray[500],
-    marginTop: 4,
+    marginLeft: 6,
+    flex: 1,
   },
   parkingMeta: {
     marginTop: 8,
@@ -355,7 +360,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginBottom: 12,
   },
   durationSelector: {
@@ -410,7 +415,7 @@ const styles = StyleSheet.create({
   timeValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   timeArrow: {
     fontSize: 16,
@@ -446,7 +451,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   textArea: {
     height: 80,
@@ -467,7 +472,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: 14,
     fontWeight: "500",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   divider: {
     height: 1,
@@ -477,7 +482,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   totalValue: {
     fontSize: 18,
@@ -492,7 +497,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,

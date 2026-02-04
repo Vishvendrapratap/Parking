@@ -137,7 +137,6 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.parkingAddressRow}>
             <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
             <Text style={styles.parkingAddress}>
-              {" "}
               {booking.parkingSpace.location.address}
             </Text>
           </View>
@@ -288,7 +287,6 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               <Text
                 style={[styles.paymentStatusText, { color: COLORS.secondary }]}
               >
-                {" "}
                 {booking.paymentStatus || "Pay at Location"}
               </Text>
             </View>
@@ -328,7 +326,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   header: {
     flexDirection: "row",
@@ -336,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200],
   },
@@ -347,7 +345,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   content: {
     flex: 1,
@@ -361,7 +359,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     marginHorizontal: 16,
     marginTop: 16,
     padding: 16,
@@ -376,12 +374,18 @@ const styles = StyleSheet.create({
   parkingTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  parkingAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
   },
   parkingAddress: {
     fontSize: 14,
     color: COLORS.gray[600],
-    marginTop: 4,
+    marginLeft: 6,
+    flex: 1,
   },
   mapContainer: {
     height: 120,
@@ -426,7 +430,7 @@ const styles = StyleSheet.create({
   timeDate: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   timeTime: {
     fontSize: 12,
@@ -462,7 +466,7 @@ const styles = StyleSheet.create({
   vehiclePlate: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   vehicleModel: {
     fontSize: 14,
@@ -491,7 +495,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: 14,
     fontWeight: "500",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   divider: {
     height: 1,
@@ -501,7 +505,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   totalValue: {
     fontSize: 18,
@@ -514,9 +518,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
+  paymentStatusContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   paymentStatusText: {
     fontSize: 14,
     fontWeight: "600",
+    marginLeft: 8,
   },
   cancelButton: {
     marginHorizontal: 16,

@@ -98,7 +98,7 @@ const BookingConfirmationScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   content: {
     flex: 1,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     textAlign: "center",
   },
   subtitle: {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginBottom: 16,
   },
   detailRow: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 14,
     fontWeight: "500",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     textAlign: "right",
     flex: 1,
     marginLeft: 16,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   totalValue: {
     fontSize: 18,
@@ -228,3 +228,4 @@ const styles = StyleSheet.create({
 });
 
 export default BookingConfirmationScreen;
+

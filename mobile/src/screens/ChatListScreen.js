@@ -121,7 +121,6 @@ const ChatListScreen = ({ navigation }) => {
             <View style={styles.parkingNameRow}>
               <Icon name="mapMarker" size="xs" color={COLORS.primary} />
               <Text style={styles.parkingName} numberOfLines={1}>
-                {" "}
                 {item.parkingSpace.title}
               </Text>
             </View>
@@ -180,24 +179,25 @@ const ChatListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[100],
+    backgroundColor: COLORS.surface,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   listContent: {
     flexGrow: 1,
@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[100],
+    backgroundColor: COLORS.card,
   },
   avatar: {
     width: 56,
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: COLORS.secondary,
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: COLORS.card,
   },
   content: {
     flex: 1,
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "500",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     flex: 1,
     marginRight: 8,
   },
@@ -261,20 +262,26 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 12,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
+  },
+  parkingNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   parkingName: {
     fontSize: 12,
-    color: COLORS.gray[500],
-    marginTop: 2,
+    color: COLORS.text.secondary,
+    marginLeft: 4,
+    flex: 1,
   },
   lastMessage: {
     fontSize: 14,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 4,
   },
   lastMessageUnread: {
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     fontWeight: "500",
   },
   emptyContainer: {
@@ -290,11 +297,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[700],
+    color: COLORS.text.primary,
   },
   emptySubtext: {
     fontSize: 14,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 8,
     textAlign: "center",
     lineHeight: 20,

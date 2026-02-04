@@ -175,3 +175,67 @@ export const updatePushToken = async (pushToken) => {
   const response = await api.put("/users/push-token", { pushToken });
   return response.data;
 };
+
+// ==================== OWNER DASHBOARD ====================
+
+export const getOwnerDashboard = async () => {
+  // Fetch listings and bookings to calculate dashboard stats
+  const [listingsRes, bookingsRes] = await Promise.all([
+    api.get("/parking/owner/my-listings"),
+    api.get("/bookings", { params: { role: "owner" } }),
+  ]);
+
+  const listings = listingsRes.data.data || [];
+  const bookings = bookingsRes.data.data || [];
+
+  // Calculate stats
+  const totalListings = listings.length;
+  const activeListings = listings.filter(
+    (l) => l.status === "available",
+  ).length;
+  const totalBookings = bookings.length;
+  const pendingBookings = bookings.filter((b) => b.status === "pending").length;
+  const confirmedBookings = bookings.filter(
+    (b) => b.status === "confirmed",
+  ).length;
+  const completedBookings = bookings.filter(
+    (b) => b.status === "completed",
+  ).length;
+
+  // Calculate earnings
+  const totalEarnings = bookings
+    .filter((b) => b.status === "completed")
+    .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+  const thisMonthBookings = bookings.filter((b) => {
+    const bookingDate = new Date(b.createdAt);
+    const now = new Date();
+    return (
+      bookingDate.getMonth() === now.getMonth() &&
+      bookingDate.getFullYear() === now.getFullYear()
+    );
+  });
+
+  const monthlyEarnings = thisMonthBookings
+    .filter((b) => b.status === "completed")
+    .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+  // Recent bookings
+  const recentBookings = bookings.slice(0, 5);
+
+  return {
+    success: true,
+    data: {
+      totalListings,
+      activeListings,
+      totalBookings,
+      pendingBookings,
+      confirmedBookings,
+      completedBookings,
+      totalEarnings,
+      monthlyEarnings,
+      recentBookings,
+      listings,
+    },
+  };
+};

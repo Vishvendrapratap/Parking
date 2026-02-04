@@ -149,7 +149,6 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.addressRow}>
             <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
             <Text style={styles.address}>
-              {" "}
               {parking.location.formattedAddress || parking.location.address}
             </Text>
           </View>
@@ -157,7 +156,6 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.ratingRow}>
             <Icon name="star" size="sm" color={COLORS.accent} />
             <Text style={styles.rating}>
-              {" "}
               {parking.rating?.toFixed(1) || "New"}
             </Text>
             <Text style={styles.reviews}>
@@ -266,7 +264,6 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
               <View style={styles.ownerRatingRow}>
                 <Icon name="star" size="sm" color={COLORS.accent} />
                 <Text style={styles.ownerRating}>
-                  {" "}
                   {parking.owner.rating?.toFixed(1) || "New"} (
                   {parking.owner.totalReviews || 0} reviews)
                 </Text>
@@ -274,7 +271,7 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
             </View>
             <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
               <Icon name="comment" size="md" color={COLORS.white} />
-              <Text style={styles.chatButtonText}> Chat</Text>
+              <Text style={styles.chatButtonText}>Chat</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -308,13 +305,13 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   header: {
     position: "absolute",
@@ -329,7 +326,7 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -345,7 +342,7 @@ const styles = StyleSheet.create({
   shareButton: {
     width: 40,
     height: 40,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -388,10 +385,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.white + "80",
+    backgroundColor: COLORS.card + "80",
   },
   paginationDotActive: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     width: 20,
   },
   mainInfo: {
@@ -411,7 +408,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   statusBadge: {
     backgroundColor: COLORS.secondary + "20",
@@ -439,10 +436,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray[500],
   },
+  addressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
   address: {
     fontSize: 14,
     color: COLORS.gray[600],
-    marginTop: 12,
+    marginLeft: 6,
+    flex: 1,
   },
   ratingRow: {
     flexDirection: "row",
@@ -453,6 +456,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.gray[700],
+    marginLeft: 6,
   },
   reviews: {
     fontSize: 14,
@@ -472,7 +476,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginBottom: 12,
   },
   sizeCard: {
@@ -492,7 +496,7 @@ const styles = StyleSheet.create({
   sizeLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   sizeDescription: {
     fontSize: 14,
@@ -546,7 +550,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 12,
     right: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -585,14 +589,21 @@ const styles = StyleSheet.create({
   ownerName: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  ownerRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   ownerRating: {
     fontSize: 14,
     color: COLORS.gray[500],
-    marginTop: 4,
+    marginLeft: 4,
   },
   chatButton: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.gray[100],
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -602,6 +613,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.gray[700],
+    marginLeft: 6,
   },
   bottomSpacer: {
     height: 100,
@@ -613,7 +625,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
@@ -625,7 +637,7 @@ const styles = StyleSheet.create({
   bottomPrice: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   bottomPriceUnit: {
     fontSize: 14,

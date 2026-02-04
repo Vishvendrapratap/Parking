@@ -217,13 +217,13 @@ const EditProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   header: {
     flexDirection: "row",
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   saveButton: {
     fontSize: 16,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   inputDisabled: {
     backgroundColor: COLORS.gray[100],
@@ -344,3 +344,4 @@ const styles = StyleSheet.create({
 });
 
 export default EditProfileScreen;
+

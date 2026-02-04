@@ -104,8 +104,8 @@ const ProfileScreen = ({ navigation }) => {
               />
               <Text style={styles.roleText}>
                 {displayUser?.activeRole === "owner"
-                  ? " Space Owner"
-                  : " Parking Seeker"}
+                  ? "Space Owner"
+                  : "Parking Seeker"}
               </Text>
             </View>
           </View>
@@ -115,8 +115,7 @@ const ProfileScreen = ({ navigation }) => {
             <View style={styles.statItem}>
               <View style={styles.statValueRow}>
                 <Icon name="star" size="sm" color={COLORS.accent} />
-                <Text style={styles.statValue}>
-                  {" "}
+                <Text style={[styles.statValue, { marginLeft: 4 }]}>
                   {displayUser?.rating?.toFixed(1) || "New"}
                 </Text>
               </View>
@@ -265,31 +264,33 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   profileCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     marginHorizontal: 16,
     marginTop: 16,
     padding: 24,
     borderRadius: 16,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.gray[100],
   },
   avatarContainer: {
     position: "relative",
@@ -320,11 +321,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: COLORS.gray[200],
+    borderColor: COLORS.card,
   },
   editAvatarText: {
     fontSize: 14,
@@ -332,11 +333,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   email: {
     fontSize: 14,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 4,
   },
   roleBadge: {
@@ -346,10 +347,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 12,
   },
+  roleContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   roleText: {
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.primary,
+    marginLeft: 6,
   },
   statsContainer: {
     flexDirection: "row",
@@ -364,27 +370,33 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
+  statValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   statValue: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   statLabel: {
     fontSize: 12,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: COLORS.gray[200],
+    backgroundColor: COLORS.gray[100],
   },
   menuSection: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
   },
   menuItem: {
     flexDirection: "row",
@@ -392,20 +404,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[100],
+    borderBottomColor: COLORS.gray[200],
   },
   menuIcon: {
-    fontSize: 20,
+    width: 24,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   menuText: {
     flex: 1,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   menuArrow: {
     fontSize: 20,
-    color: COLORS.gray[400],
+    color: COLORS.text.light,
   },
   logoutButton: {
     marginHorizontal: 16,
@@ -415,6 +429,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error,
     borderRadius: 12,
     alignItems: "center",
+    backgroundColor: COLORS.card,
   },
   logoutText: {
     fontSize: 16,
@@ -424,7 +439,7 @@ const styles = StyleSheet.create({
   version: {
     textAlign: "center",
     fontSize: 12,
-    color: COLORS.gray[400],
+    color: COLORS.text.light,
     marginTop: 24,
   },
   bottomSpacer: {

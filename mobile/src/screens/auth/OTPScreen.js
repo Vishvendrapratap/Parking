@@ -148,7 +148,7 @@ const OTPScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   content: {
     flex: 1,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   subtitle: {
     fontSize: 16,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   phone: {
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   otpContainer: {
     flexDirection: "row",
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 24,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   otpInputFilled: {
     borderColor: COLORS.primary,
@@ -241,3 +241,4 @@ const styles = StyleSheet.create({
 });
 
 export default OTPScreen;
+

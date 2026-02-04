@@ -106,7 +106,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
           <View style={styles.earningsHeader}>
             <View style={styles.earningsTitleRow}>
               <Icon name="money" size="lg" color={COLORS.white} />
-              <Text style={styles.earningsTitle}> Earnings</Text>
+              <Text style={styles.earningsTitle}>Earnings</Text>
             </View>
             <Text style={styles.earningsPeriod}>
               {format(startOfMonth(new Date()), "MMM d")} -{" "}
@@ -135,7 +135,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Icon name="clock" size="lg" color={COLORS.text.primary} />
-              <Text style={styles.sectionTitle}> Pending Requests</Text>
+              <Text style={styles.sectionTitle}>Pending Requests</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate("Bookings")}>
               <Text style={styles.seeAllText}>See All</Text>
@@ -185,7 +185,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Icon name="home" size="lg" color={COLORS.text.primary} />
-              <Text style={styles.sectionTitle}> My Listings</Text>
+              <Text style={styles.sectionTitle}>My Listings</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate("MyListings")}>
               <Text style={styles.seeAllText}>See All</Text>
@@ -214,7 +214,6 @@ const OwnerDashboardScreen = ({ navigation }) => {
                       color={COLORS.text.secondary}
                     />
                     <Text style={styles.listingAddress} numberOfLines={1}>
-                      {" "}
                       {listing.location?.address}
                     </Text>
                   </View>
@@ -259,7 +258,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Icon name="comment" size="lg" color={COLORS.text.primary} />
-              <Text style={styles.sectionTitle}> Recent Reviews</Text>
+              <Text style={styles.sectionTitle}>Recent Reviews</Text>
             </View>
           </View>
           {dashboard?.recentReviews?.length > 0 ? (
@@ -269,7 +268,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
                   <Text style={styles.reviewerName}>{review.user?.name}</Text>
                   <View style={styles.reviewRatingRow}>
                     <Icon name="star" size="sm" color={COLORS.accent} />
-                    <Text style={styles.reviewRating}> {review.rating}</Text>
+                    <Text style={styles.reviewRating}>{review.rating}</Text>
                   </View>
                 </View>
                 <Text style={styles.reviewText} numberOfLines={2}>
@@ -296,13 +295,13 @@ const OwnerDashboardScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -310,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
   },
   greeting: {
     fontSize: 14,
@@ -319,7 +318,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginTop: 4,
   },
   addButton: {
@@ -341,7 +340,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
@@ -353,7 +352,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   statLabel: {
     fontSize: 12,
@@ -374,10 +373,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  earningsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   earningsTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: COLORS.white,
+    marginLeft: 8,
   },
   earningsPeriod: {
     fontSize: 12,
@@ -403,7 +407,7 @@ const styles = StyleSheet.create({
   earningsDivider: {
     width: 1,
     height: 50,
-    backgroundColor: COLORS.white + "30",
+    backgroundColor: COLORS.surface + "30",
     marginHorizontal: 20,
   },
   earningsSecondary: {
@@ -415,7 +419,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   section: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 12,
@@ -427,10 +431,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+    marginLeft: 8,
   },
   seeAllText: {
     fontSize: 14,
@@ -450,7 +459,7 @@ const styles = StyleSheet.create({
   bookingTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   bookingDate: {
     fontSize: 13,
@@ -507,12 +516,18 @@ const styles = StyleSheet.create({
   listingTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  listingAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   listingAddress: {
     fontSize: 12,
     color: COLORS.gray[500],
-    marginTop: 4,
+    marginLeft: 4,
+    flex: 1,
   },
   listingMeta: {
     flexDirection: "row",
@@ -553,11 +568,16 @@ const styles = StyleSheet.create({
   reviewerName: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  reviewRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   reviewRating: {
     fontSize: 14,
     color: COLORS.gray[600],
+    marginLeft: 4,
   },
   reviewText: {
     fontSize: 14,

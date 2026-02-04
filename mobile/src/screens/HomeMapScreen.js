@@ -121,8 +121,8 @@ const HomeMapScreen = ({ navigation }) => {
           style={styles.searchButton}
           onPress={() => navigation.navigate("Search")}
         >
-          <Icon name="search" size="sm" color={COLORS.white} />
-          <Text style={styles.searchButtonText}> Search</Text>
+          <Icon name="search" size="sm" color={COLORS.gray[700]} />
+          <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
       </View>
 
@@ -137,25 +137,26 @@ const HomeMapScreen = ({ navigation }) => {
           showsUserLocation
           showsMyLocationButton={false}
         >
-          {parkingSpaces.map((parking) => (
-            <Marker
-              key={parking._id}
-              coordinate={{
-                latitude: parking.location.coordinates[1],
-                longitude: parking.location.coordinates[0],
-              }}
-              onPress={() => handleMarkerPress(parking)}
-            >
-              <View
-                style={[
-                  styles.marker,
-                  selectedParking?._id === parking._id && styles.markerSelected,
-                ]}
+          {parkingSpaces.map((parking) => {
+            const isSelected = selectedParking?._id === parking._id;
+            return (
+              <Marker
+                key={parking._id}
+                coordinate={{
+                  latitude: parking.location.coordinates[1],
+                  longitude: parking.location.coordinates[0],
+                }}
+                onPress={() => handleMarkerPress(parking)}
+                tracksViewChanges={false}
               >
-                <Text style={styles.markerText}>${parking.pricePerHour}</Text>
-              </View>
-            </Marker>
-          ))}
+                <View
+                  style={[styles.marker, isSelected && styles.markerSelected]}
+                >
+                  <Text style={styles.markerText}>${parking.pricePerHour}</Text>
+                </View>
+              </Marker>
+            );
+          })}
         </MapView>
 
         {/* Loading Overlay */}
@@ -175,8 +176,8 @@ const HomeMapScreen = ({ navigation }) => {
           style={styles.refreshButton}
           onPress={() => fetchNearbyParking(region.latitude, region.longitude)}
         >
-          <Icon name="sync" size="md" color={COLORS.white} />
-          <Text style={styles.refreshButtonText}> Search this area</Text>
+          <Icon name="sync" size="sm" color={COLORS.gray[700]} />
+          <Text style={styles.refreshButtonText}>Search this area</Text>
         </TouchableOpacity>
       </View>
 
@@ -229,7 +230,7 @@ const HomeMapScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -237,24 +238,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[200],
+    borderBottomColor: COLORS.gray[100],
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   searchButton: {
-    backgroundColor: COLORS.gray[100],
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   searchButtonText: {
     fontSize: 14,
-    color: COLORS.gray[700],
+    color: COLORS.text.secondary,
+    marginLeft: 6,
   },
   mapContainer: {
     flex: 1,
@@ -266,21 +270,29 @@ const styles = StyleSheet.create({
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.7)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
   },
   marker: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: COLORS.white,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   markerSelected: {
     backgroundColor: COLORS.secondary,
-    transform: [{ scale: 1.1 }],
+    transform: [{ scale: 1.2 }],
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 8,
   },
   markerText: {
     color: COLORS.white,
@@ -291,7 +303,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 200,
     right: 16,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -299,45 +311,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.gray[100],
   },
   recenterButtonText: {
     fontSize: 24,
   },
   refreshButton: {
+    flexDirection: "row",
+    alignItems: "center",
     position: "absolute",
     top: 16,
     alignSelf: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: COLORS.gray[100],
   },
   refreshButtonText: {
     fontSize: 14,
-    color: COLORS.gray[700],
+    color: COLORS.text.secondary,
     fontWeight: "500",
+    marginLeft: 6,
   },
   parkingCard: {
     position: "absolute",
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
   },
   parkingCardHeader: {
     flexDirection: "row",
@@ -354,11 +375,11 @@ const styles = StyleSheet.create({
   parkingTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   parkingAddress: {
     fontSize: 13,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 2,
   },
   parkingPrice: {
@@ -371,7 +392,7 @@ const styles = StyleSheet.create({
   },
   priceUnit: {
     fontSize: 12,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
   },
   parkingCardFooter: {
     flexDirection: "row",
@@ -388,11 +409,11 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     fontWeight: "500",
-    color: COLORS.gray[700],
+    color: COLORS.text.primary,
   },
   reviewCount: {
     fontSize: 12,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginLeft: 4,
   },
   viewDetailsButton: {

@@ -78,7 +78,6 @@ const SearchScreen = ({ navigation }) => {
         <View style={styles.parkingAddressRow}>
           <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
           <Text style={styles.parkingAddress} numberOfLines={1}>
-            {" "}
             {item.location.address}
           </Text>
         </View>
@@ -89,7 +88,6 @@ const SearchScreen = ({ navigation }) => {
           <View style={styles.parkingRatingRow}>
             <Icon name="star" size="xs" color={COLORS.accent} />
             <Text style={styles.parkingRating}>
-              {" "}
               {item.rating?.toFixed(1) || "New"}
             </Text>
           </View>
@@ -233,7 +231,7 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -241,12 +239,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
+    backgroundColor: COLORS.surface,
   },
   searchContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.gray[100],
+    backgroundColor: COLORS.gray[50],
     borderRadius: 12,
     paddingHorizontal: 12,
   },
@@ -258,10 +257,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   filterButton: {
-    backgroundColor: COLORS.gray[100],
+    backgroundColor: COLORS.gray[50],
     width: 48,
     height: 48,
     borderRadius: 12,
@@ -274,14 +273,14 @@ const styles = StyleSheet.create({
   filtersContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[200],
+    borderBottomColor: COLORS.gray[100],
   },
   filterTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.gray[700],
+    color: COLORS.text.primary,
     marginBottom: 8,
     marginTop: 8,
   },
@@ -293,15 +292,15 @@ const styles = StyleSheet.create({
   filterOption: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.gray[200],
+    borderColor: COLORS.gray[100],
   },
   filterOptionActive: {
-    backgroundColor: COLORS.primary + "20",
+    backgroundColor: COLORS.primary + "30",
     borderColor: COLORS.primary,
   },
   filterOptionIcon: {
@@ -309,7 +308,7 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 14,
-    color: COLORS.gray[600],
+    color: COLORS.text.secondary,
   },
   filterOptionTextActive: {
     color: COLORS.primary,
@@ -334,11 +333,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   searchNearMeText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "600",
+    marginLeft: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
   },
   parkingItem: {
     flexDirection: "row",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
@@ -366,7 +368,7 @@ const styles = StyleSheet.create({
   parkingImage: {
     width: "100%",
     height: "100%",
-    backgroundColor: COLORS.gray[100],
+    backgroundColor: COLORS.gray[50],
     justifyContent: "center",
     alignItems: "center",
   },
@@ -381,12 +383,18 @@ const styles = StyleSheet.create({
   parkingTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  parkingAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   parkingAddress: {
     fontSize: 13,
-    color: COLORS.gray[500],
-    marginTop: 4,
+    color: COLORS.text.secondary,
+    marginLeft: 4,
+    flex: 1,
   },
   parkingMeta: {
     flexDirection: "row",
@@ -396,15 +404,20 @@ const styles = StyleSheet.create({
   },
   parkingSize: {
     fontSize: 12,
-    color: COLORS.gray[600],
-    backgroundColor: COLORS.gray[100],
+    color: COLORS.text.secondary,
+    backgroundColor: COLORS.gray[50],
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
+  parkingRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   parkingRating: {
     fontSize: 12,
-    color: COLORS.gray[600],
+    color: COLORS.text.secondary,
+    marginLeft: 4,
   },
   priceContainer: {
     alignItems: "flex-end",
@@ -417,7 +430,7 @@ const styles = StyleSheet.create({
   },
   priceUnit: {
     fontSize: 12,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
   },
   emptyContainer: {
     alignItems: "center",
@@ -430,11 +443,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[700],
+    color: COLORS.text.primary,
   },
   emptySubtext: {
     fontSize: 14,
-    color: COLORS.gray[500],
+    color: COLORS.text.secondary,
     marginTop: 8,
     textAlign: "center",
   },

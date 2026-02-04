@@ -72,42 +72,48 @@ export const AMENITIES = [
 // Booking statuses
 export const BOOKING_STATUSES = {
   pending: { label: "Pending", color: "#F59E0B" },
-  confirmed: { label: "Confirmed", color: "#10B981" },
-  active: { label: "Active", color: "#3B82F6" },
-  completed: { label: "Completed", color: "#6B7280" },
-  cancelled: { label: "Cancelled", color: "#EF4444" },
-  rejected: { label: "Rejected", color: "#EF4444" },
-  expired: { label: "Expired", color: "#6B7280" },
+  confirmed: { label: "Confirmed", color: "#169C46" },
+  active: { label: "Active", color: "#2E77D0" },
+  completed: { label: "Completed", color: "#8A8A8A" },
+  cancelled: { label: "Cancelled", color: "#E91429" },
+  rejected: { label: "Rejected", color: "#E91429" },
+  expired: { label: "Expired", color: "#8A8A8A" },
 };
 
-// Colors
+// Colors - Spotify-inspired Dark Theme
 export const COLORS = {
-  primary: "#4F46E5",
-  primaryDark: "#4338CA",
-  secondary: "#10B981",
-  accent: "#F59E0B",
-  background: "#F3F4F6",
+  primary: "#169C46", // Darker Spotify Green
+  primaryDark: "#148F3D",
+  secondary: "#1AA34A", // Slightly lighter
+  accent: "#169C46",
+  background: "#181818", // Layout background (lighter)
+  surface: "#1E1E1E", // Surface elements
+  card: "#121212", // Card/tile background (darker than layout)
+  cardElevated: "#282828", // Elevated cards (lighter)
   white: "#FFFFFF",
-  black: "#1F2937",
+  black: "#000000",
   gray: {
-    50: "#F9FAFB",
-    100: "#F3F4F6",
-    200: "#E5E7EB",
-    300: "#D1D5DB",
-    400: "#9CA3AF",
-    500: "#6B7280",
-    600: "#4B5563",
-    700: "#374151",
-    800: "#1F2937",
-    900: "#111827",
+    50: "#282828",
+    100: "#333333",
+    200: "#404040",
+    300: "#535353",
+    400: "#727272",
+    500: "#8A8A8A",
+    600: "#A7A7A7",
+    700: "#B3B3B3",
+    800: "#E5E5E5",
+    900: "#FFFFFF",
   },
   text: {
-    primary: "#1F2937",
-    secondary: "#6B7280",
-    light: "#9CA3AF",
+    primary: "#FFFFFF",
+    secondary: "#B3B3B3",
+    light: "#727272",
   },
-  success: "#10B981",
+  success: "#169C46",
   warning: "#F59E0B",
-  error: "#EF4444",
-  info: "#3B82F6",
+  error: "#E91429",
+  info: "#2E77D0",
+  // Spotify-like gradients
+  gradientStart: "#169C46",
+  gradientEnd: "#191414",
 };

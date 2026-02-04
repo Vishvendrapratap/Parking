@@ -518,7 +518,7 @@ const AddListingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   header: {
     flexDirection: "row",
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   progressContainer: {
     flexDirection: "row",
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginBottom: 20,
   },
   inputContainer: {
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   textArea: {
     height: 100,
@@ -781,3 +781,4 @@ const styles = StyleSheet.create({
 });
 
 export default AddListingScreen;
+

@@ -110,7 +110,6 @@ const MyListingsScreen = ({ navigation }) => {
           <View style={styles.listingAddressRow}>
             <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
             <Text style={styles.listingAddress} numberOfLines={1}>
-              {" "}
               {item.location?.address}
             </Text>
           </View>
@@ -126,14 +125,12 @@ const MyListingsScreen = ({ navigation }) => {
             <View style={styles.statRow}>
               <Icon name="star" size="xs" color={COLORS.accent} />
               <Text style={styles.statText}>
-                {" "}
                 {item.rating?.toFixed(1) || "New"}
               </Text>
             </View>
             <View style={styles.statRow}>
               <Icon name="calendar" size="xs" color={COLORS.text.secondary} />
               <Text style={styles.statText}>
-                {" "}
                 {item.totalBookings || 0} bookings
               </Text>
             </View>
@@ -259,7 +256,7 @@ const MyListingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -267,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200],
   },
@@ -278,7 +275,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   addButton: {
     fontSize: 16,
@@ -294,10 +291,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   listingCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
   },
   listingImage: {
     height: 120,
@@ -320,12 +319,18 @@ const styles = StyleSheet.create({
   listingTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
+  },
+  listingAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   listingAddress: {
     fontSize: 14,
     color: COLORS.gray[500],
-    marginTop: 4,
+    marginLeft: 4,
+    flex: 1,
   },
   listingMeta: {
     flexDirection: "row",
@@ -347,9 +352,14 @@ const styles = StyleSheet.create({
     gap: 16,
     marginTop: 8,
   },
+  statRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   statText: {
     fontSize: 13,
     color: COLORS.gray[600],
+    marginLeft: 4,
   },
   statusBadge: {
     flexDirection: "row",

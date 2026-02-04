@@ -214,7 +214,7 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   content: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   subtitle: {
     fontSize: 16,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   button: {
     backgroundColor: COLORS.primary,
@@ -329,3 +329,4 @@ const styles = StyleSheet.create({
 });
 
 export default RegisterScreen;
+

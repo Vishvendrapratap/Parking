@@ -281,13 +281,13 @@ const ChatScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   header: {
     flexDirection: "row",
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   headerName: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   onlineStatus: {
     fontSize: 12,
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   theirMessageText: {
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
   },
   messageTime: {
     fontSize: 11,
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: COLORS.gray[100],
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
   },
   textInput: {
     flex: 1,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
-    color: COLORS.gray[800],
+    color: COLORS.text.primary,
     marginRight: 12,
   },
   sendButton: {
@@ -438,3 +438,4 @@ const styles = StyleSheet.create({
 });
 
 export default ChatScreen;
+
