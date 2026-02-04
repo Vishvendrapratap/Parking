@@ -37,7 +37,9 @@ const HomeMapScreen = ({ navigation }) => {
   }, []);
 
   const initializeLocation = async () => {
+    console.log("Initializing location...");
     const coords = await getCurrentLocation();
+    console.log("Got coordinates:", coords);
     if (coords) {
       const newRegion = {
         latitude: coords.latitude,
@@ -45,10 +47,12 @@ const HomeMapScreen = ({ navigation }) => {
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
       };
+      console.log("Setting region to:", newRegion);
       setRegion(newRegion);
       mapRef.current?.animateToRegion(newRegion, 1000);
       fetchNearbyParking(coords.latitude, coords.longitude);
     } else {
+      console.log("No coordinates, using default location:", DEFAULT_LOCATION);
       fetchNearbyParking(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
     }
   };

@@ -65,13 +65,34 @@ exports.parkingSpaceValidation = [
     .withMessage("Description is required")
     .isLength({ max: 1000 })
     .withMessage("Description cannot exceed 1000 characters"),
+  // Support both mobile (latitude/longitude/address) and web (location.coordinates) formats
   body("location.coordinates")
+    .optional()
     .isArray({ min: 2, max: 2 })
     .withMessage("Coordinates must be [longitude, latitude]"),
   body("location.coordinates.*")
+    .optional()
     .isFloat()
     .withMessage("Coordinates must be numbers"),
-  body("location.address").trim().notEmpty().withMessage("Address is required"),
+  body("location.address")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Address is required"),
+  // Mobile app format
+  body("latitude")
+    .optional()
+    .isFloat()
+    .withMessage("Latitude must be a number"),
+  body("longitude")
+    .optional()
+    .isFloat()
+    .withMessage("Longitude must be a number"),
+  body("address")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Address is required"),
   body("parkingSize")
     .isIn(["small", "sedan", "suv"])
     .withMessage("Parking size must be small, sedan, or suv"),

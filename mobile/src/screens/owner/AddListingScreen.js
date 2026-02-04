@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import {
 
 const AddListingScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
+  const mapRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState([]);
@@ -36,12 +37,35 @@ const AddListingScreen = ({ navigation }) => {
     accessInstructions: "",
     location: {
       address: "",
-      coordinates: location || DEFAULT_LOCATION,
+      coordinates: DEFAULT_LOCATION,
     },
   });
-  const [markerPosition, setMarkerPosition] = useState(
-    location || DEFAULT_LOCATION,
-  );
+  const [markerPosition, setMarkerPosition] = useState(DEFAULT_LOCATION);
+
+  // Fetch current location when component mounts
+  useEffect(() => {
+    initializeLocation();
+  }, []);
+
+  const initializeLocation = async () => {
+    const coords = await getCurrentLocation();
+    if (coords) {
+      setMarkerPosition(coords);
+      setFormData((prev) => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          coordinates: coords,
+        },
+      }));
+      // Animate map to current location
+      mapRef.current?.animateToRegion({
+        ...coords,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 1000);
+    }
+  };
 
   const pickImages = async () => {
     const permissionResult =
@@ -94,6 +118,12 @@ const AddListingScreen = ({ navigation }) => {
           coordinates: coords,
         },
       });
+      // Animate map to current location
+      mapRef.current?.animateToRegion({
+        ...coords,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 1000);
     }
   };
 
@@ -374,6 +404,7 @@ const AddListingScreen = ({ navigation }) => {
         <Text style={styles.label}>Pin Location on Map</Text>
         <View style={styles.mapContainer}>
           <MapView
+            ref={mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{

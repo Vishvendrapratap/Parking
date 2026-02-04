@@ -24,7 +24,11 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to find nearby parking spaces.",
         "NSLocationAlwaysUsageDescription": "This app needs access to your location to find nearby parking spaces.",
         "NSCameraUsageDescription": "This app needs access to your camera to upload photos of parking spaces.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload photos."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload photos.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
       }
     },
     "android": {

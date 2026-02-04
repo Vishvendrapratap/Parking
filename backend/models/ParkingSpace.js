@@ -29,7 +29,7 @@ const parkingSpaceSchema = new mongoose.Schema(
       coordinates: {
         type: [Number], // [longitude, latitude]
         required: true,
-        index: "2dsphere",
+        // Index is defined below using schema.index()
       },
       address: {
         type: String,

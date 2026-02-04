@@ -20,10 +20,14 @@ exports.getParkingSpaces = async (req, res) => {
       sortBy = "distance",
     } = req.query;
 
-    let query = { isActive: true, status: "available" };
+    let query = { isActive: true };
 
-    // Location-based search
-    if (lat && lng) {
+    // Only add status filter if there are parking spaces
+    // This prevents issues when db is empty
+    query.status = "available";
+
+    // Location-based search - only if lat/lng provided
+    if (lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
       query["location.coordinates"] = {
         $near: {
           $geometry: {
@@ -58,12 +62,29 @@ exports.getParkingSpaces = async (req, res) => {
       query.amenities = { $all: amenities.split(",") };
     }
 
-    const parkingSpaces = await ParkingSpace.find(query)
-      .populate("owner", "name avatar rating")
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    let parkingSpaces;
+    let total;
 
-    const total = await ParkingSpace.countDocuments(query);
+    try {
+      parkingSpaces = await ParkingSpace.find(query)
+        .populate("owner", "name avatar rating")
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+      total = await ParkingSpace.countDocuments(query);
+    } catch (geoError) {
+      // If geospatial query fails (e.g., no index or no documents), 
+      // fall back to simple query without location
+      console.error("Geospatial query failed, falling back:", geoError.message);
+      delete query["location.coordinates"];
+      
+      parkingSpaces = await ParkingSpace.find(query)
+        .populate("owner", "name avatar rating")
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+      total = await ParkingSpace.countDocuments(query);
+    }
 
     res.status(200).json({
       success: true,
@@ -73,6 +94,7 @@ exports.getParkingSpaces = async (req, res) => {
       data: parkingSpaces,
     });
   } catch (error) {
+    console.error("Error in getParkingSpaces:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching parking spaces",
@@ -117,6 +139,36 @@ exports.getParkingSpace = async (req, res) => {
 exports.createParkingSpace = async (req, res) => {
   try {
     req.body.owner = req.user.id;
+
+    // Handle FormData from mobile app (latitude, longitude, address as separate fields)
+    if (req.body.latitude && req.body.longitude && !req.body.location) {
+      req.body.location = {
+        type: "Point",
+        coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)],
+        address: req.body.address || "",
+      };
+      delete req.body.latitude;
+      delete req.body.longitude;
+      delete req.body.address;
+    }
+
+    // Handle location.coordinates sent as { latitude, longitude } object
+    if (req.body.location && req.body.location.coordinates && 
+        typeof req.body.location.coordinates === "object" && 
+        !Array.isArray(req.body.location.coordinates)) {
+      const { latitude, longitude } = req.body.location.coordinates;
+      req.body.location.coordinates = [parseFloat(longitude), parseFloat(latitude)];
+      req.body.location.type = "Point";
+    }
+
+    // Parse amenities if sent as JSON string
+    if (typeof req.body.amenities === "string") {
+      try {
+        req.body.amenities = JSON.parse(req.body.amenities);
+      } catch (e) {
+        req.body.amenities = [];
+      }
+    }
 
     const parkingSpace = await ParkingSpace.create(req.body);
 

@@ -49,12 +49,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, phone, password) => {
     try {
-      const response = await api.post("/auth/login", {
-        email,
-        phone,
-        password,
-      });
+      console.log("Attempting login with:", { email, phone });
+      
+      // Build request body, only include non-null values
+      const requestBody = { password };
+      if (email) requestBody.email = email;
+      if (phone) requestBody.phone = phone;
+      
+      const response = await api.post("/auth/login", requestBody);
 
+      console.log("Login response:", response.data);
       const { token: newToken, user: userData } = response.data;
 
       await SecureStore.setItemAsync("authToken", newToken);
@@ -66,9 +70,12 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userData };
     } catch (error) {
+      console.log("Login error:", error.message);
+      console.log("Error response:", error.response?.data);
+      console.log("Error code:", error.code);
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error.response?.data?.message || error.message || "Login failed",
       };
     }
   };

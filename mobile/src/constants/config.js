@@ -1,10 +1,19 @@
 // API Configuration
+// For Android Emulator: use "10.0.2.2" (maps to host localhost)
+// For iOS Simulator: use "localhost"
+// For Physical device: use your PC's IP address
+import { Platform } from "react-native";
+
+// Use your PC's actual Wi-Fi IP for physical devices
+// Change this to your current IP address
+const LOCAL_IP = "192.168.1.7";
+
 export const API_URL = __DEV__
-  ? "http://localhost:5000/api" // Development
-  : "https://your-production-url.com/api"; // Production
+  ? `http://${LOCAL_IP}:5000/api`
+  : "https://your-production-url.com/api";
 
 export const SOCKET_URL = __DEV__
-  ? "http://localhost:5000"
+  ? `http://${LOCAL_IP}:5000`
   : "https://your-production-url.com";
 
 // Google Maps API Key

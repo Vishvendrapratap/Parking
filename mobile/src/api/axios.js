@@ -1,10 +1,12 @@
 import axios from "axios";
 import { API_URL } from "../constants/config";
 
+console.log("API_URL configured as:", API_URL);
+
 // Create axios instance
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -22,7 +24,7 @@ export const setAuthToken = (token) => {
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // You can add loading state here
+    console.log("Making request to:", config.baseURL + config.url);
     return config;
   },
   (error) => {
