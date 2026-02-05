@@ -94,7 +94,7 @@ const SearchScreen = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.priceContainer}>
-        <Text style={styles.price}>${item.pricePerHour}</Text>
+        <Text style={styles.price}>₹{item.pricePerHour}</Text>
         <Text style={styles.priceUnit}>/hr</Text>
       </View>
     </TouchableOpacity>
@@ -160,7 +160,7 @@ const SearchScreen = ({ navigation }) => {
 
           <Text style={styles.filterTitle}>Max Price (per hour)</Text>
           <View style={styles.filterOptions}>
-            {[5, 10, 20, 50].map((price) => (
+            {[50, 100, 200, 500].map((price) => (
               <TouchableOpacity
                 key={price}
                 style={[
@@ -180,7 +180,7 @@ const SearchScreen = ({ navigation }) => {
                     filters.maxPrice === price && styles.filterOptionTextActive,
                   ]}
                 >
-                  ${price}
+                  ₹{price}
                 </Text>
               </TouchableOpacity>
             ))}

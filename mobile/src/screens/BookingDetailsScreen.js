@@ -323,10 +323,10 @@ const BookingDetailsScreen = ({ route, navigation }) => {
 
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>
-              ${booking.parkingSpace.pricePerHour} x {booking.duration} hour(s)
+              ₹{booking.parkingSpace.pricePerHour} x {booking.duration} hour(s)
             </Text>
             <Text style={styles.priceValue}>
-              $
+              ₹
               {(booking.parkingSpace.pricePerHour * booking.duration).toFixed(
                 2,
               )}
@@ -336,7 +336,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Service fee</Text>
             <Text style={styles.priceValue}>
-              $
+              ₹
               {(
                 booking.totalPrice -
                 booking.parkingSpace.pricePerHour * booking.duration
@@ -349,7 +349,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.priceRow}>
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.totalValue}>
-              ${booking.totalPrice.toFixed(2)}
+              ₹{booking.totalPrice.toFixed(2)}
             </Text>
           </View>
 

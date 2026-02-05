@@ -158,7 +158,7 @@ const BookingsPage = () => {
                     </td>
                     <td className="py-3 px-4">
                       <p className="font-semibold text-gray-800">
-                        ${booking.totalPrice?.toFixed(2)}
+                        ₹{booking.totalPrice?.toFixed(2)}
                       </p>
                     </td>
                     <td className="py-3 px-4">

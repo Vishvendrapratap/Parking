@@ -152,7 +152,7 @@ const HomeMapScreen = ({ navigation }) => {
                 <View
                   style={[styles.marker, isSelected && styles.markerSelected]}
                 >
-                  <Text style={styles.markerText}>${parking.pricePerHour}</Text>
+                  <Text style={styles.markerText}>₹{parking.pricePerHour}</Text>
                 </View>
               </Marker>
             );
@@ -200,7 +200,7 @@ const HomeMapScreen = ({ navigation }) => {
             </View>
             <View style={styles.parkingPrice}>
               <Text style={styles.priceAmount}>
-                ${selectedParking.pricePerHour}
+                ₹{selectedParking.pricePerHour}
               </Text>
               <Text style={styles.priceUnit}>/hr</Text>
             </View>

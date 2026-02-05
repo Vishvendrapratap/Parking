@@ -256,21 +256,21 @@ const BookingScreen = ({ route, navigation }) => {
 
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>
-              ${parking.pricePerHour} x {hours} hour{hours > 1 ? "s" : ""}
+              ₹{parking.pricePerHour} x {hours} hour{hours > 1 ? "s" : ""}
             </Text>
-            <Text style={styles.priceValue}>${subtotal.toFixed(2)}</Text>
+            <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
           </View>
 
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Service fee</Text>
-            <Text style={styles.priceValue}>${serviceFee.toFixed(2)}</Text>
+            <Text style={styles.priceValue}>₹{serviceFee.toFixed(2)}</Text>
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.priceRow}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+            <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
           </View>
         </View>
 
@@ -291,7 +291,7 @@ const BookingScreen = ({ route, navigation }) => {
             <ActivityIndicator color={COLORS.white} />
           ) : (
             <Text style={styles.confirmButtonText}>
-              Confirm Booking - ${total.toFixed(2)}
+              Confirm Booking - ₹{total.toFixed(2)}
             </Text>
           )}
         </TouchableOpacity>

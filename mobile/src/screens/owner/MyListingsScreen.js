@@ -155,7 +155,7 @@ const MyListingsScreen = ({ navigation }) => {
             <Text style={styles.listingSize}>
               {sizeInfo?.icon} {sizeInfo?.label}
             </Text>
-            <Text style={styles.listingPrice}>${item.pricePerHour}/hr</Text>
+            <Text style={styles.listingPrice}>₹{item.pricePerHour}/hr</Text>
           </View>
 
           <View style={styles.listingStats}>

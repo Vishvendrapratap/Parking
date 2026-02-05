@@ -116,14 +116,14 @@ const OwnerDashboardScreen = ({ navigation }) => {
           <View style={styles.earningsContent}>
             <View style={styles.earningsMain}>
               <Text style={styles.earningsValue}>
-                ${dashboard?.monthlyEarnings?.toFixed(2) || "0.00"}
+                ₹{dashboard?.monthlyEarnings?.toFixed(2) || "0.00"}
               </Text>
               <Text style={styles.earningsLabel}>This Month</Text>
             </View>
             <View style={styles.earningsDivider} />
             <View style={styles.earningsSecondary}>
               <Text style={styles.totalEarnings}>
-                ${dashboard?.totalEarnings?.toFixed(2) || "0.00"}
+                ₹{dashboard?.totalEarnings?.toFixed(2) || "0.00"}
               </Text>
               <Text style={styles.earningsLabel}>Total Earnings</Text>
             </View>
@@ -162,7 +162,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.bookingActions}>
                   <Text style={styles.bookingPrice}>
-                    ${booking.totalPrice?.toFixed(2)}
+                    ₹{booking.totalPrice?.toFixed(2)}
                   </Text>
                   <View style={styles.pendingBadge}>
                     <Text style={styles.pendingText}>Pending</Text>
@@ -218,7 +218,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
                   </View>
                   <View style={styles.listingMeta}>
                     <Text style={styles.listingPrice}>
-                      ${listing.pricePerHour}/hr
+                      ₹{listing.pricePerHour}/hr
                     </Text>
                     <View
                       style={[

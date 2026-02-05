@@ -275,15 +275,15 @@ const BookingDetailsPage = () => {
               <div className="space-y-3">
                 <div className="flex justify-between text-gray-600">
                   <span>Parking fee</span>
-                  <span>${(booking.totalPrice * 0.9).toFixed(2)}</span>
+                  <span>₹{(booking.totalPrice * 0.9).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Service fee</span>
-                  <span>${(booking.totalPrice * 0.1).toFixed(2)}</span>
+                  <span>₹{(booking.totalPrice * 0.1).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-gray-800 pt-3 border-t">
                   <span>Total</span>
-                  <span>${booking.totalPrice?.toFixed(2)}</span>
+                  <span>₹{booking.totalPrice?.toFixed(2)}</span>
                 </div>
               </div>
             </div>

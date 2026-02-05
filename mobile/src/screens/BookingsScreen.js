@@ -148,7 +148,7 @@ const BookingsScreen = ({ navigation }) => {
               <Text style={styles.detailLabel}>Total</Text>
             </View>
             <Text style={styles.detailValue}>
-              ${item.totalPrice?.toFixed(2) || "0.00"}
+              ₹{item.totalPrice?.toFixed(2) || "0.00"}
             </Text>
           </View>
         </View>

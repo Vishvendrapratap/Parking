@@ -406,7 +406,7 @@ const EditListingScreen = ({ route, navigation }) => {
 
         {/* Price */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Price per Hour ($) *</Text>
+          <Text style={styles.label}>Price per Hour (₹) *</Text>
           <TextInput
             style={styles.input}
             value={formData.pricePerHour}

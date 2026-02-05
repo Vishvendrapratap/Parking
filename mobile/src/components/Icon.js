@@ -54,6 +54,7 @@ import {
   faClipboardList,
   faMoneyBillWave,
   faDollarSign,
+  faIndianRupeeSign,
   faCreditCard,
   faWallet,
   faReceipt,
@@ -175,6 +176,8 @@ const iconMap = {
   // Money & Payment
   money: faMoneyBillWave,
   dollar: faDollarSign,
+  rupee: faIndianRupeeSign,
+  indianRupee: faIndianRupeeSign,
   creditCard: faCreditCard,
   wallet: faWallet,
   receipt: faReceipt,

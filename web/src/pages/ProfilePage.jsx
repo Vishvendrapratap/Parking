@@ -138,7 +138,7 @@ const ProfilePage = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Earnings</span>
                     <span className="font-medium text-green-600">
-                      ${user?.stats?.totalEarnings?.toFixed(2) || "0.00"}
+                      ₹{user?.stats?.totalEarnings?.toFixed(2) || "0.00"}
                     </span>
                   </div>
                 </>

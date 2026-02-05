@@ -202,7 +202,7 @@ const HomePage = () => {
                   Earn Up To
                 </h3>
                 <p className="text-4xl font-bold text-primary-600 mb-2">
-                  $500/month
+                  ₹50,000/month
                 </p>
                 <p className="text-gray-500">by renting your parking space</p>
               </div>

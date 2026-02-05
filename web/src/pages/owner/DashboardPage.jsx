@@ -71,7 +71,7 @@ const OwnerDashboard = () => {
         <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
           <p className="text-primary-100 text-sm">Total Earnings</p>
           <p className="text-3xl font-bold mt-1">
-            ${stats?.totalEarnings?.toFixed(2) || "0.00"}
+            ₹{stats?.totalEarnings?.toFixed(2) || "0.00"}
           </p>
           <p className="text-primary-200 text-sm mt-2">All time</p>
         </div>
@@ -79,7 +79,7 @@ const OwnerDashboard = () => {
         <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
           <p className="text-green-100 text-sm">This Month</p>
           <p className="text-3xl font-bold mt-1">
-            ${stats?.monthlyEarnings?.toFixed(2) || "0.00"}
+            ₹{stats?.monthlyEarnings?.toFixed(2) || "0.00"}
           </p>
           <p className="text-green-200 text-sm mt-2">
             {stats?.monthlyBookings || 0} bookings
@@ -141,7 +141,7 @@ const OwnerDashboard = () => {
                       </p>
                     </div>
                     <span className="text-primary-600 font-semibold">
-                      ${booking.totalPrice?.toFixed(2)}
+                      ₹{booking.totalPrice?.toFixed(2)}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 mb-3">

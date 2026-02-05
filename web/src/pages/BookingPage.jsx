@@ -367,7 +367,7 @@ const BookingPage = () => {
             >
               {submitting
                 ? "Processing..."
-                : `Confirm Booking - $${pricing.total}`}
+                : `Confirm Booking - ₹${pricing.total}`}
             </button>
           </form>
         </div>
@@ -406,17 +406,17 @@ const BookingPage = () => {
             <div className="py-4 space-y-3">
               <div className="flex justify-between text-gray-600">
                 <span>
-                  ${space?.pricing?.hourly} × {pricing.duration} hours
+                  ₹{space?.pricing?.hourly} × {pricing.duration} hours
                 </span>
-                <span>${pricing.subtotal}</span>
+                <span>₹{pricing.subtotal}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Service fee</span>
-                <span>${pricing.serviceFee}</span>
+                <span>₹{pricing.serviceFee}</span>
               </div>
               <div className="flex justify-between font-semibold text-gray-800 pt-3 border-t">
                 <span>Total</span>
-                <span>${pricing.total}</span>
+                <span>₹{pricing.total}</span>
               </div>
             </div>
 

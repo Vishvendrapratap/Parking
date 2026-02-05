@@ -333,16 +333,16 @@ const ParkingDetailsPage = () => {
             <div className="mb-6">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-3xl font-bold text-gray-800">
-                  ${space.pricing?.hourly}
+                  ₹{space.pricing?.hourly}
                 </span>
                 <span className="text-gray-500">/ hour</span>
               </div>
               <div className="flex gap-4 text-sm text-gray-600">
                 {space.pricing?.daily && (
-                  <span>${space.pricing.daily}/day</span>
+                  <span>₹{space.pricing.daily}/day</span>
                 )}
                 {space.pricing?.monthly && (
-                  <span>${space.pricing.monthly}/month</span>
+                  <span>₹{space.pricing.monthly}/month</span>
                 )}
               </div>
             </div>

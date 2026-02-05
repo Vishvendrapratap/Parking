@@ -183,7 +183,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-primary-600">
-                    ${booking.totalPrice?.toFixed(2)}
+                    ₹{booking.totalPrice?.toFixed(2)}
                   </p>
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs ${

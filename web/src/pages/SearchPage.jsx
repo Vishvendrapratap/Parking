@@ -153,7 +153,7 @@ const SearchPage = () => {
               {/* Price Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price Range ($/hour)
+                  Price Range (₹/hour)
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -279,7 +279,7 @@ const SearchPage = () => {
                       </p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-primary-600 font-bold">
-                          ${space.pricing?.hourly}/hr
+                          ₹{space.pricing?.hourly}/hr
                         </span>
                         <div className="flex items-center text-sm text-gray-500">
                           <Icon name="star" className="text-yellow-500" />
@@ -351,7 +351,7 @@ const SearchPage = () => {
                     {selectedSpace.address?.street}
                   </p>
                   <p className="text-primary-600 font-bold mt-1">
-                    ${selectedSpace.pricing?.hourly}/hr
+                    ₹{selectedSpace.pricing?.hourly}/hr
                   </p>
                 </Link>
               </InfoWindow>

@@ -172,7 +172,7 @@ const BookingsPage = () => {
 
                   <div className="flex justify-between items-center">
                     <p className="font-semibold text-primary-600">
-                      ${booking.totalPrice?.toFixed(2)}
+                      ₹{booking.totalPrice?.toFixed(2)}
                     </p>
                     <div className="flex gap-2">
                       <Link

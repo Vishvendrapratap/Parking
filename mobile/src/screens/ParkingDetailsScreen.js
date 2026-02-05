@@ -150,7 +150,7 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
               </View>
             </View>
             <View style={styles.priceContainer}>
-              <Text style={styles.price}>${parking.pricePerHour}</Text>
+              <Text style={styles.price}>₹{parking.pricePerHour}</Text>
               <Text style={styles.priceUnit}>/hour</Text>
             </View>
           </View>
@@ -291,7 +291,7 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
       {/* Bottom Action */}
       <View style={styles.bottomAction}>
         <View style={styles.bottomPriceContainer}>
-          <Text style={styles.bottomPrice}>${parking.pricePerHour}</Text>
+          <Text style={styles.bottomPrice}>₹{parking.pricePerHour}</Text>
           <Text style={styles.bottomPriceUnit}>/hour</Text>
         </View>
         {(() => {
