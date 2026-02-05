@@ -208,6 +208,16 @@ const SearchScreen = ({ navigation }) => {
       }
 
       if (coords) {
+        // Update selectedLocation for distance calculation if using current location
+        if (!selectedLocation) {
+          setSelectedLocation({
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            address: "Current Location",
+          });
+          setSearchQuery("Current Location");
+        }
+
         const result = await searchNearbyParking(
           coords.latitude,
           coords.longitude,
