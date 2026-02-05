@@ -254,7 +254,10 @@ export const getPlaceAutocomplete = async (input, sessionToken = null) => {
     });
     return response.data;
   } catch (error) {
-    console.error("getPlaceAutocomplete error:", error.response?.data || error.message);
+    console.error(
+      "getPlaceAutocomplete error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: [] };
   }
 };
@@ -264,7 +267,10 @@ export const getPlaceDetails = async (placeId) => {
     const response = await api.get(`/geocoding/place/${placeId}`);
     return response.data;
   } catch (error) {
-    console.error("getPlaceDetails error:", error.response?.data || error.message);
+    console.error(
+      "getPlaceDetails error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: null };
   }
 };
@@ -276,7 +282,10 @@ export const geocodeAddress = async (address) => {
     });
     return response.data;
   } catch (error) {
-    console.error("geocodeAddress error:", error.response?.data || error.message);
+    console.error(
+      "geocodeAddress error:",
+      error.response?.data || error.message,
+    );
     return { success: false, data: null };
   }
 };

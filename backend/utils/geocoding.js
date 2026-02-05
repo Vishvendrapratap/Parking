@@ -119,8 +119,15 @@ const getPlaceSuggestions = async (input, sessionToken) => {
     );
 
     // Check for API errors
-    if (response.data.status !== "OK" && response.data.status !== "ZERO_RESULTS") {
-      console.error("Google Places API error:", response.data.status, response.data.error_message);
+    if (
+      response.data.status !== "OK" &&
+      response.data.status !== "ZERO_RESULTS"
+    ) {
+      console.error(
+        "Google Places API error:",
+        response.data.status,
+        response.data.error_message,
+      );
       return [];
     }
 

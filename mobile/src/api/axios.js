@@ -35,7 +35,12 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log("API Response from:", response.config.url, "Status:", response.status);
+    console.log(
+      "API Response from:",
+      response.config.url,
+      "Status:",
+      response.status,
+    );
     return response;
   },
   (error) => {
