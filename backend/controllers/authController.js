@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const { verifyFirebaseToken } = require("../config/firebase");
+const { cloudinary } = require("../config/cloudinary");
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -209,6 +210,11 @@ exports.updateDetails = async (req, res) => {
       avatar: req.body.avatar,
       location: req.body.location,
     };
+
+    // Handle profile picture upload
+    if (req.file) {
+      fieldsToUpdate.profilePicture = req.file.path;
+    }
 
     // Remove undefined fields
     Object.keys(fieldsToUpdate).forEach(

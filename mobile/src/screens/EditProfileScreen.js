@@ -84,7 +84,10 @@ const EditProfileScreen = ({ navigation }) => {
 
       const formData = new FormData();
       formData.append("name", profile.name);
-      formData.append("phone", profile.phone);
+
+      if (profile.phone) {
+        formData.append("phone", profile.phone);
+      }
 
       if (
         profile.profilePicture &&
@@ -97,15 +100,33 @@ const EditProfileScreen = ({ navigation }) => {
         });
       }
 
+      console.log("Saving profile with data:", {
+        name: profile.name,
+        phone: profile.phone,
+        hasNewImage:
+          profile.profilePicture && !profile.profilePicture.startsWith("http"),
+      });
+
       const result = await updateUserProfile(formData);
+      console.log("Update result:", result);
 
       if (result.success) {
         updateUser(result.data);
         Alert.alert("Success", "Profile updated successfully");
         navigation.goBack();
+      } else {
+        Alert.alert("Error", result.message || "Failed to update profile");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to update profile");
+      console.error(
+        "Profile update error:",
+        error.response?.data || error.message,
+      );
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ||
+          "Failed to update profile. Please try again.",
+      );
     } finally {
       setSaving(false);
     }

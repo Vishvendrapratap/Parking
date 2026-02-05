@@ -171,6 +171,13 @@ export const getUserProfile = async (id) => {
   return response.data;
 };
 
+export const updateUserProfile = async (formData) => {
+  const response = await api.put("/auth/updatedetails", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
 export const updatePushToken = async (pushToken) => {
   const response = await api.put("/users/push-token", { pushToken });
   return response.data;

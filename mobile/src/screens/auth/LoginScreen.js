@@ -39,17 +39,19 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handlePhoneLogin = async () => {
-    if (!phone) {
-      Alert.alert("Error", "Please enter your phone number");
+    if (!phone || phone.length < 10) {
+      Alert.alert("Error", "Please enter a valid 10-digit phone number");
       return;
     }
 
     setLoading(true);
-    const result = await sendOTP(phone);
+    // Format phone with country code
+    const formattedPhone = `+91${phone}`;
+    const result = await sendOTP(formattedPhone);
     setLoading(false);
 
     if (result.success) {
-      navigation.navigate("OTP", { phone });
+      navigation.navigate("OTP", { phone: formattedPhone });
     } else {
       Alert.alert("Error", result.message);
     }
@@ -149,14 +151,20 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.form}>
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Phone Number</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="+1 (555) 000-0000"
-                  placeholderTextColor={COLORS.gray[400]}
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                />
+                <View style={styles.phoneInputWrapper}>
+                  <Text style={styles.countryCode}>+91</Text>
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="Enter 10-digit number"
+                    placeholderTextColor={COLORS.gray[400]}
+                    value={phone}
+                    onChangeText={(text) =>
+                      setPhone(text.replace(/[^0-9]/g, ""))
+                    }
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                  />
+                </View>
               </View>
 
               <TouchableOpacity
@@ -168,6 +176,10 @@ const LoginScreen = ({ navigation }) => {
                   {loading ? "Sending OTP..." : "Send OTP"}
                 </Text>
               </TouchableOpacity>
+
+              <Text style={styles.otpNote}>
+                We'll send a 6-digit verification code to your phone
+              </Text>
             </View>
           )}
 
@@ -293,7 +305,38 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "600",
   },
+  phoneInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  countryCode: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    backgroundColor: COLORS.gray[100],
+    borderRightWidth: 1,
+    borderRightColor: COLORS.gray[200],
+  },
+  phoneInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.text.primary,
+  },
+  otpNote: {
+    fontSize: 13,
+    color: COLORS.gray[500],
+    textAlign: "center",
+    marginTop: 8,
+  },
 });
 
 export default LoginScreen;
-
