@@ -194,7 +194,11 @@ export const getOwnerDashboard = async () => {
     (l) => l.status === "available",
   ).length;
   const totalBookings = bookings.length;
-  const pendingBookings = bookings.filter((b) => b.status === "pending").length;
+
+  // Get pending bookings (full array for display)
+  const pendingBookingsArray = bookings.filter((b) => b.status === "pending");
+  const pendingBookings = pendingBookingsArray.length;
+
   const confirmedBookings = bookings.filter(
     (b) => b.status === "confirmed",
   ).length;
@@ -229,7 +233,8 @@ export const getOwnerDashboard = async () => {
       totalListings,
       activeListings,
       totalBookings,
-      pendingBookings,
+      pendingBookings: pendingBookingsArray, // Return full array for dashboard display
+      pendingCount: pendingBookings,
       confirmedBookings,
       completedBookings,
       totalEarnings,

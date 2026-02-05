@@ -299,6 +299,7 @@ export const TabIcon = ({
     Profile: "user",
     Dashboard: "dashboard",
     Listings: "parking",
+    "My Listings": "parking",
   };
 
   const iconName = tabIcons[name] || "location";

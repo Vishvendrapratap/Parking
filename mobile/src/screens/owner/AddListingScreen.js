@@ -37,7 +37,11 @@ const AddListingScreen = ({ navigation }) => {
     amenities: [],
     accessInstructions: "",
     location: {
-      address: "",
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "India",
       coordinates: DEFAULT_LOCATION,
     },
   });
@@ -168,8 +172,20 @@ const AddListingScreen = ({ navigation }) => {
         }
         return true;
       case 3:
-        if (!formData.location.address.trim()) {
-          Alert.alert("Error", "Please enter an address");
+        if (!formData.location.street.trim()) {
+          Alert.alert("Error", "Please enter a street address");
+          return false;
+        }
+        if (!formData.location.city.trim()) {
+          Alert.alert("Error", "Please enter a city");
+          return false;
+        }
+        if (!formData.location.state.trim()) {
+          Alert.alert("Error", "Please enter a state");
+          return false;
+        }
+        if (!formData.location.zipCode.trim()) {
+          Alert.alert("Error", "Please enter a ZIP code");
           return false;
         }
         return true;
@@ -194,6 +210,9 @@ const AddListingScreen = ({ navigation }) => {
     try {
       setLoading(true);
 
+      // Combine address fields into full address string
+      const fullAddress = `${formData.location.street}, ${formData.location.city}, ${formData.location.state} ${formData.location.zipCode}, ${formData.location.country}`;
+
       const submitData = new FormData();
       submitData.append("title", formData.title);
       submitData.append("description", formData.description);
@@ -201,7 +220,12 @@ const AddListingScreen = ({ navigation }) => {
       submitData.append("parkingSize", formData.parkingSize);
       submitData.append("amenities", JSON.stringify(formData.amenities));
       submitData.append("accessInstructions", formData.accessInstructions);
-      submitData.append("address", formData.location.address);
+      submitData.append("address", fullAddress);
+      submitData.append("street", formData.location.street);
+      submitData.append("city", formData.location.city);
+      submitData.append("state", formData.location.state);
+      submitData.append("zipCode", formData.location.zipCode);
+      submitData.append("country", formData.location.country);
       submitData.append("latitude", markerPosition.latitude);
       submitData.append("longitude", markerPosition.longitude);
 
@@ -392,23 +416,93 @@ const AddListingScreen = ({ navigation }) => {
       <Text style={styles.stepTitle}>Location</Text>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Address *</Text>
+        <Text style={styles.label}>Street Address *</Text>
         <TextInput
           style={styles.input}
-          value={formData.location.address}
+          value={formData.location.street}
           onChangeText={(text) =>
             setFormData({
               ...formData,
-              location: { ...formData.location, address: text },
+              location: { ...formData.location, street: text },
             })
           }
-          placeholder="Enter your address"
+          placeholder="e.g., 123 Main Street, Apt 4B"
           placeholderTextColor={COLORS.gray[400]}
         />
       </View>
 
+      <View style={styles.rowInputs}>
+        <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+          <Text style={styles.label}>City *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.location.city}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                location: { ...formData.location, city: text },
+              })
+            }
+            placeholder="City"
+            placeholderTextColor={COLORS.gray[400]}
+          />
+        </View>
+        <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+          <Text style={styles.label}>State *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.location.state}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                location: { ...formData.location, state: text },
+              })
+            }
+            placeholder="State"
+            placeholderTextColor={COLORS.gray[400]}
+          />
+        </View>
+      </View>
+
+      <View style={styles.rowInputs}>
+        <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+          <Text style={styles.label}>ZIP Code *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.location.zipCode}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                location: { ...formData.location, zipCode: text },
+              })
+            }
+            placeholder="ZIP Code"
+            placeholderTextColor={COLORS.gray[400]}
+            keyboardType="numeric"
+          />
+        </View>
+        <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+          <Text style={styles.label}>Country</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.location.country}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                location: { ...formData.location, country: text },
+              })
+            }
+            placeholder="Country"
+            placeholderTextColor={COLORS.gray[400]}
+          />
+        </View>
+      </View>
+
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Pin Location on Map</Text>
+        <Text style={styles.helperText}>
+          Tap on the map or drag the marker to set exact location
+        </Text>
         <View style={styles.mapContainer}>
           <MapView
             ref={mapRef}
@@ -723,14 +817,24 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   useLocationButton: {
+    flexDirection: "row",
     marginTop: 12,
     paddingVertical: 10,
     alignItems: "center",
+    justifyContent: "center",
   },
   useLocationText: {
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "600",
+  },
+  rowInputs: {
+    flexDirection: "row",
+  },
+  helperText: {
+    fontSize: 12,
+    color: COLORS.gray[500],
+    marginBottom: 8,
   },
   footer: {
     flexDirection: "row",

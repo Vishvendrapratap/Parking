@@ -137,9 +137,6 @@ const OwnerDashboardScreen = ({ navigation }) => {
               <Icon name="clock" size="lg" color={COLORS.text.primary} />
               <Text style={styles.sectionTitle}>Pending Requests</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate("Bookings")}>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
           </View>
           {dashboard?.pendingBookings?.length > 0 ? (
             dashboard.pendingBookings.slice(0, 3).map((booking) => (
@@ -187,7 +184,9 @@ const OwnerDashboardScreen = ({ navigation }) => {
               <Icon name="home" size="lg" color={COLORS.text.primary} />
               <Text style={styles.sectionTitle}>My Listings</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate("MyListings")}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("My Listings")}
+            >
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>

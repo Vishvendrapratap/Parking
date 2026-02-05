@@ -37,7 +37,11 @@ const EditListingScreen = ({ route, navigation }) => {
     accessInstructions: "",
     status: "available",
     location: {
-      address: "",
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "India",
       coordinates: { latitude: 0, longitude: 0 },
     },
   });
@@ -46,11 +50,28 @@ const EditListingScreen = ({ route, navigation }) => {
     fetchListing();
   }, [parkingId]);
 
+  // Helper function to parse address string into components
+  const parseAddress = (addressString) => {
+    if (!addressString) return { street: "", city: "", state: "", zipCode: "", country: "India" };
+    
+    const parts = addressString.split(",").map(part => part.trim());
+    return {
+      street: parts[0] || "",
+      city: parts[1] || "",
+      state: parts[2]?.split(" ")[0] || "",
+      zipCode: parts[2]?.split(" ")[1] || "",
+      country: parts[3] || "India",
+    };
+  };
+
   const fetchListing = async () => {
     try {
       setLoading(true);
       const result = await getParkingSpace(parkingId);
       const parking = result.data;
+
+      // Parse existing address or use separate fields if available
+      const addressParts = parseAddress(parking.location?.address);
 
       setFormData({
         title: parking.title || "",
@@ -61,7 +82,11 @@ const EditListingScreen = ({ route, navigation }) => {
         accessInstructions: parking.accessInstructions || "",
         status: parking.status || "available",
         location: {
-          address: parking.location?.address || "",
+          street: parking.street || addressParts.street,
+          city: parking.city || addressParts.city,
+          state: parking.state || addressParts.state,
+          zipCode: parking.zipCode || addressParts.zipCode,
+          country: parking.country || addressParts.country || "India",
           coordinates: {
             latitude: parking.location?.coordinates?.[1] || 0,
             longitude: parking.location?.coordinates?.[0] || 0,
@@ -153,6 +178,9 @@ const EditListingScreen = ({ route, navigation }) => {
     try {
       setSaving(true);
 
+      // Combine address fields into full address string
+      const fullAddress = `${formData.location.street}, ${formData.location.city}, ${formData.location.state} ${formData.location.zipCode}, ${formData.location.country}`;
+
       // Update basic info
       await updateParkingSpace(parkingId, {
         title: formData.title,
@@ -162,7 +190,12 @@ const EditListingScreen = ({ route, navigation }) => {
         amenities: formData.amenities,
         accessInstructions: formData.accessInstructions,
         status: formData.status,
-        address: formData.location.address,
+        address: fullAddress,
+        street: formData.location.street,
+        city: formData.location.city,
+        state: formData.location.state,
+        zipCode: formData.location.zipCode,
+        country: formData.location.country,
       });
 
       // Upload new images if any
@@ -430,21 +463,90 @@ const EditListingScreen = ({ route, navigation }) => {
           />
         </View>
 
-        {/* Location */}
+        {/* Location - Street Address */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Address</Text>
+          <Text style={styles.label}>Street Address *</Text>
           <TextInput
             style={styles.input}
-            value={formData.location.address}
+            value={formData.location.street}
             onChangeText={(text) =>
               setFormData({
                 ...formData,
-                location: { ...formData.location, address: text },
+                location: { ...formData.location, street: text },
               })
             }
-            placeholder="Enter address"
+            placeholder="e.g., 123 Main Street, Apt 4B"
             placeholderTextColor={COLORS.gray[400]}
           />
+        </View>
+
+        {/* City and State */}
+        <View style={styles.rowInputs}>
+          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+            <Text style={styles.label}>City *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location.city}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  location: { ...formData.location, city: text },
+                })
+              }
+              placeholder="City"
+              placeholderTextColor={COLORS.gray[400]}
+            />
+          </View>
+          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+            <Text style={styles.label}>State *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location.state}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  location: { ...formData.location, state: text },
+                })
+              }
+              placeholder="State"
+              placeholderTextColor={COLORS.gray[400]}
+            />
+          </View>
+        </View>
+
+        {/* ZIP Code and Country */}
+        <View style={styles.rowInputs}>
+          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+            <Text style={styles.label}>ZIP Code *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location.zipCode}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  location: { ...formData.location, zipCode: text },
+                })
+              }
+              placeholder="ZIP Code"
+              placeholderTextColor={COLORS.gray[400]}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+            <Text style={styles.label}>Country</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location.country}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  location: { ...formData.location, country: text },
+                })
+              }
+              placeholder="Country"
+              placeholderTextColor={COLORS.gray[400]}
+            />
+          </View>
         </View>
 
         {/* Map Preview */}
@@ -695,6 +797,9 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  rowInputs: {
+    flexDirection: "row",
   },
   bottomSpacer: {
     height: 40,

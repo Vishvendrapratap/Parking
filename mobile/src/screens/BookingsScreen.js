@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
 import { getMyBookings } from "../api/services";
 import { format } from "date-fns";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
@@ -16,26 +18,53 @@ import Icon from "../components/Icon";
 
 const BookingsScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const isOwner = user?.activeRole === "owner";
+  const { onBookingUpdate } = useSocket();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(isOwner ? "requests" : "upcoming");
   const [refreshing, setRefreshing] = useState(false);
+
+  // Refresh bookings when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchBookings();
+    }, []),
+  );
+
+  // Listen for real-time booking updates
+  useEffect(() => {
+    const unsubscribe = onBookingUpdate((data) => {
+      console.log("BookingsScreen: Received booking_update, refreshing...");
+      fetchBookings();
+    });
+    return unsubscribe;
+  }, [onBookingUpdate]);
 
   useEffect(() => {
     fetchBookings();
-  }, [activeTab, isOwner]);
+  }, []);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
+      // Always fetch as seeker for seeker's booking view
+      // The isOwner check here determines which tab view to show, not the API role
       const params = {
-        role: isOwner ? "owner" : "seeker",
+        role: "seeker",
       };
       const result = await getMyBookings(params);
+      console.log("=== FETCH BOOKINGS RESULT ===");
+      console.log("Total bookings from API:", result.data?.length);
+      if (result.data) {
+        result.data.forEach((b, i) => {
+          console.log(
+            `Booking ${i + 1}: id=${b._id}, status="${b.status}", title="${b.parkingSpace?.title}"`,
+          );
+        });
+      }
       setBookings(result.data || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
+      console.error("Error details:", error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -52,178 +81,100 @@ const BookingsScreen = ({ navigation }) => {
     return statusInfo?.color || COLORS.gray[500];
   };
 
-  const filterBookings = () => {
-    const now = new Date();
-
-    if (isOwner) {
-      // Owner view: filter by tab
-      if (activeTab === "requests") {
-        return bookings.filter((b) => b.status === "pending");
-      } else if (activeTab === "upcoming") {
-        return bookings.filter(
-          (b) =>
-            new Date(b.startTime) >= now && ["confirmed"].includes(b.status),
-        );
-      } else if (activeTab === "past") {
-        return bookings.filter(
-          (b) =>
-            new Date(b.endTime) < now ||
-            ["completed", "cancelled", "rejected"].includes(b.status),
-        );
-      }
-    } else {
-      // Seeker view: original logic
-      if (activeTab === "upcoming") {
-        return bookings.filter(
-          (b) =>
-            new Date(b.startTime) >= now &&
-            ["pending", "confirmed"].includes(b.status),
-        );
-      } else if (activeTab === "past") {
-        return bookings.filter(
-          (b) =>
-            new Date(b.endTime) < now ||
-            ["completed", "cancelled"].includes(b.status),
-        );
-      }
-    }
-    return bookings;
-  };
-
-  const renderBookingItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.bookingCard}
-      onPress={() =>
-        navigation.navigate("BookingDetails", { bookingId: item._id })
-      }
-    >
-      <View style={styles.bookingHeader}>
-        <View style={styles.bookingInfo}>
-          <Text style={styles.parkingTitle} numberOfLines={1}>
-            {item.parkingSpace?.title}
-          </Text>
-          <View style={styles.parkingAddressRow}>
-            <Icon name="mapMarker" size="xs" color={COLORS.gray[500]} />
-            <Text style={styles.parkingAddress} numberOfLines={1}>
-              {item.parkingSpace?.location?.address}
+  const renderBookingItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={styles.bookingCard}
+        onPress={() =>
+          navigation.navigate("BookingDetails", { bookingId: item._id })
+        }
+      >
+        <View style={styles.bookingHeader}>
+          <View style={styles.bookingInfo}>
+            <Text style={styles.parkingTitle} numberOfLines={1}>
+              {item.parkingSpace?.title || "Unknown Parking"}
+            </Text>
+            <View style={styles.parkingAddressRow}>
+              <Icon name="mapMarker" size="xs" color={COLORS.gray[500]} />
+              <Text style={styles.parkingAddress} numberOfLines={1}>
+                {item.parkingSpace?.location?.address ||
+                  "Address not available"}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: getStatusColor(item.status) + "20" },
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                { color: getStatusColor(item.status) },
+              ]}
+            >
+              {item.status}
             </Text>
           </View>
-          {isOwner && item.seeker && (
-            <View style={styles.seekerInfoRow}>
-              <Icon name="user" size="xs" color={COLORS.gray[500]} />
-              <Text style={styles.seekerName}>{item.seeker?.name}</Text>
+        </View>
+
+        <View style={styles.bookingDetails}>
+          <View style={styles.detailItem}>
+            <View style={styles.detailLabelRow}>
+              <Icon name="calendar" size="xs" color={COLORS.gray[500]} />
+              <Text style={styles.detailLabel}>Date</Text>
             </View>
-          )}
-        </View>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(item.status) + "20" },
-          ]}
-        >
-          <Text
-            style={[styles.statusText, { color: getStatusColor(item.status) }]}
-          >
-            {item.status}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.bookingDetails}>
-        <View style={styles.detailItem}>
-          <View style={styles.detailLabelRow}>
-            <Icon name="calendar" size="xs" color={COLORS.gray[500]} />
-            <Text style={styles.detailLabel}>Date</Text>
+            <Text style={styles.detailValue}>
+              {item.startTime
+                ? format(new Date(item.startTime), "MMM d, yyyy")
+                : "N/A"}
+            </Text>
           </View>
-          <Text style={styles.detailValue}>
-            {format(new Date(item.startTime), "MMM d, yyyy")}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <View style={styles.detailLabelRow}>
-            <Icon name="clock" size="xs" color={COLORS.gray[500]} />
-            <Text style={styles.detailLabel}>Time</Text>
+          <View style={styles.detailItem}>
+            <View style={styles.detailLabelRow}>
+              <Icon name="clock" size="xs" color={COLORS.gray[500]} />
+              <Text style={styles.detailLabel}>Time</Text>
+            </View>
+            <Text style={styles.detailValue}>
+              {item.startTime && item.endTime
+                ? `${format(new Date(item.startTime), "h:mm a")} - ${format(new Date(item.endTime), "h:mm a")}`
+                : "N/A"}
+            </Text>
           </View>
-          <Text style={styles.detailValue}>
-            {format(new Date(item.startTime), "h:mm a")} -{" "}
-            {format(new Date(item.endTime), "h:mm a")}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <View style={styles.detailLabelRow}>
-            <Icon name="money" size="xs" color={COLORS.gray[500]} />
-            <Text style={styles.detailLabel}>Total</Text>
+          <View style={styles.detailItem}>
+            <View style={styles.detailLabelRow}>
+              <Icon name="money" size="xs" color={COLORS.gray[500]} />
+              <Text style={styles.detailLabel}>Total</Text>
+            </View>
+            <Text style={styles.detailValue}>
+              ${item.totalPrice?.toFixed(2) || "0.00"}
+            </Text>
           </View>
-          <Text style={styles.detailValue}>${item.totalPrice?.toFixed(2)}</Text>
         </View>
-      </View>
 
-      {item.vehicleInfo?.licensePlate && (
-        <View style={styles.vehicleInfo}>
-          <Icon name="car" size="sm" color={COLORS.gray[600]} />
-          <Text style={styles.vehicleText}>
-            {item.vehicleInfo.make} {item.vehicleInfo.model} •{" "}
-            {item.vehicleInfo.licensePlate}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+        {item.vehicleInfo?.licensePlate && (
+          <View style={styles.vehicleInfo}>
+            <Icon name="car" size="sm" color={COLORS.gray[600]} />
+            <Text style={styles.vehicleText}>
+              {item.vehicleInfo.make} {item.vehicleInfo.model} •{" "}
+              {item.vehicleInfo.licensePlate}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
-  const filteredBookings = filterBookings();
+  console.log("=== RENDER DEBUG ===");
+  console.log("loading:", loading);
+  console.log("bookings length:", bookings.length);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {isOwner ? "Booking Requests" : "My Bookings"}
-        </Text>
-      </View>
-
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        {isOwner && (
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "requests" && styles.tabActive]}
-            onPress={() => setActiveTab("requests")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "requests" && styles.tabTextActive,
-              ]}
-            >
-              Requests
-            </Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "upcoming" && styles.tabActive]}
-          onPress={() => setActiveTab("upcoming")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "upcoming" && styles.tabTextActive,
-            ]}
-          >
-            {isOwner ? "Confirmed" : "Upcoming"}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "past" && styles.tabActive]}
-          onPress={() => setActiveTab("past")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "past" && styles.tabTextActive,
-            ]}
-          >
-            Past
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Bookings</Text>
       </View>
 
       {/* Bookings List */}
@@ -231,60 +182,29 @@ const BookingsScreen = ({ navigation }) => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
+      ) : bookings.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Icon name="clipboard" size="4xl" color={COLORS.gray[300]} />
+          <Text style={styles.emptyText}>No bookings found</Text>
+          <Text style={styles.emptySubtext}>
+            Find a parking space and make a reservation
+          </Text>
+          <TouchableOpacity
+            style={styles.findParkingButton}
+            onPress={() => navigation.navigate("Home")}
+          >
+            <Text style={styles.findParkingText}>Find Parking</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
-          data={filteredBookings}
+          data={bookings}
           renderItem={renderBookingItem}
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Icon
-                name={isOwner ? "inbox" : "clipboard"}
-                size="4xl"
-                color={COLORS.gray[300]}
-              />
-              <Text style={styles.emptyText}>
-                {isOwner
-                  ? activeTab === "requests"
-                    ? "No pending requests"
-                    : activeTab === "upcoming"
-                      ? "No confirmed bookings"
-                      : "No past bookings"
-                  : `No ${activeTab} bookings`}
-              </Text>
-              <Text style={styles.emptySubtext}>
-                {isOwner
-                  ? activeTab === "requests"
-                    ? "New booking requests will appear here"
-                    : activeTab === "upcoming"
-                      ? "Confirmed bookings will appear here"
-                      : "Completed bookings will appear here"
-                  : activeTab === "upcoming"
-                    ? "Find a parking space and make a reservation"
-                    : "Your completed bookings will appear here"}
-              </Text>
-              {!isOwner && activeTab === "upcoming" && (
-                <TouchableOpacity
-                  style={styles.findParkingButton}
-                  onPress={() => navigation.navigate("Home")}
-                >
-                  <Text style={styles.findParkingText}>Find Parking</Text>
-                </TouchableOpacity>
-              )}
-              {isOwner && activeTab === "requests" && (
-                <TouchableOpacity
-                  style={styles.findParkingButton}
-                  onPress={() => navigation.navigate("MyListings")}
-                >
-                  <Text style={styles.findParkingText}>Manage Listings</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          }
         />
       )}
     </SafeAreaView>
@@ -306,31 +226,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: COLORS.text.primary,
   },
-  tabs: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: COLORS.gray[50],
-  },
-  tabActive: {
-    backgroundColor: COLORS.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.text.secondary,
-  },
-  tabTextActive: {
-    color: COLORS.white,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -338,6 +233,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    flexGrow: 1,
   },
   bookingCard: {
     backgroundColor: COLORS.card,

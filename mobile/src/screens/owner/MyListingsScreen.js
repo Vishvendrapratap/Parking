@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getMyListings,
+  getMyBookings,
   updateParkingSpace,
   deleteParkingSpace,
 } from "../../api/services";
@@ -20,6 +21,7 @@ import Icon from "../../components/Icon";
 
 const MyListingsScreen = ({ navigation }) => {
   const [listings, setListings] = useState([]);
+  const [pendingByListing, setPendingByListing] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -30,8 +32,25 @@ const MyListingsScreen = ({ navigation }) => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const result = await getMyListings();
-      setListings(result.data || []);
+      const [listingsResult, bookingsResult] = await Promise.all([
+        getMyListings(),
+        getMyBookings({ role: "owner", status: "pending" }),
+      ]);
+
+      setListings(listingsResult.data || []);
+
+      // Group pending bookings by parking space ID
+      const pendingMap = {};
+      (bookingsResult.data || []).forEach((booking) => {
+        const parkingId = booking.parkingSpace?._id || booking.parkingSpace;
+        if (parkingId) {
+          if (!pendingMap[parkingId]) {
+            pendingMap[parkingId] = [];
+          }
+          pendingMap[parkingId].push(booking);
+        }
+      });
+      setPendingByListing(pendingMap);
     } catch (error) {
       console.error("Error fetching listings:", error);
     } finally {
@@ -86,9 +105,27 @@ const MyListingsScreen = ({ navigation }) => {
 
   const renderListingItem = ({ item }) => {
     const sizeInfo = PARKING_SIZES.find((s) => s.value === item.parkingSize);
+    const pendingRequests = pendingByListing[item._id] || [];
+    const pendingCount = pendingRequests.length;
 
     return (
       <View style={styles.listingCard}>
+        {/* Pending Badge */}
+        {pendingCount > 0 && (
+          <TouchableOpacity
+            style={styles.pendingBadge}
+            onPress={() =>
+              navigation.navigate("BookingDetails", {
+                bookingId: pendingRequests[0]._id,
+              })
+            }
+          >
+            <Icon name="clock" size="xs" color={COLORS.white} />
+            <Text style={styles.pendingBadgeText}>
+              {pendingCount} Pending Request{pendingCount > 1 ? "s" : ""}
+            </Text>
+          </TouchableOpacity>
+        )}
         {/* Image/Icon */}
         <View style={styles.listingImage}>
           {item.images?.[0] ? (
@@ -175,6 +212,23 @@ const MyListingsScreen = ({ navigation }) => {
             {item.status}
           </Text>
         </TouchableOpacity>
+
+        {/* Pending Requests Action Button */}
+        {pendingCount > 0 && (
+          <TouchableOpacity
+            style={styles.viewRequestsButton}
+            onPress={() =>
+              navigation.navigate("BookingDetails", {
+                bookingId: pendingRequests[0]._id,
+              })
+            }
+          >
+            <Icon name="clipboard" size="sm" color={COLORS.white} />
+            <Text style={styles.viewRequestsText}>
+              View {pendingCount} Request{pendingCount > 1 ? "s" : ""}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Actions */}
         <View style={styles.actions}>
@@ -435,6 +489,39 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: "600",
+  },
+  pendingBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 1,
+  },
+  pendingBadgeText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  viewRequestsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.accent,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  viewRequestsText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 6,
   },
 });
 

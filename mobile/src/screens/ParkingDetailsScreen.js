@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { getParkingSpace } from "../api/services";
+import { useAuth } from "../contexts/AuthContext";
 import { COLORS, PARKING_SIZES, AMENITIES } from "../constants/config";
 import Icon from "../components/Icon";
 
@@ -21,6 +22,7 @@ const { width } = Dimensions.get("window");
 
 const ParkingDetailsScreen = ({ route, navigation }) => {
   const { parkingId } = route.params;
+  const { user } = useAuth();
   const [parking, setParking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -49,6 +51,13 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
   };
 
   const handleBookNow = () => {
+    // Check if user is the owner of this parking space
+    const isOwnListing =
+      parking.owner?._id === user?._id || parking.owner === user?._id;
+    if (isOwnListing) {
+      Alert.alert("Cannot Book", "You cannot book your own parking space.");
+      return;
+    }
     navigation.navigate("Booking", { parking });
   };
 
@@ -285,18 +294,29 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.bottomPrice}>${parking.pricePerHour}</Text>
           <Text style={styles.bottomPriceUnit}>/hour</Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.bookButton,
-            parking.status !== "available" && styles.bookButtonDisabled,
-          ]}
-          onPress={handleBookNow}
-          disabled={parking.status !== "available"}
-        >
-          <Text style={styles.bookButtonText}>
-            {parking.status === "available" ? "Book Now" : "Not Available"}
-          </Text>
-        </TouchableOpacity>
+        {(() => {
+          const isOwnListing =
+            parking.owner?._id === user?._id || parking.owner === user?._id;
+          const isDisabled = parking.status !== "available" || isOwnListing;
+          const buttonText = isOwnListing
+            ? "Your Listing"
+            : parking.status === "available"
+              ? "Book Now"
+              : "Not Available";
+
+          return (
+            <TouchableOpacity
+              style={[
+                styles.bookButton,
+                isDisabled && styles.bookButtonDisabled,
+              ]}
+              onPress={handleBookNow}
+              disabled={isDisabled}
+            >
+              <Text style={styles.bookButtonText}>{buttonText}</Text>
+            </TouchableOpacity>
+          );
+        })()}
       </View>
     </SafeAreaView>
   );

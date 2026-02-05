@@ -1,10 +1,14 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 
 import { useAuth } from "../contexts/AuthContext";
+import { NotificationProvider } from "../contexts/NotificationContext";
 import { COLORS } from "../constants/config";
 import { TabIcon } from "../components/Icon";
 
@@ -87,8 +91,11 @@ const OwnerTabs = () => (
     })}
   >
     <Tab.Screen name="Dashboard" component={OwnerDashboardScreen} />
-    <Tab.Screen name="Listings" component={MyListingsScreen} />
-    <Tab.Screen name="Bookings" component={BookingsScreen} />
+    <Tab.Screen
+      name="My Listings"
+      component={MyListingsScreen}
+      options={{ tabBarLabel: "My Listings" }}
+    />
     <Tab.Screen name="Chat" component={ChatListScreen} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
@@ -140,14 +147,17 @@ const LoadingScreen = () => (
 // Main App Navigator
 const AppNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
+  const navigationRef = useNavigationContainerRef();
 
   if (loading) {
     return <LoadingScreen />;
   }
 
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <MainStack /> : <AuthStack />}
+    <NavigationContainer ref={navigationRef}>
+      <NotificationProvider navigation={navigationRef}>
+        {isAuthenticated ? <MainStack /> : <AuthStack />}
+      </NotificationProvider>
     </NavigationContainer>
   );
 };

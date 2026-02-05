@@ -33,6 +33,7 @@ const initializeSocket = (server) => {
 
     // Join user's personal room
     socket.join(`user_${socket.userId}`);
+    console.log(`User ${socket.userId} joined room: user_${socket.userId}`);
 
     // Join conversation room
     socket.on("join_conversation", (conversationId) => {

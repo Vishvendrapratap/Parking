@@ -44,7 +44,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleSwitchRole = async () => {
-    const newRole = user?.activeRole === "seeker" ? "owner" : "seeker";
+    const newRole = user?.role === "seeker" ? "owner" : "seeker";
     const result = await switchRole(newRole);
     if (result.success) {
       Alert.alert("Success", `Switched to ${newRole} mode`);
@@ -98,12 +98,12 @@ const ProfileScreen = ({ navigation }) => {
           <View style={styles.roleBadge}>
             <View style={styles.roleContent}>
               <Icon
-                name={displayUser?.activeRole === "owner" ? "home" : "search"}
+                name={displayUser?.role === "owner" ? "home" : "search"}
                 size="sm"
                 color={COLORS.primary}
               />
               <Text style={styles.roleText}>
-                {displayUser?.activeRole === "owner"
+                {displayUser?.role === "owner"
                   ? "Space Owner"
                   : "Parking Seeker"}
               </Text>
@@ -156,16 +156,16 @@ const ProfileScreen = ({ navigation }) => {
               <Icon name="sync" size="lg" color={COLORS.text.secondary} />
             </View>
             <Text style={styles.menuText}>
-              Switch to {user?.activeRole === "seeker" ? "Owner" : "Seeker"}
+              Switch to {user?.role === "seeker" ? "Owner" : "Seeker"}
             </Text>
             <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
-          {user?.activeRole === "owner" && (
+          {user?.role === "owner" && (
             <>
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={() => navigation.navigate("MyListings")}
+                onPress={() => navigation.navigate("My Listings")}
               >
                 <View style={styles.menuIcon}>
                   <Icon

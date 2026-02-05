@@ -161,9 +161,17 @@ export const SocketProvider = ({ children }) => {
   const onBookingUpdate = useCallback(
     (callback) => {
       if (socket) {
-        socket.on("booking_update", callback);
-        return () => socket.off("booking_update", callback);
+        console.log("Registering booking_update listener");
+        socket.on("booking_update", (data) => {
+          console.log("Socket received booking_update:", data);
+          callback(data);
+        });
+        return () => {
+          console.log("Unregistering booking_update listener");
+          socket.off("booking_update", callback);
+        };
       }
+      console.log("No socket available for booking_update listener");
       return () => {};
     },
     [socket],
@@ -172,9 +180,17 @@ export const SocketProvider = ({ children }) => {
   const onNewBooking = useCallback(
     (callback) => {
       if (socket) {
-        socket.on("new_booking", callback);
-        return () => socket.off("new_booking", callback);
+        console.log("Registering new_booking listener");
+        socket.on("new_booking", (data) => {
+          console.log("Socket received new_booking:", data);
+          callback(data);
+        });
+        return () => {
+          console.log("Unregistering new_booking listener");
+          socket.off("new_booking", callback);
+        };
       }
+      console.log("No socket available for new_booking listener");
       return () => {};
     },
     [socket],

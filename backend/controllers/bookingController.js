@@ -19,6 +19,14 @@ exports.createBooking = async (req, res) => {
       });
     }
 
+    // Check if user is trying to book their own parking space
+    if (parkingSpace.owner.toString() === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot book your own parking space",
+      });
+    }
+
     if (parkingSpace.status !== "available") {
       return res.status(400).json({
         success: false,
@@ -93,9 +101,20 @@ exports.getBookings = async (req, res) => {
   try {
     const { status, role, page = 1, limit = 20 } = req.query;
 
+    console.log(
+      "getBookings called - user:",
+      req.user.id,
+      "role param:",
+      role,
+      "user.role:",
+      req.user.role,
+    );
+
     const userRole = role || (req.user.role === "owner" ? "owner" : "seeker");
     const query =
       userRole === "owner" ? { owner: req.user.id } : { seeker: req.user.id };
+
+    console.log("Query being used:", JSON.stringify(query));
 
     if (status) {
       query.status = status;
@@ -109,6 +128,13 @@ exports.getBookings = async (req, res) => {
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
 
+    console.log("Found bookings:", bookings.length);
+    bookings.forEach((b, i) => {
+      console.log(
+        `  Booking ${i + 1}: id=${b._id}, status="${b.status}", title="${b.parkingSpace?.title}"`,
+      );
+    });
+
     const total = await Booking.countDocuments(query);
 
     res.status(200).json({
@@ -119,6 +145,7 @@ exports.getBookings = async (req, res) => {
       data: bookings,
     });
   } catch (error) {
+    console.error("Error in getBookings:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching bookings",
@@ -236,7 +263,11 @@ exports.updateBookingStatus = async (req, res) => {
 
     // Notify seeker
     const io = req.app.get("io");
-    io.to(`user_${booking.seeker}`).emit("booking_update", {
+    const seekerId = booking.seeker.toString();
+    console.log(
+      `Emitting booking_update to user_${seekerId}, status: ${status}`,
+    );
+    io.to(`user_${seekerId}`).emit("booking_update", {
       bookingId: booking._id,
       status,
       message: `Your booking has been ${status}`,

@@ -13,11 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { format } from "date-fns";
 import { getBooking, updateBookingStatus } from "../api/services";
+import { useAuth } from "../contexts/AuthContext";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
 import Icon from "../components/Icon";
 
 const BookingDetailsScreen = ({ route, navigation }) => {
   const { bookingId } = route.params;
+  const { user } = useAuth();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -65,18 +67,84 @@ const BookingDetailsScreen = ({ route, navigation }) => {
     );
   };
 
+  const handleApproveBooking = () => {
+    Alert.alert(
+      "Approve Booking",
+      "Are you sure you want to approve this booking request?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Approve",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await updateBookingStatus(bookingId, "confirmed");
+              setBooking({ ...booking, status: "confirmed" });
+              Alert.alert("Success", "Booking approved successfully");
+            } catch (error) {
+              Alert.alert("Error", "Failed to approve booking");
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleRejectBooking = () => {
+    Alert.alert(
+      "Reject Booking",
+      "Are you sure you want to reject this booking request?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reject",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await updateBookingStatus(bookingId, "rejected");
+              setBooking({ ...booking, status: "rejected" });
+              Alert.alert("Success", "Booking rejected");
+            } catch (error) {
+              Alert.alert("Error", "Failed to reject booking");
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const openNavigation = () => {
     const { coordinates } = booking.parkingSpace.location;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates[1]},${coordinates[0]}`;
     Linking.openURL(url);
   };
 
+  // Determine if current user is the owner of this booking's parking space
+  const isOwner = () => {
+    const ownerId = booking?.owner?._id || booking?.owner;
+    return ownerId === user?._id || ownerId === user?.id;
+  };
+
   const handleChat = () => {
-    navigation.navigate("ChatRoom", {
-      receiverId: booking.parkingSpace.owner._id,
-      receiverName: booking.parkingSpace.owner.name,
-      parkingSpaceId: booking.parkingSpace._id,
-    });
+    // If owner, chat with seeker; if seeker, chat with owner
+    if (isOwner()) {
+      navigation.navigate("ChatRoom", {
+        receiverId: booking.seeker?._id || booking.seeker,
+        receiverName: booking.seeker?.name || "Seeker",
+        parkingSpaceId: booking.parkingSpace._id,
+      });
+    } else {
+      navigation.navigate("ChatRoom", {
+        receiverId: booking.parkingSpace.owner?._id || booking.owner,
+        receiverName: booking.parkingSpace.owner?.name || "Owner",
+        parkingSpaceId: booking.parkingSpace._id,
+      });
+    }
   };
 
   const getStatusColor = (status) => {
@@ -85,10 +153,17 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   };
 
   const canCancel = () => {
+    // Only seeker can cancel, and only pending/confirmed bookings before start time
     return (
+      !isOwner() &&
       ["pending", "confirmed"].includes(booking?.status) &&
       new Date(booking?.startTime) > new Date()
     );
+  };
+
+  const canApproveOrReject = () => {
+    // Only owner can approve/reject, and only pending bookings
+    return isOwner() && booking?.status === "pending";
   };
 
   if (loading) {
@@ -174,7 +249,9 @@ const BookingDetailsScreen = ({ route, navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton} onPress={handleChat}>
               <Icon name="comment" size="md" color={COLORS.primary} />
-              <Text style={styles.actionButtonText}> Chat Owner</Text>
+              <Text style={styles.actionButtonText}>
+                {isOwner() ? " Chat Seeker" : " Chat Owner"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -293,7 +370,47 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Cancel Button */}
+        {/* Owner Action Buttons - Approve/Reject */}
+        {canApproveOrReject() && (
+          <View style={styles.ownerActions}>
+            <TouchableOpacity
+              style={[
+                styles.rejectButton,
+                actionLoading && styles.buttonDisabled,
+              ]}
+              onPress={handleRejectBooking}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <ActivityIndicator color={COLORS.error} />
+              ) : (
+                <>
+                  <Icon name="xmark" size="md" color={COLORS.error} />
+                  <Text style={styles.rejectButtonText}> Reject</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.approveButton,
+                actionLoading && styles.buttonDisabled,
+              ]}
+              onPress={handleApproveBooking}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <>
+                  <Icon name="check" size="md" color={COLORS.white} />
+                  <Text style={styles.approveButtonText}> Approve</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Seeker Cancel Button */}
         {canCancel() && (
           <TouchableOpacity
             style={[
@@ -309,6 +426,30 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               <Text style={styles.cancelButtonText}>Cancel Booking</Text>
             )}
           </TouchableOpacity>
+        )}
+
+        {/* Seeker Info for Owner */}
+        {isOwner() && booking.seeker && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Seeker Information</Text>
+            <View style={styles.seekerInfo}>
+              <Icon name="user" size="2xl" color={COLORS.primary} />
+              <View style={styles.seekerDetails}>
+                <Text style={styles.seekerName}>{booking.seeker.name}</Text>
+                {booking.seeker.phone && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      Linking.openURL(`tel:${booking.seeker.phone}`)
+                    }
+                  >
+                    <Text style={styles.seekerPhone}>
+                      {booking.seeker.phone}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          </View>
         )}
 
         <View style={styles.bottomSpacer} />
@@ -543,6 +684,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: COLORS.error,
+  },
+  ownerActions: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginTop: 24,
+    gap: 12,
+  },
+  approveButton: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: COLORS.secondary,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  approveButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  rejectButton: {
+    flex: 1,
+    flexDirection: "row",
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rejectButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.error,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  seekerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
+    padding: 12,
+    borderRadius: 8,
+  },
+  seekerDetails: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  seekerName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  seekerPhone: {
+    fontSize: 14,
+    color: COLORS.primary,
+    marginTop: 4,
   },
   bottomSpacer: {
     height: 32,
