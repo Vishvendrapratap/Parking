@@ -18,7 +18,7 @@ const LoginPage = () => {
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     if (!phone || phone.length < 10) {
       setError("Please enter a valid 10-digit phone number");
       return;
@@ -85,9 +85,7 @@ const LoginPage = () => {
           <h2 className="mt-4 text-3xl font-bold text-gray-900">
             Welcome back
           </h2>
-          <p className="mt-2 text-gray-600">
-            Sign in with your phone number
-          </p>
+          <p className="mt-2 text-gray-600">Sign in with your phone number</p>
         </div>
       </div>
 
@@ -118,7 +116,9 @@ const LoginPage = () => {
                     type="tel"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/[^0-9]/g, ""))
+                    }
                     maxLength={10}
                     className="input-field rounded-l-none"
                     placeholder="Enter 10-digit number"
@@ -161,7 +161,9 @@ const LoginPage = () => {
                   inputMode="numeric"
                   required
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/[^0-9]/g, ""))
+                  }
                   maxLength={6}
                   className="input-field text-center text-2xl tracking-widest"
                   placeholder="000000"

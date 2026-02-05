@@ -56,7 +56,11 @@ const OTPScreen = ({ route, navigation }) => {
 
     setLoading(true);
     // Pass registration data if this is a new registration
-    const result = await verifyOTP(phone, otpCode, isRegistration ? { name, email, role } : null);
+    const result = await verifyOTP(
+      phone,
+      otpCode,
+      isRegistration ? { name, email, role } : null,
+    );
     setLoading(false);
 
     if (!result.success) {
@@ -242,4 +246,3 @@ const styles = StyleSheet.create({
 });
 
 export default OTPScreen;
-

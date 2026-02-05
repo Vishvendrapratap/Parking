@@ -30,7 +30,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchDashboard();
-    }, [])
+    }, []),
   );
 
   const fetchDashboard = async () => {

@@ -19,7 +19,7 @@ const RegisterScreen = ({ navigation, route }) => {
   const { sendOTP } = useAuth();
   // Pre-fill phone if coming from login redirect
   const prefilledPhone = route.params?.phone || "";
-  
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState(prefilledPhone);
@@ -44,12 +44,12 @@ const RegisterScreen = ({ navigation, route }) => {
     setLoading(false);
 
     if (result.success) {
-      navigation.navigate("OTP", { 
-        phone: formattedPhone, 
+      navigation.navigate("OTP", {
+        phone: formattedPhone,
         name: name.trim(),
         email: email.trim() || undefined,
         role: role,
-        isRegistration: true 
+        isRegistration: true,
       });
     } else {
       Alert.alert("Error", result.message);
@@ -160,9 +160,7 @@ const RegisterScreen = ({ navigation, route }) => {
                   placeholder="Enter 10-digit number"
                   placeholderTextColor={COLORS.gray[400]}
                   value={phone}
-                  onChangeText={(text) =>
-                    setPhone(text.replace(/[^0-9]/g, ""))
-                  }
+                  onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
                   keyboardType="phone-pad"
                   maxLength={10}
                 />
@@ -347,4 +345,3 @@ const styles = StyleSheet.create({
 });
 
 export default RegisterScreen;
-

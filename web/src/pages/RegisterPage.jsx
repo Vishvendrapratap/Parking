@@ -289,7 +289,9 @@ const RegisterPage = () => {
                     inputMode="numeric"
                     required
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                    onChange={(e) =>
+                      setOtp(e.target.value.replace(/[^0-9]/g, ""))
+                    }
                     maxLength={6}
                     className="input-field text-center text-2xl tracking-widest"
                     placeholder="000000"

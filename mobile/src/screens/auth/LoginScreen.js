@@ -44,7 +44,7 @@ const LoginScreen = ({ navigation }) => {
               onPress: () => navigation.navigate("Register", { phone: phone }),
             },
             { text: "Cancel", style: "cancel" },
-          ]
+          ],
         );
       } else {
         navigation.navigate("OTP", { phone: formattedPhone });
@@ -80,9 +80,7 @@ const LoginScreen = ({ navigation }) => {
                   placeholder="Enter 10-digit number"
                   placeholderTextColor={COLORS.gray[400]}
                   value={phone}
-                  onChangeText={(text) =>
-                    setPhone(text.replace(/[^0-9]/g, ""))
-                  }
+                  onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
                   keyboardType="phone-pad"
                   maxLength={10}
                 />

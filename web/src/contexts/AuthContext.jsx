@@ -109,8 +109,8 @@ export const AuthProvider = ({ children }) => {
   const sendOTP = async (phone, isRegistration = false) => {
     try {
       const response = await authService.sendOTP(phone, isRegistration);
-      return { 
-        success: true, 
+      return {
+        success: true,
         isNewUser: response.data.isNewUser,
         requiresRegistration: response.data.requiresRegistration,
       };
@@ -122,7 +122,11 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOTP = async (phone, otp, registrationData = null) => {
     try {
-      const response = await authService.verifyOTP(phone, otp, registrationData);
+      const response = await authService.verifyOTP(
+        phone,
+        otp,
+        registrationData,
+      );
       const { token, user: userData } = response.data;
 
       localStorage.setItem("token", token);
@@ -134,7 +138,8 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || "OTP verification failed";
+      const message =
+        error.response?.data?.message || "OTP verification failed";
       return { success: false, message };
     }
   };

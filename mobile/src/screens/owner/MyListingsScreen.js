@@ -31,7 +31,7 @@ const MyListingsScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchListings();
-    }, [])
+    }, []),
   );
 
   const fetchListings = async () => {

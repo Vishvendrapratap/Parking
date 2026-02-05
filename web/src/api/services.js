@@ -4,7 +4,8 @@ import api from "./axios";
 export const authService = {
   login: (email, password) => api.post("/auth/login", { email, password }),
   register: (data) => api.post("/auth/register", data),
-  sendOTP: (phone, isRegistration = false) => api.post("/auth/send-otp", { phone, isRegistration }),
+  sendOTP: (phone, isRegistration = false) =>
+    api.post("/auth/send-otp", { phone, isRegistration }),
   verifyOTP: (phone, otp, registrationData = null) => {
     const payload = { phone, otp };
     if (registrationData) {
