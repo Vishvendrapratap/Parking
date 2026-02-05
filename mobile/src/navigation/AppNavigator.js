@@ -9,7 +9,10 @@ import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 
 import { useAuth } from "../contexts/AuthContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
-import { UnreadMessagesProvider, useUnreadMessages } from "../contexts/UnreadMessagesContext";
+import {
+  UnreadMessagesProvider,
+  useUnreadMessages,
+} from "../contexts/UnreadMessagesContext";
 import { COLORS } from "../constants/config";
 import { TabIcon } from "../components/Icon";
 
@@ -58,15 +61,15 @@ const AuthStack = () => (
 // Seeker Tab Navigator
 const SeekerTabs = () => {
   const { unreadCount } = useUnreadMessages();
-  
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused }) => (
-          <TabIcon 
-            name={route.name} 
-            focused={focused} 
+          <TabIcon
+            name={route.name}
+            focused={focused}
             badge={route.name === "Chat" ? unreadCount : 0}
           />
         ),
@@ -88,14 +91,14 @@ const SeekerTabs = () => {
 // Owner Tab Navigator
 const OwnerTabs = () => {
   const { unreadCount } = useUnreadMessages();
-  
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused }) => (
-          <TabIcon 
-            name={route.name} 
+          <TabIcon
+            name={route.name}
             focused={focused}
             badge={route.name === "Chat" ? unreadCount : 0}
           />

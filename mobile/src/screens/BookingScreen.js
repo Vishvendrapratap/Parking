@@ -30,7 +30,7 @@ const BookingScreen = ({ route, navigation }) => {
     color: "",
   });
   const [specialRequests, setSpecialRequests] = useState("");
-  
+
   // Date/Time picker state
   const [startTime, setStartTime] = useState(addMinutes(new Date(), 30)); // Default to 30 mins from now
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -49,21 +49,24 @@ const BookingScreen = ({ route, navigation }) => {
     if (Platform.OS === "android") {
       setShowDatePicker(false);
     }
-    
+
     if (selectedDate) {
       // Keep the time part from current startTime, just change the date
       const newDateTime = new Date(selectedDate);
       newDateTime.setHours(startTime.getHours());
       newDateTime.setMinutes(startTime.getMinutes());
-      
+
       // Ensure the selected datetime is not in the past
       if (isBefore(newDateTime, minStartTime)) {
-        Alert.alert("Invalid Time", "Please select a time at least 15 minutes from now.");
+        Alert.alert(
+          "Invalid Time",
+          "Please select a time at least 15 minutes from now.",
+        );
         return;
       }
-      
+
       setStartTime(newDateTime);
-      
+
       // On Android, show time picker after date selection
       if (Platform.OS === "android" && pickerMode === "date") {
         setTimeout(() => {
@@ -78,18 +81,21 @@ const BookingScreen = ({ route, navigation }) => {
     if (Platform.OS === "android") {
       setShowTimePicker(false);
     }
-    
+
     if (selectedTime) {
       const newDateTime = new Date(startTime);
       newDateTime.setHours(selectedTime.getHours());
       newDateTime.setMinutes(selectedTime.getMinutes());
-      
+
       // Ensure the selected datetime is not in the past
       if (isBefore(newDateTime, minStartTime)) {
-        Alert.alert("Invalid Time", "Please select a time at least 15 minutes from now.");
+        Alert.alert(
+          "Invalid Time",
+          "Please select a time at least 15 minutes from now.",
+        );
         return;
       }
-      
+
       setStartTime(newDateTime);
     }
   };
@@ -194,9 +200,9 @@ const BookingScreen = ({ route, navigation }) => {
         {/* Duration Selection */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Date & Time</Text>
-          
+
           {/* Date/Time Selection */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.dateTimeSelector}
             onPress={openDateTimePicker}
           >
@@ -270,11 +276,7 @@ const BookingScreen = ({ route, navigation }) => {
 
         {/* iOS Date Picker Modal */}
         {Platform.OS === "ios" && showDatePicker && (
-          <Modal
-            visible={showDatePicker}
-            transparent
-            animationType="slide"
-          >
+          <Modal visible={showDatePicker} transparent animationType="slide">
             <View style={styles.modalOverlay}>
               <View style={styles.pickerModal}>
                 <View style={styles.pickerHeader}>

@@ -46,7 +46,12 @@ const formatDistance = (distanceKm) => {
 };
 
 const SearchScreen = ({ navigation }) => {
-  const { location, getCurrentLocation, requestPermission, getAddressFromCoords } = useLocation();
+  const {
+    location,
+    getCurrentLocation,
+    requestPermission,
+    getAddressFromCoords,
+  } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -270,12 +275,12 @@ const SearchScreen = ({ navigation }) => {
 
       // First, request location permission
       const hasPermission = await requestPermission();
-      
+
       if (!hasPermission) {
         Alert.alert(
           "Location Permission Required",
           "Please enable location access in your device settings to use 'Search Near Me' feature.",
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
         setLoading(false);
         return;
@@ -287,7 +292,7 @@ const SearchScreen = ({ navigation }) => {
       if (!coords) {
         Alert.alert(
           "Location Error",
-          "Unable to get your current location. Please ensure GPS is enabled and try again."
+          "Unable to get your current location. Please ensure GPS is enabled and try again.",
         );
         setLoading(false);
         return;
@@ -296,10 +301,14 @@ const SearchScreen = ({ navigation }) => {
       // Get human-readable address from coordinates
       let addressText = "My Current Location";
       try {
-        const addressResult = await getAddressFromCoords(coords.latitude, coords.longitude);
+        const addressResult = await getAddressFromCoords(
+          coords.latitude,
+          coords.longitude,
+        );
         if (addressResult) {
           const parts = [];
-          if (addressResult.name && addressResult.name !== addressResult.street) parts.push(addressResult.name);
+          if (addressResult.name && addressResult.name !== addressResult.street)
+            parts.push(addressResult.name);
           if (addressResult.street) parts.push(addressResult.street);
           if (addressResult.city) parts.push(addressResult.city);
           if (addressResult.region) parts.push(addressResult.region);
@@ -315,7 +324,7 @@ const SearchScreen = ({ navigation }) => {
         longitude: coords.longitude,
         address: addressText,
       });
-      
+
       // Skip suggestions when setting query programmatically
       skipSuggestionsRef.current = true;
       setSearchQuery(addressText);
@@ -353,7 +362,10 @@ const SearchScreen = ({ navigation }) => {
       setResults(sortedResults);
     } catch (error) {
       console.error("Search near me error:", error);
-      Alert.alert("Error", "Failed to search nearby parking. Please try again.");
+      Alert.alert(
+        "Error",
+        "Failed to search nearby parking. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { getUnreadCount } from "../api/services";
 import { useAuth } from "./AuthContext";
 import { useSocket } from "./SocketContext";
@@ -15,7 +21,7 @@ export const UnreadMessagesProvider = ({ children }) => {
       setUnreadCount(0);
       return;
     }
-    
+
     try {
       const result = await getUnreadCount();
       setUnreadCount(result.data?.unreadCount || 0);
@@ -71,7 +77,9 @@ export const UnreadMessagesProvider = ({ children }) => {
 export const useUnreadMessages = () => {
   const context = useContext(UnreadMessagesContext);
   if (!context) {
-    throw new Error("useUnreadMessages must be used within an UnreadMessagesProvider");
+    throw new Error(
+      "useUnreadMessages must be used within an UnreadMessagesProvider",
+    );
   }
   return context;
 };
