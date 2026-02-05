@@ -52,9 +52,10 @@ const EditListingScreen = ({ route, navigation }) => {
 
   // Helper function to parse address string into components
   const parseAddress = (addressString) => {
-    if (!addressString) return { street: "", city: "", state: "", zipCode: "", country: "India" };
-    
-    const parts = addressString.split(",").map(part => part.trim());
+    if (!addressString)
+      return { street: "", city: "", state: "", zipCode: "", country: "India" };
+
+    const parts = addressString.split(",").map((part) => part.trim());
     return {
       street: parts[0] || "",
       city: parts[1] || "",
