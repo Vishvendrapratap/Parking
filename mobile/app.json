@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Parking App",
-    "slug": "parking-app",
+    "name": "ParkEase",
+    "slug": "parkease",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,19 +14,17 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.parkingapp.mobile",
+      "bundleIdentifier": "com.yourcompany.parkease",
+      "buildNumber": "1",
       "config": {
-        "googleMapsApiKey": "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI"
+        "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY"
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to find nearby parking spaces.",
-        "NSLocationAlwaysUsageDescription": "This app needs access to your location to find nearby parking spaces.",
-        "NSCameraUsageDescription": "This app needs access to your camera to upload photos of parking spaces.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload photos.",
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true,
-          "NSAllowsLocalNetworking": true
-        }
+        "NSLocationWhenInUseUsageDescription": "ParkEase needs your location to find nearby parking spaces and show them on the map.",
+        "NSLocationAlwaysUsageDescription": "ParkEase needs your location to find nearby parking spaces even when the app is in the background.",
+        "NSCameraUsageDescription": "ParkEase needs camera access to let you take photos of your parking space listings.",
+        "NSPhotoLibraryUsageDescription": "ParkEase needs photo library access to let you upload photos of parking spaces.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -34,10 +32,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4F46E5"
       },
-      "package": "com.parkingapp.mobile",
+      "package": "com.yourcompany.parkease",
+      "versionCode": 1,
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI"
+          "apiKey": "YOUR_ANDROID_GOOGLE_MAPS_API_KEY"
         }
       },
       "permissions": [
@@ -45,7 +44,8 @@
         "ACCESS_FINE_LOCATION",
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -55,19 +55,31 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Parking App to use your location."
+          "locationAlwaysAndWhenInUsePermission": "Allow ParkEase to use your location to find nearby parking."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Parking App to access your photos.",
-          "cameraPermission": "Allow Parking App to access your camera."
+          "photosPermission": "Allow ParkEase to access your photos for uploading parking images.",
+          "cameraPermission": "Allow ParkEase to use your camera for taking parking photos."
         }
       ],
       "expo-asset",
       "expo-font",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    },
+    "owner": "your-expo-username",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+    }
   }
 }

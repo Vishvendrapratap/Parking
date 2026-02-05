@@ -128,7 +128,6 @@ const SearchScreen = ({ navigation }) => {
       } else {
         Alert.alert("Error", "Could not get location details. Please try again.");
       }
-      }
     } catch (error) {
       console.error("Select place error:", error);
     } finally {

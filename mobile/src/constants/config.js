@@ -3,25 +3,37 @@
 // For iOS Simulator: use "localhost"
 // For Physical device: use your PC's IP address
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 // Use your PC's actual Wi-Fi IP for physical devices
 // Change this to your current IP address
 const LOCAL_IP = "192.168.1.7";
 
-export const API_URL = __DEV__
+// Production API URL - Update this when you deploy your backend
+const PRODUCTION_API_URL = "https://your-production-api.com/api";
+const PRODUCTION_SOCKET_URL = "https://your-production-api.com";
+
+// Check if running in Expo Go development mode
+const isDevelopment = __DEV__;
+
+export const API_URL = isDevelopment
   ? `http://${LOCAL_IP}:5000/api`
-  : "https://your-production-url.com/api";
+  : PRODUCTION_API_URL;
 
-export const SOCKET_URL = __DEV__
+export const SOCKET_URL = isDevelopment
   ? `http://${LOCAL_IP}:5000`
-  : "https://your-production-url.com";
+  : PRODUCTION_SOCKET_URL;
 
-// Google Maps API Key
-export const GOOGLE_MAPS_API_KEY = "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI";
-// Map defaults
+// Google Maps API Key (use different keys for iOS/Android in production)
+// In production, keys are loaded from app.json config
+export const GOOGLE_MAPS_API_KEY =
+  Constants.expoConfig?.ios?.config?.googleMapsApiKey ||
+  Constants.expoConfig?.android?.config?.googleMaps?.apiKey ||
+  "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI"; // Fallback for development
+// Map defaults (Mumbai, India)
 export const DEFAULT_LOCATION = {
-  latitude: 37.7749,
-  longitude: -122.4194,
+  latitude: 19.076,
+  longitude: 72.8777,
   latitudeDelta: 0.0922,
   longitudeDelta: 0.0421,
 };
