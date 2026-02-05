@@ -15,6 +15,7 @@ import { getMyBookings } from "../api/services";
 import { format } from "date-fns";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
 import Icon from "../components/Icon";
+import Header from "../components/Header";
 
 const BookingsScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -172,10 +173,8 @@ const BookingsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Bookings</Text>
-      </View>
+      {/* Header with Logo */}
+      <Header showLogo={true} />
 
       {/* Bookings List */}
       {loading ? (

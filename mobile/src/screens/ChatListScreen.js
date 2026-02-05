@@ -16,6 +16,7 @@ import { useSocket } from "../contexts/SocketContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { COLORS } from "../constants/config";
 import Icon from "../components/Icon";
+import Header from "../components/Header";
 
 const ChatListScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -189,12 +190,10 @@ const ChatListScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-      </View>
+      {/* Header with Logo */}
+      <Header showLogo={true} />
 
-      {/* Conversations List */}
+      {/* Conversations List */
       <FlatList
         data={conversations}
         renderItem={renderConversationItem}

@@ -14,6 +14,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { getMyProfile } from "../api/services";
 import { COLORS } from "../constants/config";
 import Icon from "../components/Icon";
+import Header from "../components/Header";
 
 const ProfileScreen = ({ navigation }) => {
   const { user, logout, switchRole } = useAuth();
@@ -63,12 +64,10 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header with Logo */}
+      <Header showLogo={true} />
+      
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-        </View>
-
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>

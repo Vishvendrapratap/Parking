@@ -20,6 +20,7 @@ import {
 import { useLocation } from "../hooks/useLocation";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
+import Header from "../components/Header";
 
 const SearchScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
@@ -242,6 +243,9 @@ const SearchScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header with Logo */}
+      <Header showLogo={true} />
+      
       {/* Search Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>

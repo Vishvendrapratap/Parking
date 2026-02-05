@@ -14,6 +14,7 @@ import { useLocation } from "../hooks/useLocation";
 import { searchNearbyParking } from "../api/services";
 import { COLORS, DEFAULT_LOCATION } from "../constants/config";
 import Icon from "../components/Icon";
+import Header from "../components/Header";
 
 const { width, height } = Dimensions.get("window");
 
@@ -114,17 +115,18 @@ const HomeMapScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Find Parking</Text>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={() => navigation.navigate("Search")}
-        >
-          <Icon name="mapMarker" size="sm" color={COLORS.primary} />
-          <Text style={styles.searchButtonText}>Search location...</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Header with Logo */}
+      <Header 
+        showLogo={true}
+        rightComponent={
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => navigation.navigate("Search")}
+          >
+            <Icon name="search" size="sm" color={COLORS.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       {/* Map */}
       <View style={styles.mapContainer}>

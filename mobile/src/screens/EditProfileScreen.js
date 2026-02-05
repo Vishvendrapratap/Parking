@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
-import { updateUserProfile, getUserProfile } from "../api/services";
+import { updateUserProfile, getMyProfile } from "../api/services";
 import { COLORS } from "../constants/config";
 import Icon from "../components/Icon";
 
@@ -35,7 +35,7 @@ const EditProfileScreen = ({ navigation }) => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const result = await getUserProfile();
+      const result = await getMyProfile();
       setProfile({
         name: result.data.name || "",
         email: result.data.email || "",

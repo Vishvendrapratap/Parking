@@ -15,6 +15,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { COLORS } from "../../constants/config";
 import Icon from "../../components/Icon";
+import Header from "../../components/Header";
 
 const { width } = Dimensions.get("window");
 
@@ -56,24 +57,29 @@ const OwnerDashboardScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.name}>{user?.name}</Text>
-          </View>
+      {/* Header with Logo */}
+      <Header 
+        showLogo={true}
+        rightComponent={
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => navigation.navigate("AddListing")}
           >
             <Text style={styles.addButtonText}>+ Add Listing</Text>
           </TouchableOpacity>
+        }
+      />
+      
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.greeting}>Welcome back,</Text>
+          <Text style={styles.name}>{user?.name}</Text>
         </View>
 
         {/* Stats Overview */}
@@ -301,6 +307,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.background,
+  },
+  welcomeSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   header: {
     flexDirection: "row",

@@ -18,6 +18,7 @@ import {
 } from "../../api/services";
 import { COLORS, PARKING_SIZES } from "../../constants/config";
 import Icon from "../../components/Icon";
+import Header from "../../components/Header";
 
 const MyListingsScreen = ({ navigation }) => {
   const [listings, setListings] = useState([]);
@@ -254,20 +255,15 @@ const MyListingsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButtonContainer}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrowLeft" size="md" color={COLORS.text.primary} />
-          <Text style={styles.backButton}> Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Listings</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AddListing")}>
-          <Text style={styles.addButton}>+ Add</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Header with Logo */}
+      <Header 
+        showLogo={true}
+        rightComponent={
+          <TouchableOpacity onPress={() => navigation.navigate("AddListing")}>
+            <Text style={styles.addButton}>+ Add</Text>
+          </TouchableOpacity>
+        }
+      />
 
       {/* Listings */}
       {loading ? (
