@@ -22,6 +22,29 @@ import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
 import Header from "../components/Header";
 
+// Calculate distance between two coordinates using Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+};
+
+// Format distance for display
+const formatDistance = (distanceKm) => {
+  if (distanceKm < 1) {
+    return `${Math.round(distanceKm * 1000)} m`;
+  }
+  return `${distanceKm.toFixed(1)} km`;
+};
+
 const SearchScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,7 +145,7 @@ const SearchScreen = ({ navigation }) => {
         const result = await searchNearbyParking(
           searchCoords.latitude,
           searchCoords.longitude,
-          20000, // 20km radius
+          10000, // 10km radius
           {
             parkingSize: filters.parkingSize,
             maxPrice: filters.maxPrice,
@@ -133,12 +156,30 @@ const SearchScreen = ({ navigation }) => {
           result.data?.length,
           "spaces found",
         );
-        setResults(result.data || []);
 
-        if (!result.data || result.data.length === 0) {
+        // Sort results by distance (nearest first)
+        const sortedResults = (result.data || []).sort((a, b) => {
+          const distA = calculateDistance(
+            searchCoords.latitude,
+            searchCoords.longitude,
+            a.location.coordinates[1],
+            a.location.coordinates[0],
+          );
+          const distB = calculateDistance(
+            searchCoords.latitude,
+            searchCoords.longitude,
+            b.location.coordinates[1],
+            b.location.coordinates[0],
+          );
+          return distA - distB;
+        });
+
+        setResults(sortedResults);
+
+        if (!sortedResults || sortedResults.length === 0) {
           Alert.alert(
             "No Parking Found",
-            `No parking spaces found within 20km of ${suggestion.mainText}. Try a different location.`,
+            `No parking spaces found within 10km of ${suggestion.mainText}. Try a different location.`,
           );
         }
       } else {
@@ -176,7 +217,25 @@ const SearchScreen = ({ navigation }) => {
             maxPrice: filters.maxPrice,
           },
         );
-        setResults(result.data || []);
+
+        // Sort results by distance (nearest first)
+        const sortedResults = (result.data || []).sort((a, b) => {
+          const distA = calculateDistance(
+            coords.latitude,
+            coords.longitude,
+            a.location.coordinates[1],
+            a.location.coordinates[0],
+          );
+          const distB = calculateDistance(
+            coords.latitude,
+            coords.longitude,
+            b.location.coordinates[1],
+            b.location.coordinates[0],
+          );
+          return distA - distB;
+        });
+
+        setResults(sortedResults);
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -194,52 +253,82 @@ const SearchScreen = ({ navigation }) => {
     setResults([]);
   };
 
-  const renderParkingItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.parkingItem}
-      onPress={() =>
-        navigation.navigate("ParkingDetails", { parkingId: item._id })
-      }
-    >
-      <View style={styles.parkingImageContainer}>
-        {item.images?.[0] ? (
-          <View style={styles.parkingImage}>
-            <Icon name="parking" size="2xl" color={COLORS.primary} />
-          </View>
-        ) : (
-          <View style={styles.parkingImage}>
-            <Icon name="parking" size="2xl" color={COLORS.primary} />
-          </View>
-        )}
-      </View>
-      <View style={styles.parkingInfo}>
-        <Text style={styles.parkingTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <View style={styles.parkingAddressRow}>
-          <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
-          <Text style={styles.parkingAddress} numberOfLines={1}>
-            {item.location.address}
-          </Text>
-        </View>
-        <View style={styles.parkingMeta}>
-          <Text style={styles.parkingSize}>
-            {PARKING_SIZES.find((s) => s.value === item.parkingSize)?.label}
-          </Text>
-          <View style={styles.parkingRatingRow}>
-            <Icon name="star" size="xs" color={COLORS.accent} />
-            <Text style={styles.parkingRating}>
-              {item.rating?.toFixed(1) || "New"}
+  // Get distance from selected location to parking space
+  const getDistanceToParking = (parkingItem) => {
+    const searchFrom = selectedLocation || location;
+    if (!searchFrom || !parkingItem.location?.coordinates) return null;
+
+    const parkingLat = parkingItem.location.coordinates[1];
+    const parkingLng = parkingItem.location.coordinates[0];
+
+    return calculateDistance(
+      searchFrom.latitude,
+      searchFrom.longitude,
+      parkingLat,
+      parkingLng,
+    );
+  };
+
+  const renderParkingItem = ({ item }) => {
+    const distance = getDistanceToParking(item);
+
+    return (
+      <TouchableOpacity
+        style={styles.parkingItem}
+        onPress={() =>
+          navigation.navigate("ParkingDetails", { parkingId: item._id })
+        }
+      >
+        {/* Distance Badge - Top Right */}
+        {distance !== null && (
+          <View style={styles.distanceBadge}>
+            <Icon name="directions" size="xs" color="#FFFFFF" />
+            <Text style={styles.distanceBadgeText}>
+              {formatDistance(distance)}
             </Text>
           </View>
+        )}
+
+        <View style={styles.parkingImageContainer}>
+          {item.images?.[0] ? (
+            <View style={styles.parkingImage}>
+              <Icon name="parking" size="2xl" color={COLORS.primary} />
+            </View>
+          ) : (
+            <View style={styles.parkingImage}>
+              <Icon name="parking" size="2xl" color={COLORS.primary} />
+            </View>
+          )}
         </View>
-      </View>
-      <View style={styles.priceContainer}>
-        <Text style={styles.price}>₹{item.pricePerHour}</Text>
-        <Text style={styles.priceUnit}>/hr</Text>
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={styles.parkingInfo}>
+          <Text style={styles.parkingTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <View style={styles.parkingAddressRow}>
+            <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
+            <Text style={styles.parkingAddress} numberOfLines={1}>
+              {item.location.address}
+            </Text>
+          </View>
+          <View style={styles.parkingMeta}>
+            <Text style={styles.parkingSize}>
+              {PARKING_SIZES.find((s) => s.value === item.parkingSize)?.label}
+            </Text>
+            <View style={styles.parkingRatingRow}>
+              <Icon name="star" size="xs" color={COLORS.accent} />
+              <Text style={styles.parkingRating}>
+                {item.rating?.toFixed(1) || "New"}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>₹{item.pricePerHour}</Text>
+          <Text style={styles.priceUnit}>/hr</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -796,6 +885,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
+  },
+  distanceBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E53935",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  distanceBadgeText: {
+    fontSize: 12,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  distanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.primary + "15",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  distanceText: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: "600",
+    marginLeft: 4,
   },
   parkingRatingRow: {
     flexDirection: "row",
