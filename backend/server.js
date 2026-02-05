@@ -32,6 +32,7 @@ app.use("/api/parking", require("./routes/parkingRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/geocoding", require("./routes/geocodingRoutes"));
 
 // Health check
 app.get("/api/health", (req, res) => {

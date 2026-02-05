@@ -17,8 +17,7 @@ export const SOCKET_URL = __DEV__
   : "https://your-production-url.com";
 
 // Google Maps API Key
-export const GOOGLE_MAPS_API_KEY = "AIzaSyBF1cfg0RytU-lbuqnFET0VFoS9aOhvyXAv";
-
+export const GOOGLE_MAPS_API_KEY = "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI";
 // Map defaults
 export const DEFAULT_LOCATION = {
   latitude: 37.7749,

@@ -77,3 +77,11 @@ export const adminService = {
   getBookings: (params) => api.get("/admin/bookings", { params }),
   getStats: () => api.get("/admin/stats"),
 };
+
+// Geocoding Services
+export const geocodingService = {
+  autocomplete: (input, sessionToken = null) =>
+    api.get("/geocoding/autocomplete", { params: { input, sessionToken } }),
+  getPlaceDetails: (placeId) => api.get(`/geocoding/place/${placeId}`),
+  geocode: (address) => api.get("/geocoding/geocode", { params: { address } }),
+};

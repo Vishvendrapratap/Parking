@@ -244,3 +244,39 @@ export const getOwnerDashboard = async () => {
     },
   };
 };
+
+// ==================== GEOCODING ====================
+
+export const getPlaceAutocomplete = async (input, sessionToken = null) => {
+  try {
+    const response = await api.get("/geocoding/autocomplete", {
+      params: { input, sessionToken },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("getPlaceAutocomplete error:", error.response?.data || error.message);
+    return { success: false, data: [] };
+  }
+};
+
+export const getPlaceDetails = async (placeId) => {
+  try {
+    const response = await api.get(`/geocoding/place/${placeId}`);
+    return response.data;
+  } catch (error) {
+    console.error("getPlaceDetails error:", error.response?.data || error.message);
+    return { success: false, data: null };
+  }
+};
+
+export const geocodeAddress = async (address) => {
+  try {
+    const response = await api.get("/geocoding/geocode", {
+      params: { address },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("geocodeAddress error:", error.response?.data || error.message);
+    return { success: false, data: null };
+  }
+};

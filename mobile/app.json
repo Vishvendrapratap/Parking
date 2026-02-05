@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.parkingapp.mobile",
       "config": {
-        "googleMapsApiKey": "AIzaSyBF1cfg0RytU-lbuqnFET0VFoS9aOhvyXAv"
+        "googleMapsApiKey": "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI"
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to find nearby parking spaces.",
@@ -37,7 +37,7 @@
       "package": "com.parkingapp.mobile",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyBF1cfg0RytU-lbuqnFET0VFoS9aOhvyXAv"
+          "apiKey": "AIzaSyDEYwDyIlL6CHzIcUzlNfkj9El2f3qf-nI"
         }
       },
       "permissions": [

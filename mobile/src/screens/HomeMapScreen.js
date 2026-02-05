@@ -121,8 +121,8 @@ const HomeMapScreen = ({ navigation }) => {
           style={styles.searchButton}
           onPress={() => navigation.navigate("Search")}
         >
-          <Icon name="search" size="sm" color={COLORS.gray[700]} />
-          <Text style={styles.searchButtonText}>Search</Text>
+          <Icon name="mapMarker" size="sm" color={COLORS.primary} />
+          <Text style={styles.searchButtonText}>Search location...</Text>
         </TouchableOpacity>
       </View>
 

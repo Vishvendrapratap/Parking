@@ -35,12 +35,14 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
+    console.log("API Response from:", response.config.url, "Status:", response.status);
     return response;
   },
   (error) => {
     if (error.response) {
       // Server responded with error
       const { status, data } = error.response;
+      console.error("API Error Response:", status, JSON.stringify(data));
 
       if (status === 401) {
         // Token expired or invalid
@@ -50,10 +52,11 @@ api.interceptors.response.use(
       return Promise.reject(error);
     } else if (error.request) {
       // Request made but no response
-      console.error("Network Error:", error.message);
+      console.error("Network Error - No Response:", error.message);
+      console.error("Request URL:", error.config?.url);
     } else {
       // Something else happened
-      console.error("Error:", error.message);
+      console.error("Request Setup Error:", error.message);
     }
 
     return Promise.reject(error);

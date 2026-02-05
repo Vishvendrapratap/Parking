@@ -95,9 +95,15 @@ const toRad = (deg) => deg * (Math.PI / 180);
 
 /**
  * Get place autocomplete suggestions
+ * Supports cities, states, localities, neighborhoods, and landmarks
  */
 const getPlaceSuggestions = async (input, sessionToken) => {
   try {
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error("GOOGLE_MAPS_API_KEY is not set");
+      return [];
+    }
+
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
       {
@@ -105,16 +111,25 @@ const getPlaceSuggestions = async (input, sessionToken) => {
           input,
           key: GOOGLE_MAPS_API_KEY,
           sessiontoken: sessionToken,
-          types: "address",
+          // No types restriction - allows all place types including:
+          // cities, states, localities, neighborhoods, landmarks, addresses
+          components: "country:in", // Restrict to India
         },
       },
     );
 
-    return response.data.predictions.map((p) => ({
+    // Check for API errors
+    if (response.data.status !== "OK" && response.data.status !== "ZERO_RESULTS") {
+      console.error("Google Places API error:", response.data.status, response.data.error_message);
+      return [];
+    }
+
+    const predictions = response.data.predictions || [];
+    return predictions.map((p) => ({
       placeId: p.place_id,
       description: p.description,
-      mainText: p.structured_formatting.main_text,
-      secondaryText: p.structured_formatting.secondary_text,
+      mainText: p.structured_formatting?.main_text || p.description,
+      secondaryText: p.structured_formatting?.secondary_text || "",
     }));
   } catch (error) {
     console.error("Place autocomplete error:", error.message);
