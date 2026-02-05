@@ -15,44 +15,44 @@ import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/config";
 import Icon from "../../components/Icon";
 
-const RegisterScreen = ({ navigation }) => {
-  const { register } = useAuth();
+const RegisterScreen = ({ navigation, route }) => {
+  const { sendOTP } = useAuth();
+  // Pre-fill phone if coming from login redirect
+  const prefilledPhone = route.params?.phone || "";
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState(prefilledPhone);
   const [role, setRole] = useState("seeker");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all required fields");
+    if (!name.trim()) {
+      Alert.alert("Error", "Please enter your name");
       return;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+    if (!phone || phone.length < 10) {
+      Alert.alert("Error", "Please enter a valid 10-digit phone number");
       return;
     }
 
     setLoading(true);
-    const result = await register(
-      name,
-      email,
-      phone || undefined,
-      password,
-      role,
-    );
+    // Format phone with country code
+    const formattedPhone = `+91${phone}`;
+    const result = await sendOTP(formattedPhone, true); // true = registration
     setLoading(false);
 
-    if (!result.success) {
-      Alert.alert("Registration Failed", result.message);
+    if (result.success) {
+      navigation.navigate("OTP", { 
+        phone: formattedPhone, 
+        name: name.trim(),
+        email: email.trim() || undefined,
+        role: role,
+        isRegistration: true 
+      });
+    } else {
+      Alert.alert("Error", result.message);
     }
   };
 
@@ -139,7 +139,7 @@ const RegisterScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email *</Text>
+              <Text style={styles.label}>Email (Optional)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Enter your email"
@@ -152,39 +152,21 @@ const RegisterScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone Number (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="+1 (555) 000-0000"
-                placeholderTextColor={COLORS.gray[400]}
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Create a password"
-                placeholderTextColor={COLORS.gray[400]}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Confirm Password *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm your password"
-                placeholderTextColor={COLORS.gray[400]}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
+              <Text style={styles.label}>Phone Number *</Text>
+              <View style={styles.phoneInputWrapper}>
+                <Text style={styles.countryCode}>+91</Text>
+                <TextInput
+                  style={styles.phoneInput}
+                  placeholder="Enter 10-digit number"
+                  placeholderTextColor={COLORS.gray[400]}
+                  value={phone}
+                  onChangeText={(text) =>
+                    setPhone(text.replace(/[^0-9]/g, ""))
+                  }
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                />
+              </View>
             </View>
 
             <TouchableOpacity
@@ -193,9 +175,13 @@ const RegisterScreen = ({ navigation }) => {
               disabled={loading}
             >
               <Text style={styles.buttonText}>
-                {loading ? "Creating Account..." : "Create Account"}
+                {loading ? "Sending OTP..." : "Continue"}
               </Text>
             </TouchableOpacity>
+
+            <Text style={styles.otpNote}>
+              We'll send a 6-digit verification code to your phone
+            </Text>
           </View>
 
           {/* Login Link */}
@@ -325,6 +311,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "600",
+  },
+  phoneInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  countryCode: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    backgroundColor: COLORS.gray[100],
+    borderRightWidth: 1,
+    borderRightColor: COLORS.gray[200],
+  },
+  phoneInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.text.primary,
+  },
+  otpNote: {
+    fontSize: 13,
+    color: COLORS.gray[500],
+    textAlign: "center",
+    marginTop: 8,
   },
 });
 

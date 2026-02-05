@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const sendOTP = async (phone) => {
+  const sendOTP = async (phone, isRegistration = false) => {
     try {
       // Format phone number (ensure it has country code)
       const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
@@ -125,7 +125,17 @@ export const AuthProvider = ({ children }) => {
       // Send OTP via backend (using configured SMS provider)
       const response = await api.post("/auth/send-otp", {
         phone: formattedPhone,
+        isRegistration,
       });
+
+      // Check if user needs to register first
+      if (response.data.requiresRegistration) {
+        return {
+          success: true,
+          requiresRegistration: true,
+          message: "User not found",
+        };
+      }
 
       // Store phone for later verification
       confirmationRef.current = { phone: formattedPhone };
@@ -141,16 +151,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (phone, otp) => {
+  const verifyOTP = async (phone, otp, registrationData = null) => {
     try {
       // Format phone number
       const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
 
-      // Verify OTP via backend
-      const response = await api.post("/auth/verify-otp", {
+      // Build request body
+      const requestBody = {
         phone: formattedPhone,
         otp,
-      });
+      };
+
+      // Add registration data if provided (for new user registration)
+      if (registrationData) {
+        requestBody.name = registrationData.name;
+        requestBody.role = registrationData.role;
+        if (registrationData.email) {
+          requestBody.email = registrationData.email;
+        }
+      }
+
+      // Verify OTP via backend
+      const response = await api.post("/auth/verify-otp", requestBody);
 
       const { token: newToken, user: userData } = response.data;
 

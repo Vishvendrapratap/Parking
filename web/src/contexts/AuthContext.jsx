@@ -106,6 +106,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendOTP = async (phone, isRegistration = false) => {
+    try {
+      const response = await authService.sendOTP(phone, isRegistration);
+      return { 
+        success: true, 
+        isNewUser: response.data.isNewUser,
+        requiresRegistration: response.data.requiresRegistration,
+      };
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to send OTP";
+      return { success: false, message };
+    }
+  };
+
+  const verifyOTP = async (phone, otp, registrationData = null) => {
+    try {
+      const response = await authService.verifyOTP(phone, otp, registrationData);
+      const { token, user: userData } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      setUser(userData);
+      setIsAuthenticated(true);
+      toast.success("Login successful!");
+
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || "OTP verification failed";
+      return { success: false, message };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -117,6 +150,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateUser,
         switchRole,
+        sendOTP,
+        verifyOTP,
       }}
     >
       {children}

@@ -15,7 +15,7 @@ import { COLORS } from "../../constants/config";
 import Icon from "../../components/Icon";
 
 const OTPScreen = ({ route, navigation }) => {
-  const { phone } = route.params;
+  const { phone, name, email, role, isRegistration } = route.params;
   const { verifyOTP, sendOTP } = useAuth();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,8 @@ const OTPScreen = ({ route, navigation }) => {
     }
 
     setLoading(true);
-    const result = await verifyOTP(phone, otpCode);
+    // Pass registration data if this is a new registration
+    const result = await verifyOTP(phone, otpCode, isRegistration ? { name, email, role } : null);
     setLoading(false);
 
     if (!result.success) {

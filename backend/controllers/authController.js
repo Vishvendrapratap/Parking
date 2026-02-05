@@ -98,7 +98,7 @@ exports.login = async (req, res) => {
 // @access  Public
 exports.sendOTP = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, isRegistration } = req.body;
 
     if (!phone) {
       return res.status(400).json({
@@ -108,9 +108,20 @@ exports.sendOTP = async (req, res) => {
     }
 
     let user = await User.findOne({ phone });
+    let isNewUser = !user;
 
-    if (!user) {
-      // Create a temporary user for OTP verification
+    // For login flow, don't create user if they don't exist
+    if (!user && !isRegistration) {
+      return res.status(200).json({
+        success: true,
+        message: "User not found",
+        isNewUser: true,
+        requiresRegistration: true,
+      });
+    }
+
+    // For registration flow, create temporary user if they don't exist
+    if (!user && isRegistration) {
       user = await User.create({
         phone,
         name: "New User",
@@ -127,6 +138,7 @@ exports.sendOTP = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "OTP sent successfully",
+      isNewUser,
       // Only include OTP in development
       ...(process.env.NODE_ENV === "development" && { otp }),
     });
@@ -144,14 +156,14 @@ exports.sendOTP = async (req, res) => {
 // @access  Public
 exports.verifyOTP = async (req, res) => {
   try {
-    const { phone, otp } = req.body;
+    const { phone, otp, name, email, role } = req.body;
 
-    const user = await User.findOne({ phone });
+    let user = await User.findOne({ phone });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found. Please request OTP first.",
       });
     }
 
@@ -160,6 +172,17 @@ exports.verifyOTP = async (req, res) => {
         success: false,
         message: "Invalid or expired OTP",
       });
+    }
+
+    // Update user details if provided (for new registrations)
+    if (name && user.name === "New User") {
+      user.name = name;
+    }
+    if (email) {
+      user.email = email;
+    }
+    if (role) {
+      user.role = role;
     }
 
     // Clear OTP and mark as verified

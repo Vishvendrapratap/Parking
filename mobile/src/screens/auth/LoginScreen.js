@@ -16,27 +16,9 @@ import { COLORS } from "../../constants/config";
 import Icon from "../../components/Icon";
 
 const LoginScreen = ({ navigation }) => {
-  const { login, sendOTP } = useAuth();
-  const [loginMethod, setLoginMethod] = useState("email"); // 'email' or 'phone'
-  const [email, setEmail] = useState("");
+  const { sendOTP } = useAuth();
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleEmailLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
-
-    setLoading(true);
-    const result = await login(email, null, password);
-    setLoading(false);
-
-    if (!result.success) {
-      Alert.alert("Login Failed", result.message);
-    }
-  };
 
   const handlePhoneLogin = async () => {
     if (!phone || phone.length < 10) {
@@ -47,11 +29,26 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     // Format phone with country code
     const formattedPhone = `+91${phone}`;
-    const result = await sendOTP(formattedPhone);
+    const result = await sendOTP(formattedPhone, false); // false = not registration
     setLoading(false);
 
     if (result.success) {
-      navigation.navigate("OTP", { phone: formattedPhone });
+      if (result.requiresRegistration) {
+        // User doesn't exist, redirect to registration with phone pre-filled
+        Alert.alert(
+          "Account Not Found",
+          "No account found with this phone number. Please sign up to continue.",
+          [
+            {
+              text: "Sign Up",
+              onPress: () => navigation.navigate("Register", { phone: phone }),
+            },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
+      } else {
+        navigation.navigate("OTP", { phone: formattedPhone });
+      }
     } else {
       Alert.alert("Error", result.message);
     }
@@ -68,120 +65,44 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.logoContainer}>
               <Icon name="parking" size="4xl" color={COLORS.primary} />
             </View>
-            <Text style={styles.title}>Parking App</Text>
+            <Text style={styles.title}>ParkEase</Text>
             <Text style={styles.subtitle}>Find & share parking spaces</Text>
           </View>
 
-          {/* Login Method Toggle */}
-          <View style={styles.toggleContainer}>
+          {/* Phone Login Form */}
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <View style={styles.phoneInputWrapper}>
+                <Text style={styles.countryCode}>+91</Text>
+                <TextInput
+                  style={styles.phoneInput}
+                  placeholder="Enter 10-digit number"
+                  placeholderTextColor={COLORS.gray[400]}
+                  value={phone}
+                  onChangeText={(text) =>
+                    setPhone(text.replace(/[^0-9]/g, ""))
+                  }
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                />
+              </View>
+            </View>
+
             <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                loginMethod === "email" && styles.toggleButtonActive,
-              ]}
-              onPress={() => setLoginMethod("email")}
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handlePhoneLogin}
+              disabled={loading}
             >
-              <Text
-                style={[
-                  styles.toggleText,
-                  loginMethod === "email" && styles.toggleTextActive,
-                ]}
-              >
-                Email
+              <Text style={styles.buttonText}>
+                {loading ? "Sending OTP..." : "Send OTP"}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                loginMethod === "phone" && styles.toggleButtonActive,
-              ]}
-              onPress={() => setLoginMethod("phone")}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  loginMethod === "phone" && styles.toggleTextActive,
-                ]}
-              >
-                Phone
-              </Text>
-            </TouchableOpacity>
+
+            <Text style={styles.otpNote}>
+              We'll send a 6-digit verification code to your phone
+            </Text>
           </View>
-
-          {/* Email Login Form */}
-          {loginMethod === "email" ? (
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email"
-                  placeholderTextColor={COLORS.gray[400]}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Password</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  placeholderTextColor={COLORS.gray[400]}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleEmailLogin}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Signing in..." : "Sign In"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            /* Phone Login Form */
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Phone Number</Text>
-                <View style={styles.phoneInputWrapper}>
-                  <Text style={styles.countryCode}>+91</Text>
-                  <TextInput
-                    style={styles.phoneInput}
-                    placeholder="Enter 10-digit number"
-                    placeholderTextColor={COLORS.gray[400]}
-                    value={phone}
-                    onChangeText={(text) =>
-                      setPhone(text.replace(/[^0-9]/g, ""))
-                    }
-                    keyboardType="phone-pad"
-                    maxLength={10}
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handlePhoneLogin}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Sending OTP..." : "Send OTP"}
-                </Text>
-              </TouchableOpacity>
-
-              <Text style={styles.otpNote}>
-                We'll send a 6-digit verification code to your phone
-              </Text>
-            </View>
-          )}
 
           {/* Register Link */}
           <View style={styles.footer}>
@@ -210,8 +131,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginBottom: 40,
   },
-  logo: {
-    fontSize: 64,
+  logoContainer: {
     marginBottom: 16,
   },
   title: {
@@ -224,35 +144,6 @@ const styles = StyleSheet.create({
     color: COLORS.gray[500],
     marginTop: 8,
   },
-  toggleContainer: {
-    flexDirection: "row",
-    backgroundColor: COLORS.gray[100],
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  toggleButtonActive: {
-    backgroundColor: COLORS.card,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  toggleText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.gray[500],
-  },
-  toggleTextActive: {
-    color: COLORS.primary,
-  },
   form: {
     gap: 16,
   },
@@ -264,16 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.gray[700],
     marginBottom: 8,
-  },
-  input: {
-    backgroundColor: COLORS.gray[50],
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.text.primary,
   },
   button: {
     backgroundColor: COLORS.primary,

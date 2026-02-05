@@ -4,8 +4,18 @@ import api from "./axios";
 export const authService = {
   login: (email, password) => api.post("/auth/login", { email, password }),
   register: (data) => api.post("/auth/register", data),
-  sendOTP: (phone) => api.post("/auth/send-otp", { phone }),
-  verifyOTP: (phone, otp) => api.post("/auth/verify-otp", { phone, otp }),
+  sendOTP: (phone, isRegistration = false) => api.post("/auth/send-otp", { phone, isRegistration }),
+  verifyOTP: (phone, otp, registrationData = null) => {
+    const payload = { phone, otp };
+    if (registrationData) {
+      payload.name = registrationData.name;
+      payload.role = registrationData.role;
+      if (registrationData.email) {
+        payload.email = registrationData.email;
+      }
+    }
+    return api.post("/auth/verify-otp", payload);
+  },
   getProfile: () => api.get("/auth/me"),
   updateProfile: (data) => api.put("/users/profile", data),
   switchRole: (role) => api.post("/auth/switch-role", { role }),

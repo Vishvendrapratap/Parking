@@ -6,24 +6,29 @@ import Icon from "../components/Icon";
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
   const initialRole = searchParams.get("role") || "seeker";
+  const prefilledPhone = searchParams.get("phone") || "";
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1: info, 2: otp
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+    phone: prefilledPhone,
     role: initialRole,
   });
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { register } = useAuth();
+  const { sendOTP, verifyOTP } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "phone") {
+      setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, "") });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
     setError("");
   };
 
@@ -32,59 +37,68 @@ const RegisterPage = () => {
       setError("Name is required");
       return false;
     }
-    if (!formData.email.trim()) {
-      setError("Email is required");
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError("Please enter a valid email");
+    if (!formData.phone || formData.phone.length < 10) {
+      setError("Please enter a valid 10-digit phone number");
       return false;
     }
     return true;
   };
 
-  const validateStep2 = () => {
-    if (!formData.phone.trim()) {
-      setError("Phone number is required");
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-    return true;
-  };
+  const handleSendOTP = async () => {
+    if (!validateStep1()) return;
 
-  const handleNext = () => {
-    if (step === 1 && validateStep1()) {
+    setLoading(true);
+    setError("");
+
+    const formattedPhone = `+91${formData.phone}`;
+    const result = await sendOTP(formattedPhone, true); // true = registration
+
+    if (result.success) {
       setStep(2);
+    } else {
+      setError(result.message || "Failed to send OTP");
     }
+    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateStep2()) return;
+    if (otp.length !== 6) {
+      setError("Please enter the 6-digit OTP");
+      return;
+    }
 
     setLoading(true);
     setError("");
 
-    const result = await register({
+    const formattedPhone = `+91${formData.phone}`;
+    const result = await verifyOTP(formattedPhone, otp, {
       name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
+      email: formData.email || undefined,
       role: formData.role,
     });
 
     if (result.success) {
       navigate("/");
+    } else {
+      setError(result.message || "Invalid OTP");
     }
+    setLoading(false);
+  };
 
+  const handleResendOTP = async () => {
+    setLoading(true);
+    setError("");
+
+    const formattedPhone = `+91${formData.phone}`;
+    const result = await sendOTP(formattedPhone, true); // true = registration
+
+    if (result.success) {
+      alert("OTP sent successfully!");
+    } else {
+      setError(result.message || "Failed to resend OTP");
+    }
     setLoading(false);
   };
 
@@ -180,7 +194,7 @@ const RegisterPage = () => {
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Full Name
+                    Full Name *
                   </label>
                   <input
                     id="name"
@@ -199,13 +213,12 @@ const RegisterPage = () => {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email address
+                    Email (Optional)
                   </label>
                   <input
                     id="email"
                     name="email"
                     type="email"
-                    required
                     value={formData.email}
                     onChange={handleChange}
                     className="input-field mt-1"
@@ -213,13 +226,47 @@ const RegisterPage = () => {
                   />
                 </div>
 
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Phone Number *
+                  </label>
+                  <div className="mt-1 flex">
+                    <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                      +91
+                    </span>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      maxLength={10}
+                      className="input-field rounded-l-none"
+                      placeholder="Enter 10-digit number"
+                    />
+                  </div>
+                </div>
+
                 <button
                   type="button"
-                  onClick={handleNext}
-                  className="btn-primary w-full"
+                  onClick={handleSendOTP}
+                  disabled={loading}
+                  className="btn-primary w-full flex justify-center items-center"
                 >
-                  Continue
+                  {loading ? (
+                    <Icon name="spinner" className="text-white" size="lg" />
+                  ) : (
+                    "Send OTP"
+                  )}
                 </button>
+
+                <p className="text-sm text-gray-500 text-center">
+                  We'll send a 6-digit verification code to your phone
+                </p>
               </>
             )}
 
@@ -227,82 +274,55 @@ const RegisterPage = () => {
               <>
                 <div>
                   <label
-                    htmlFor="phone"
+                    htmlFor="otp"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Phone Number
+                    Enter OTP
                   </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="input-field mt-1"
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="input-field mt-1"
-                    placeholder="••••••••"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    At least 6 characters
+                  <p className="text-sm text-gray-500 mb-2">
+                    Code sent to +91{formData.phone}
                   </p>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Confirm Password
-                  </label>
                   <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="input-field mt-1"
-                    placeholder="••••••••"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                    maxLength={6}
+                    className="input-field text-center text-2xl tracking-widest"
+                    placeholder="000000"
                   />
                 </div>
 
-                <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full flex justify-center items-center"
+                >
+                  {loading ? (
+                    <Icon name="spinner" className="text-white" size="lg" />
+                  ) : (
+                    "Create Account"
+                  )}
+                </button>
+
+                <div className="flex justify-between items-center text-sm">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="btn-secondary flex-1"
+                    className="text-primary-600 hover:text-primary-500"
                   >
-                    Back
+                    Change details
                   </button>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleResendOTP}
                     disabled={loading}
-                    className="btn-primary flex-1 flex justify-center items-center"
+                    className="text-primary-600 hover:text-primary-500"
                   >
-                    {loading ? (
-                      <Icon name="spinner" className="text-white" size="lg" />
-                    ) : (
-                      "Create Account"
-                    )}
+                    Resend OTP
                   </button>
                 </div>
               </>

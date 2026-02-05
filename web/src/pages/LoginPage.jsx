@@ -4,31 +4,76 @@ import { useAuth } from "../contexts/AuthContext";
 import Icon from "../components/Icon";
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("phone"); // 'phone' or 'otp'
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState("");
+  const { sendOTP, verifyOTP } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    
+    if (!phone || phone.length < 10) {
+      setError("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    setLoading(true);
+    const formattedPhone = `+91${phone}`;
+    const result = await sendOTP(formattedPhone, false); // false = not registration
+
+    if (result.success) {
+      if (result.requiresRegistration) {
+        // User doesn't exist, redirect to registration with phone pre-filled
+        navigate(`/register?phone=${phone}`);
+      } else {
+        setStep("otp");
+      }
+    } else {
+      setError(result.message || "Failed to send OTP");
+    }
+    setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleVerifyOTP = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError("");
 
-    const result = await login(formData.email, formData.password);
+    if (otp.length !== 6) {
+      setError("Please enter the 6-digit OTP");
+      return;
+    }
+
+    setLoading(true);
+    const formattedPhone = `+91${phone}`;
+    const result = await verifyOTP(formattedPhone, otp);
 
     if (result.success) {
       navigate(from, { replace: true });
+    } else {
+      setError(result.message || "Invalid OTP");
     }
+    setLoading(false);
+  };
 
+  const handleResendOTP = async () => {
+    setError("");
+    setLoading(true);
+    const formattedPhone = `+91${phone}`;
+    const result = await sendOTP(formattedPhone, false);
+
+    if (result.success && !result.requiresRegistration) {
+      setError("");
+      alert("OTP sent successfully!");
+    } else {
+      setError(result.message || "Failed to resend OTP");
+    }
     setLoading(false);
   };
 
@@ -41,74 +86,119 @@ const LoginPage = () => {
             Welcome back
           </h2>
           <p className="mt-2 text-gray-600">
-            Sign in to your account to continue
+            Sign in with your phone number
           </p>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="you@example.com"
-              />
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
             </div>
+          )}
 
-            <div>
-              <div className="flex justify-between">
+          {step === "phone" ? (
+            <form onSubmit={handleSendOTP} className="space-y-6">
+              <div>
                 <label
-                  htmlFor="password"
+                  htmlFor="phone"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Password
+                  Phone Number
                 </label>
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary-600 hover:text-primary-500"
-                >
-                  Forgot password?
-                </Link>
+                <div className="mt-1 flex">
+                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                    +91
+                  </span>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    maxLength={10}
+                    className="input-field rounded-l-none"
+                    placeholder="Enter 10-digit number"
+                  />
+                </div>
               </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="••••••••"
-              />
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full flex justify-center items-center"
-            >
-              {loading ? (
-                <Icon name="spinner" className="text-white" size="lg" />
-              ) : (
-                "Sign in"
-              )}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full flex justify-center items-center"
+              >
+                {loading ? (
+                  <Icon name="spinner" className="text-white" size="lg" />
+                ) : (
+                  "Send OTP"
+                )}
+              </button>
+
+              <p className="text-sm text-gray-500 text-center">
+                We'll send a 6-digit verification code to your phone
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOTP} className="space-y-6">
+              <div>
+                <label
+                  htmlFor="otp"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Enter OTP
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Code sent to +91{phone}
+                </p>
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                  maxLength={6}
+                  className="input-field text-center text-2xl tracking-widest"
+                  placeholder="000000"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full flex justify-center items-center"
+              >
+                {loading ? (
+                  <Icon name="spinner" className="text-white" size="lg" />
+                ) : (
+                  "Verify & Sign in"
+                )}
+              </button>
+
+              <div className="flex justify-between items-center text-sm">
+                <button
+                  type="button"
+                  onClick={() => setStep("phone")}
+                  className="text-primary-600 hover:text-primary-500"
+                >
+                  Change number
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={loading}
+                  className="text-primary-600 hover:text-primary-500"
+                >
+                  Resend OTP
+                </button>
+              </div>
+            </form>
+          )}
 
           <div className="mt-6">
             <div className="relative">
@@ -117,7 +207,7 @@ const LoginPage = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  New to Parking App?
+                  New to ParkEase?
                 </span>
               </div>
             </div>

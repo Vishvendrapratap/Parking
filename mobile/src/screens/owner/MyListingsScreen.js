@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   getMyListings,
   getMyBookings,
@@ -26,9 +27,12 @@ const MyListingsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
+  // Refresh listings when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchListings();
+    }, [])
+  );
 
   const fetchListings = async () => {
     try {
