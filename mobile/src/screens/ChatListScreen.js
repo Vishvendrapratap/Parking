@@ -193,7 +193,7 @@ const ChatListScreen = ({ navigation }) => {
       {/* Header with Logo */}
       <Header showLogo={true} />
 
-      {/* Conversations List */
+      {/* Conversations List */}
       <FlatList
         data={conversations}
         renderItem={renderConversationItem}

@@ -58,7 +58,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header with Logo */}
-      <Header 
+      <Header
         showLogo={true}
         rightComponent={
           <TouchableOpacity
@@ -69,7 +69,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
           </TouchableOpacity>
         }
       />
-      
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={

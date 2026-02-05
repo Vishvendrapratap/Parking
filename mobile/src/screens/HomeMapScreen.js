@@ -116,7 +116,7 @@ const HomeMapScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header with Logo */}
-      <Header 
+      <Header
         showLogo={true}
         rightComponent={
           <TouchableOpacity

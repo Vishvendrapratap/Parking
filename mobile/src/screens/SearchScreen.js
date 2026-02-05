@@ -245,7 +245,7 @@ const SearchScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header with Logo */}
       <Header showLogo={true} />
-      
+
       {/* Search Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>

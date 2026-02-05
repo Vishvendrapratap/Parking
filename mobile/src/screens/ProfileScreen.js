@@ -66,7 +66,7 @@ const ProfileScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header with Logo */}
       <Header showLogo={true} />
-      
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
         <View style={styles.profileCard}>

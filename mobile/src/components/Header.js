@@ -4,13 +4,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../constants/config";
 import Icon from "./Icon";
 
-const Header = ({ 
-  title, 
-  showLogo = true, 
-  showBack = false, 
-  onBack, 
+const Header = ({
+  title,
+  showLogo = true,
+  showBack = false,
+  onBack,
   rightComponent,
-  navigation 
+  navigation,
 }) => {
   const handleBack = () => {
     if (onBack) {
@@ -49,9 +49,7 @@ const Header = ({
         )}
 
         {/* Right side - Optional component */}
-        <View style={styles.right}>
-          {rightComponent}
-        </View>
+        <View style={styles.right}>{rightComponent}</View>
       </View>
     </View>
   );

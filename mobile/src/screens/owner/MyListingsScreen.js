@@ -256,7 +256,7 @@ const MyListingsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header with Logo */}
-      <Header 
+      <Header
         showLogo={true}
         rightComponent={
           <TouchableOpacity onPress={() => navigation.navigate("AddListing")}>
