@@ -12,7 +12,11 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { searchNearbyParking, getPlaceAutocomplete, getPlaceDetails } from "../api/services";
+import {
+  searchNearbyParking,
+  getPlaceAutocomplete,
+  getPlaceDetails,
+} from "../api/services";
 import { useLocation } from "../hooks/useLocation";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
@@ -27,7 +31,7 @@ const SearchScreen = ({ navigation }) => {
     maxPrice: null,
   });
   const [showFilters, setShowFilters] = useState(false);
-  
+
   // Location search state
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -47,12 +51,19 @@ const SearchScreen = ({ navigation }) => {
       // Always show the suggestions panel when typing
       setShowSuggestions(true);
       setLoadingSuggestions(true);
-      
+
       try {
         console.log("=== Fetching suggestions for:", searchQuery, "===");
-        const result = await getPlaceAutocomplete(searchQuery, sessionTokenRef.current);
-        console.log("=== Autocomplete API result:", JSON.stringify(result), "===");
-        
+        const result = await getPlaceAutocomplete(
+          searchQuery,
+          sessionTokenRef.current,
+        );
+        console.log(
+          "=== Autocomplete API result:",
+          JSON.stringify(result),
+          "===",
+        );
+
         if (result && result.success && Array.isArray(result.data)) {
           console.log("Setting", result.data.length, "suggestions");
           setSuggestions(result.data);
@@ -82,12 +93,12 @@ const SearchScreen = ({ navigation }) => {
       setSuggestions([]);
       setSearchQuery(suggestion.description);
       setLoading(true);
-      
+
       // Get place details to get coordinates
       console.log("Fetching place details for:", suggestion.placeId);
       const placeResult = await getPlaceDetails(suggestion.placeId);
       console.log("Place details result:", JSON.stringify(placeResult));
-      
+
       if (placeResult && placeResult.success && placeResult.data) {
         const { coordinates } = placeResult.data;
         console.log("Coordinates:", coordinates);
@@ -96,15 +107,15 @@ const SearchScreen = ({ navigation }) => {
           latitude: coordinates[1],
           longitude: coordinates[0],
         };
-        
+
         setSelectedLocation({
           ...searchCoords,
           address: suggestion.description,
         });
-        
+
         // Generate new session token for next search
         sessionTokenRef.current = Date.now().toString();
-        
+
         // Search for parking near this location
         console.log("Searching parking near:", searchCoords);
         const result = await searchNearbyParking(
@@ -116,17 +127,24 @@ const SearchScreen = ({ navigation }) => {
             maxPrice: filters.maxPrice,
           },
         );
-        console.log("Parking search result:", result.data?.length, "spaces found");
+        console.log(
+          "Parking search result:",
+          result.data?.length,
+          "spaces found",
+        );
         setResults(result.data || []);
-        
+
         if (!result.data || result.data.length === 0) {
           Alert.alert(
-            "No Parking Found", 
-            `No parking spaces found within 20km of ${suggestion.mainText}. Try a different location.`
+            "No Parking Found",
+            `No parking spaces found within 20km of ${suggestion.mainText}. Try a different location.`,
           );
         }
       } else {
-        Alert.alert("Error", "Could not get location details. Please try again.");
+        Alert.alert(
+          "Error",
+          "Could not get location details. Please try again.",
+        );
       }
     } catch (error) {
       console.error("Select place error:", error);
@@ -140,7 +158,7 @@ const SearchScreen = ({ navigation }) => {
       Keyboard.dismiss();
       setShowSuggestions(false);
       setLoading(true);
-      
+
       let coords = selectedLocation || location;
 
       if (!coords) {
@@ -246,7 +264,10 @@ const SearchScreen = ({ navigation }) => {
             }}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={handleClearLocation} style={styles.clearButton}>
+            <TouchableOpacity
+              onPress={handleClearLocation}
+              style={styles.clearButton}
+            >
               <Icon name="close" size="sm" color={COLORS.gray[400]} />
             </TouchableOpacity>
           )}
@@ -271,14 +292,19 @@ const SearchScreen = ({ navigation }) => {
           <Text style={styles.suggestionsTitle}>
             {loadingSuggestions ? "Searching..." : "Location Suggestions"}
           </Text>
-          
+
           {loadingSuggestions ? (
             <View style={styles.suggestionLoading}>
               <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.suggestionLoadingText}>Finding locations...</Text>
+              <Text style={styles.suggestionLoadingText}>
+                Finding locations...
+              </Text>
             </View>
           ) : suggestions.length > 0 ? (
-            <ScrollView style={styles.suggestionsList} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              style={styles.suggestionsList}
+              keyboardShouldPersistTaps="handled"
+            >
               {suggestions.map((item) => (
                 <TouchableOpacity
                   key={item.placeId}
@@ -290,18 +316,29 @@ const SearchScreen = ({ navigation }) => {
                     <Text style={styles.suggestionMainText} numberOfLines={1}>
                       {item.mainText}
                     </Text>
-                    <Text style={styles.suggestionSecondaryText} numberOfLines={1}>
+                    <Text
+                      style={styles.suggestionSecondaryText}
+                      numberOfLines={1}
+                    >
                       {item.secondaryText}
                     </Text>
                   </View>
-                  <Icon name="chevronRight" size="sm" color={COLORS.gray[300]} />
+                  <Icon
+                    name="chevronRight"
+                    size="sm"
+                    color={COLORS.gray[300]}
+                  />
                 </TouchableOpacity>
               ))}
             </ScrollView>
           ) : (
             <View style={styles.noSuggestionsContainer}>
-              <Text style={styles.noSuggestionsText}>No locations found for "{searchQuery}"</Text>
-              <Text style={styles.noSuggestionsSubtext}>Try a different search term</Text>
+              <Text style={styles.noSuggestionsText}>
+                No locations found for "{searchQuery}"
+              </Text>
+              <Text style={styles.noSuggestionsSubtext}>
+                Try a different search term
+              </Text>
             </View>
           )}
         </View>
@@ -401,25 +438,30 @@ const SearchScreen = ({ navigation }) => {
       )}
 
       {/* Results Count Header */}
-      {!loading && !showSuggestions && results.length > 0 && selectedLocation && (
-        <View style={styles.resultsHeader}>
-          <Text style={styles.resultsCount}>
-            {results.length} parking space{results.length !== 1 ? 's' : ''} found
-          </Text>
-          <Text style={styles.resultsLocation}>
-            near {selectedLocation.address?.split(',')[0]}
-          </Text>
-        </View>
-      )}
+      {!loading &&
+        !showSuggestions &&
+        results.length > 0 &&
+        selectedLocation && (
+          <View style={styles.resultsHeader}>
+            <Text style={styles.resultsCount}>
+              {results.length} parking space{results.length !== 1 ? "s" : ""}{" "}
+              found
+            </Text>
+            <Text style={styles.resultsLocation}>
+              near {selectedLocation.address?.split(",")[0]}
+            </Text>
+          </View>
+        )}
 
       {/* Results - only show when not showing suggestions */}
-      {!showSuggestions && (
-        loading ? (
+      {!showSuggestions &&
+        (loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
             {selectedLocation && (
               <Text style={styles.loadingText}>
-                Searching parking near {selectedLocation.address?.split(',')[0]}...
+                Searching parking near {selectedLocation.address?.split(",")[0]}
+                ...
               </Text>
             )}
           </View>
@@ -433,22 +475,25 @@ const SearchScreen = ({ navigation }) => {
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Icon name={selectedLocation ? "mapMarker" : "search"} size="4xl" color={COLORS.gray[300]} />
+                <Icon
+                  name={selectedLocation ? "mapMarker" : "search"}
+                  size="4xl"
+                  color={COLORS.gray[300]}
+                />
                 <Text style={styles.emptyText}>
-                  {selectedLocation 
-                    ? "No parking spaces found nearby" 
+                  {selectedLocation
+                    ? "No parking spaces found nearby"
                     : "Search for a location"}
                 </Text>
                 <Text style={styles.emptySubtext}>
-                  {selectedLocation 
-                    ? `No parking available within 10km of ${selectedLocation.address?.split(',')[0]}. Try a different location.`
+                  {selectedLocation
+                    ? `No parking available within 10km of ${selectedLocation.address?.split(",")[0]}. Try a different location.`
                     : "Enter a city, area, or landmark to find parking nearby"}
                 </Text>
               </View>
             }
           />
-        )
-      )}
+        ))}
     </SafeAreaView>
   );
 };
