@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -36,6 +36,9 @@ const BookingScreen = ({ route, navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pickerMode, setPickerMode] = useState("date"); // 'date' or 'time'
+  
+  // Ref to store latest datetime for time picker (avoids stale state issues)
+  const pendingDateTimeRef = useRef(startTime);
 
   const endTime = addHours(startTime, hours);
   const subtotal = parking.pricePerHour * hours;
@@ -48,13 +51,25 @@ const BookingScreen = ({ route, navigation }) => {
   const handleDateChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
       setShowDatePicker(false);
+      // Don't process if user dismissed/cancelled the picker
+      if (event.type === "dismissed") {
+        return;
+      }
     }
 
     if (selectedDate) {
-      // Keep the time part from current startTime, just change the date
-      const newDateTime = new Date(selectedDate);
-      newDateTime.setHours(startTime.getHours());
-      newDateTime.setMinutes(startTime.getMinutes());
+      let newDateTime;
+      
+      if (Platform.OS === "ios") {
+        // iOS datetime picker returns complete date+time, use it directly
+        newDateTime = new Date(selectedDate);
+      } else {
+        // Android date-only picker: keep the time from current selection, just change the date
+        const currentTime = pendingDateTimeRef.current;
+        newDateTime = new Date(selectedDate);
+        newDateTime.setHours(currentTime.getHours());
+        newDateTime.setMinutes(currentTime.getMinutes());
+      }
 
       // Ensure the selected datetime is not in the past
       if (isBefore(newDateTime, minStartTime)) {
@@ -65,6 +80,8 @@ const BookingScreen = ({ route, navigation }) => {
         return;
       }
 
+      // Update both state and ref
+      pendingDateTimeRef.current = newDateTime;
       setStartTime(newDateTime);
 
       // On Android, show time picker after date selection
@@ -72,7 +89,7 @@ const BookingScreen = ({ route, navigation }) => {
         setTimeout(() => {
           setPickerMode("time");
           setShowTimePicker(true);
-        }, 100);
+        }, 150);
       }
     }
   };
@@ -80,10 +97,16 @@ const BookingScreen = ({ route, navigation }) => {
   const handleTimeChange = (event, selectedTime) => {
     if (Platform.OS === "android") {
       setShowTimePicker(false);
+      // Don't process if user dismissed/cancelled the picker
+      if (event.type === "dismissed") {
+        return;
+      }
     }
 
     if (selectedTime) {
-      const newDateTime = new Date(startTime);
+      // Use ref to get the latest date (set by handleDateChange)
+      const currentDateTime = pendingDateTimeRef.current;
+      const newDateTime = new Date(currentDateTime);
       newDateTime.setHours(selectedTime.getHours());
       newDateTime.setMinutes(selectedTime.getMinutes());
 
@@ -96,11 +119,15 @@ const BookingScreen = ({ route, navigation }) => {
         return;
       }
 
+      // Update both state and ref
+      pendingDateTimeRef.current = newDateTime;
       setStartTime(newDateTime);
     }
   };
 
   const openDateTimePicker = () => {
+    // Sync ref with current state before opening picker
+    pendingDateTimeRef.current = startTime;
     setPickerMode("date");
     if (Platform.OS === "ios") {
       setShowDatePicker(true);

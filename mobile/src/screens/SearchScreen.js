@@ -127,6 +127,9 @@ const SearchScreen = ({ navigation }) => {
       Keyboard.dismiss();
       setShowSuggestions(false);
       setSuggestions([]);
+      
+      // Skip suggestion fetch when setting the search query programmatically
+      skipSuggestionsRef.current = true;
       setSearchQuery(suggestion.description);
       setLoading(true);
 
@@ -227,7 +230,11 @@ const SearchScreen = ({ navigation }) => {
             longitude: coords.longitude,
             address: "Current Location",
           });
+          // Skip suggestions when setting query programmatically
+          skipSuggestionsRef.current = true;
           setSearchQuery("Current Location");
+          setSuggestions([]);
+          setShowSuggestions(false);
         }
 
         const result = await searchNearbyParking(
