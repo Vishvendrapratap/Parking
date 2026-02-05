@@ -36,7 +36,7 @@ const BookingScreen = ({ route, navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pickerMode, setPickerMode] = useState("date"); // 'date' or 'time'
-  
+
   // Ref to store latest datetime for time picker (avoids stale state issues)
   const pendingDateTimeRef = useRef(startTime);
 
@@ -59,7 +59,7 @@ const BookingScreen = ({ route, navigation }) => {
 
     if (selectedDate) {
       let newDateTime;
-      
+
       if (Platform.OS === "ios") {
         // iOS datetime picker returns complete date+time, use it directly
         newDateTime = new Date(selectedDate);

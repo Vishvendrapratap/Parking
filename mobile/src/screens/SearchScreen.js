@@ -127,7 +127,7 @@ const SearchScreen = ({ navigation }) => {
       Keyboard.dismiss();
       setShowSuggestions(false);
       setSuggestions([]);
-      
+
       // Skip suggestion fetch when setting the search query programmatically
       skipSuggestionsRef.current = true;
       setSearchQuery(suggestion.description);
