@@ -46,7 +46,7 @@ const formatDistance = (distanceKm) => {
 };
 
 const SearchScreen = ({ navigation }) => {
-  const { location, getCurrentLocation } = useLocation();
+  const { location, getCurrentLocation, requestPermission, getAddressFromCoords } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -62,10 +62,17 @@ const SearchScreen = ({ navigation }) => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const sessionTokenRef = useRef(Date.now().toString());
+  const skipSuggestionsRef = useRef(false); // Flag to skip suggestions when setting location programmatically
 
   // Fetch autocomplete suggestions when search query changes
   useEffect(() => {
     const fetchSuggestions = async () => {
+      // Skip if programmatically set (e.g., from "Search Near Me")
+      if (skipSuggestionsRef.current) {
+        skipSuggestionsRef.current = false;
+        return;
+      }
+
       if (searchQuery.length < 2) {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -254,6 +261,104 @@ const SearchScreen = ({ navigation }) => {
     }
   }, [location, selectedLocation, filters]);
 
+  // Handle "Search Near Me" - asks for permission, gets fresh GPS location, and shows results
+  const handleSearchNearMe = useCallback(async () => {
+    try {
+      Keyboard.dismiss();
+      setShowSuggestions(false);
+      setLoading(true);
+
+      // First, request location permission
+      const hasPermission = await requestPermission();
+      
+      if (!hasPermission) {
+        Alert.alert(
+          "Location Permission Required",
+          "Please enable location access in your device settings to use 'Search Near Me' feature.",
+          [{ text: "OK" }]
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Get fresh GPS coordinates
+      const coords = await getCurrentLocation();
+
+      if (!coords) {
+        Alert.alert(
+          "Location Error",
+          "Unable to get your current location. Please ensure GPS is enabled and try again."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Get human-readable address from coordinates
+      let addressText = "My Current Location";
+      try {
+        const addressResult = await getAddressFromCoords(coords.latitude, coords.longitude);
+        if (addressResult) {
+          const parts = [];
+          if (addressResult.name && addressResult.name !== addressResult.street) parts.push(addressResult.name);
+          if (addressResult.street) parts.push(addressResult.street);
+          if (addressResult.city) parts.push(addressResult.city);
+          if (addressResult.region) parts.push(addressResult.region);
+          addressText = parts.slice(0, 3).join(", ") || "My Current Location";
+        }
+      } catch (e) {
+        console.log("Could not get address:", e);
+      }
+
+      // Set the current location as selected location
+      setSelectedLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        address: addressText,
+      });
+      
+      // Skip suggestions when setting query programmatically
+      skipSuggestionsRef.current = true;
+      setSearchQuery(addressText);
+      setSuggestions([]);
+      setShowSuggestions(false);
+
+      // Search for nearby parking
+      const result = await searchNearbyParking(
+        coords.latitude,
+        coords.longitude,
+        10000,
+        {
+          parkingSize: filters.parkingSize,
+          maxPrice: filters.maxPrice,
+        },
+      );
+
+      // Sort results by distance (nearest first)
+      const sortedResults = (result.data || []).sort((a, b) => {
+        const distA = calculateDistance(
+          coords.latitude,
+          coords.longitude,
+          a.location.coordinates[1],
+          a.location.coordinates[0],
+        );
+        const distB = calculateDistance(
+          coords.latitude,
+          coords.longitude,
+          b.location.coordinates[1],
+          b.location.coordinates[0],
+        );
+        return distA - distB;
+      });
+
+      setResults(sortedResults);
+    } catch (error) {
+      console.error("Search near me error:", error);
+      Alert.alert("Error", "Failed to search nearby parking. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, getCurrentLocation, requestPermission, getAddressFromCoords]);
+
   // Clear location selection
   const handleClearLocation = () => {
     setSearchQuery("");
@@ -289,7 +394,7 @@ const SearchScreen = ({ navigation }) => {
           navigation.navigate("ParkingDetails", { parkingId: item._id })
         }
       >
-        {/* Distance Badge - Top Right */}
+        {/* Distance Badge - Bottom Right */}
         {distance !== null && (
           <View style={styles.distanceBadge}>
             <Icon name="directions" size="xs" color="#FFFFFF" />
@@ -533,7 +638,7 @@ const SearchScreen = ({ navigation }) => {
       {!showSuggestions && (
         <TouchableOpacity
           style={styles.searchNearMeButton}
-          onPress={handleSearch}
+          onPress={handleSearchNearMe}
         >
           <Icon name="mapMarker" size="md" color={COLORS.white} />
           <Text style={styles.searchNearMeText}> Search Near Me</Text>
@@ -898,7 +1003,7 @@ const styles = StyleSheet.create({
   },
   distanceBadge: {
     position: "absolute",
-    top: 8,
+    bottom: 8,
     right: 8,
     flexDirection: "row",
     alignItems: "center",

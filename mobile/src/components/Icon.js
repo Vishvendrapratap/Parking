@@ -293,6 +293,7 @@ export const TabIcon = ({
   focused,
   activeColor = COLORS.primary,
   inactiveColor = COLORS.gray[400],
+  badge = 0,
 }) => {
   const tabIcons = {
     Home: "map",
@@ -309,5 +310,35 @@ export const TabIcon = ({
   const color = focused ? activeColor : inactiveColor;
   const size = focused ? "xl" : "lg";
 
-  return <Icon name={iconName} size={size} color={color} />;
+  return (
+    <View style={{ position: "relative" }}>
+      <Icon name={iconName} size={size} color={color} />
+      {badge > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: -4,
+            right: -8,
+            backgroundColor: "#EF4444",
+            borderRadius: 10,
+            minWidth: 18,
+            height: 18,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 4,
+          }}
+        >
+          <Text
+            style={{
+              color: "#FFFFFF",
+              fontSize: 10,
+              fontWeight: "bold",
+            }}
+          >
+            {badge > 99 ? "99+" : badge}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 };

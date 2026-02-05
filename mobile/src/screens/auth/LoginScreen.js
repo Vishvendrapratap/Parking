@@ -65,7 +65,7 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.logoContainer}>
               <Icon name="parking" size="4xl" color={COLORS.primary} />
             </View>
-            <Text style={styles.title}>ParkEase</Text>
+            <Text style={styles.title}>Parking Uncle</Text>
             <Text style={styles.subtitle}>Find & share parking spaces</Text>
           </View>
 

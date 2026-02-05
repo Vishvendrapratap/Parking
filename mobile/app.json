@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ParkEase",
-    "slug": "parkease",
+    "name": "Parking Uncle",
+    "slug": "parking-uncle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,19 +11,21 @@
       "resizeMode": "contain",
       "backgroundColor": "#4F46E5"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.parkease",
+      "bundleIdentifier": "com.yourcompany.parkinguncle",
       "buildNumber": "1",
       "config": {
         "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY"
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "ParkEase needs your location to find nearby parking spaces and show them on the map.",
-        "NSLocationAlwaysUsageDescription": "ParkEase needs your location to find nearby parking spaces even when the app is in the background.",
-        "NSCameraUsageDescription": "ParkEase needs camera access to let you take photos of your parking space listings.",
-        "NSPhotoLibraryUsageDescription": "ParkEase needs photo library access to let you upload photos of parking spaces.",
+        "NSLocationWhenInUseUsageDescription": "Parking Uncle needs your location to find nearby parking spaces and show them on the map.",
+        "NSLocationAlwaysUsageDescription": "Parking Uncle needs your location to find nearby parking spaces even when the app is in the background.",
+        "NSCameraUsageDescription": "Parking Uncle needs camera access to let you take photos of your parking space listings.",
+        "NSPhotoLibraryUsageDescription": "Parking Uncle needs photo library access to let you upload photos of parking spaces.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -32,7 +34,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4F46E5"
       },
-      "package": "com.yourcompany.parkease",
+      "package": "com.yourcompany.parkinguncle",
       "versionCode": 1,
       "config": {
         "googleMaps": {
@@ -55,19 +57,20 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow ParkEase to use your location to find nearby parking."
+          "locationAlwaysAndWhenInUsePermission": "Allow Parking Uncle to use your location to find nearby parking."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow ParkEase to access your photos for uploading parking images.",
-          "cameraPermission": "Allow ParkEase to use your camera for taking parking photos."
+          "photosPermission": "Allow Parking Uncle to access your photos for uploading parking images.",
+          "cameraPermission": "Allow Parking Uncle to use your camera for taking parking photos."
         }
       ],
       "expo-asset",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {

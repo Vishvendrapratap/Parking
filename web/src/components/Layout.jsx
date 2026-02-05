@@ -24,7 +24,7 @@ const Layout = () => {
               <Link to="/" className="flex items-center space-x-2">
                 <Icon name="parking" className="text-primary-600" size="2xl" />
                 <span className="text-xl font-bold text-primary-600">
-                  Parking App
+                  Parking Uncle
                 </span>
               </Link>
             </div>
@@ -219,7 +219,7 @@ const Layout = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Icon name="parking" size="2xl" />
-                <span className="text-xl font-bold">Parking App</span>
+                <span className="text-xl font-bold">Parking Uncle</span>
               </div>
               <p className="text-gray-400">
                 Find and share parking spaces in your community.
@@ -292,7 +292,7 @@ const Layout = () => {
 
           <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
             <p>
-              &copy; {new Date().getFullYear()} Parking App. All rights
+              &copy; {new Date().getFullYear()} Parking Uncle. All rights
               reserved.
             </p>
           </div>

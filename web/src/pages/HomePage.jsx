@@ -107,7 +107,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Why Choose Parking App?
+              Why Choose Parking Uncle?
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               We connect parking space owners with drivers looking for

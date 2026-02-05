@@ -8,9 +8,12 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { format, addHours } from "date-fns";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { format, addHours, isAfter, isBefore, addMinutes } from "date-fns";
 import { createBooking, checkParkingAvailability } from "../api/services";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
@@ -27,12 +30,78 @@ const BookingScreen = ({ route, navigation }) => {
     color: "",
   });
   const [specialRequests, setSpecialRequests] = useState("");
-  const [startTime] = useState(new Date());
+  
+  // Date/Time picker state
+  const [startTime, setStartTime] = useState(addMinutes(new Date(), 30)); // Default to 30 mins from now
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState("date"); // 'date' or 'time'
 
   const endTime = addHours(startTime, hours);
   const subtotal = parking.pricePerHour * hours;
   const serviceFee = subtotal * 0.1;
   const total = subtotal + serviceFee;
+
+  // Minimum start time is 15 minutes from now
+  const minStartTime = addMinutes(new Date(), 15);
+
+  const handleDateChange = (event, selectedDate) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+    
+    if (selectedDate) {
+      // Keep the time part from current startTime, just change the date
+      const newDateTime = new Date(selectedDate);
+      newDateTime.setHours(startTime.getHours());
+      newDateTime.setMinutes(startTime.getMinutes());
+      
+      // Ensure the selected datetime is not in the past
+      if (isBefore(newDateTime, minStartTime)) {
+        Alert.alert("Invalid Time", "Please select a time at least 15 minutes from now.");
+        return;
+      }
+      
+      setStartTime(newDateTime);
+      
+      // On Android, show time picker after date selection
+      if (Platform.OS === "android" && pickerMode === "date") {
+        setTimeout(() => {
+          setPickerMode("time");
+          setShowTimePicker(true);
+        }, 100);
+      }
+    }
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+    }
+    
+    if (selectedTime) {
+      const newDateTime = new Date(startTime);
+      newDateTime.setHours(selectedTime.getHours());
+      newDateTime.setMinutes(selectedTime.getMinutes());
+      
+      // Ensure the selected datetime is not in the past
+      if (isBefore(newDateTime, minStartTime)) {
+        Alert.alert("Invalid Time", "Please select a time at least 15 minutes from now.");
+        return;
+      }
+      
+      setStartTime(newDateTime);
+    }
+  };
+
+  const openDateTimePicker = () => {
+    setPickerMode("date");
+    if (Platform.OS === "ios") {
+      setShowDatePicker(true);
+    } else {
+      setShowDatePicker(true);
+    }
+  };
 
   const handleCheckAvailability = async () => {
     try {
@@ -124,6 +193,28 @@ const BookingScreen = ({ route, navigation }) => {
 
         {/* Duration Selection */}
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Date & Time</Text>
+          
+          {/* Date/Time Selection */}
+          <TouchableOpacity 
+            style={styles.dateTimeSelector}
+            onPress={openDateTimePicker}
+          >
+            <View style={styles.dateTimeItem}>
+              <Icon name="calendar" size="md" color={COLORS.primary} />
+              <View style={styles.dateTimeTextContainer}>
+                <Text style={styles.dateTimeLabel}>Start Date & Time</Text>
+                <Text style={styles.dateTimeValue}>
+                  {format(startTime, "EEE, MMM d, yyyy")}
+                </Text>
+                <Text style={styles.dateTimeValue}>
+                  {format(startTime, "h:mm a")}
+                </Text>
+              </View>
+            </View>
+            <Icon name="chevronRight" size="sm" color={COLORS.gray[400]} />
+          </TouchableOpacity>
+
           <Text style={styles.sectionTitle}>Duration</Text>
           <View style={styles.durationSelector}>
             <TouchableOpacity
@@ -176,6 +267,58 @@ const BookingScreen = ({ route, navigation }) => {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* iOS Date Picker Modal */}
+        {Platform.OS === "ios" && showDatePicker && (
+          <Modal
+            visible={showDatePicker}
+            transparent
+            animationType="slide"
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.pickerModal}>
+                <View style={styles.pickerHeader}>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text style={styles.pickerCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.pickerTitle}>Select Date & Time</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text style={styles.pickerDone}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={startTime}
+                  mode="datetime"
+                  display="spinner"
+                  onChange={handleDateChange}
+                  minimumDate={minStartTime}
+                  style={styles.iosPicker}
+                />
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {/* Android Date Picker */}
+        {Platform.OS === "android" && showDatePicker && (
+          <DateTimePicker
+            value={startTime}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            minimumDate={minStartTime}
+          />
+        )}
+
+        {/* Android Time Picker */}
+        {Platform.OS === "android" && showTimePicker && (
+          <DateTimePicker
+            value={startTime}
+            mode="time"
+            display="default"
+            onChange={handleTimeChange}
+          />
+        )}
 
         {/* Vehicle Information */}
         <View style={styles.card}>
@@ -362,6 +505,70 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.text.primary,
     marginBottom: 12,
+  },
+  dateTimeSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.gray[50],
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  dateTimeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateTimeTextContainer: {
+    marginLeft: 12,
+  },
+  dateTimeLabel: {
+    fontSize: 12,
+    color: COLORS.gray[500],
+    marginBottom: 2,
+  },
+  dateTimeValue: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  pickerModal: {
+    backgroundColor: COLORS.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 30,
+  },
+  pickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  pickerCancel: {
+    fontSize: 16,
+    color: COLORS.gray[500],
+  },
+  pickerDone: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  iosPicker: {
+    height: 200,
   },
   durationSelector: {
     flexDirection: "row",

@@ -9,6 +9,7 @@ import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
 
 import { useAuth } from "../contexts/AuthContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
+import { UnreadMessagesProvider, useUnreadMessages } from "../contexts/UnreadMessagesContext";
 import { COLORS } from "../constants/config";
 import { TabIcon } from "../components/Icon";
 
@@ -55,51 +56,67 @@ const AuthStack = () => (
 );
 
 // Seeker Tab Navigator
-const SeekerTabs = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarIcon: ({ focused }) => (
-        <TabIcon name={route.name} focused={focused} />
-      ),
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.gray[400],
-      tabBarStyle: styles.tabBar,
-      tabBarLabelStyle: styles.tabBarLabel,
-    })}
-  >
-    <Tab.Screen name="Home" component={HomeMapScreen} />
-    <Tab.Screen name="Search" component={SearchScreen} />
-    <Tab.Screen name="Bookings" component={BookingsScreen} />
-    <Tab.Screen name="Chat" component={ChatListScreen} />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
-  </Tab.Navigator>
-);
+const SeekerTabs = () => {
+  const { unreadCount } = useUnreadMessages();
+  
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused }) => (
+          <TabIcon 
+            name={route.name} 
+            focused={focused} 
+            badge={route.name === "Chat" ? unreadCount : 0}
+          />
+        ),
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.gray[400],
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeMapScreen} />
+      <Tab.Screen name="Search" component={SearchScreen} />
+      <Tab.Screen name="Bookings" component={BookingsScreen} />
+      <Tab.Screen name="Chat" component={ChatListScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
 
 // Owner Tab Navigator
-const OwnerTabs = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarIcon: ({ focused }) => (
-        <TabIcon name={route.name} focused={focused} />
-      ),
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.gray[400],
-      tabBarStyle: styles.tabBar,
-      tabBarLabelStyle: styles.tabBarLabel,
-    })}
-  >
-    <Tab.Screen name="Dashboard" component={OwnerDashboardScreen} />
-    <Tab.Screen
-      name="My Listings"
-      component={MyListingsScreen}
-      options={{ tabBarLabel: "My Listings" }}
-    />
-    <Tab.Screen name="Chat" component={ChatListScreen} />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
-  </Tab.Navigator>
-);
+const OwnerTabs = () => {
+  const { unreadCount } = useUnreadMessages();
+  
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused }) => (
+          <TabIcon 
+            name={route.name} 
+            focused={focused}
+            badge={route.name === "Chat" ? unreadCount : 0}
+          />
+        ),
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.gray[400],
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+      })}
+    >
+      <Tab.Screen name="Dashboard" component={OwnerDashboardScreen} />
+      <Tab.Screen
+        name="My Listings"
+        component={MyListingsScreen}
+        options={{ tabBarLabel: "My Listings" }}
+      />
+      <Tab.Screen name="Chat" component={ChatListScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
 
 // Main Stack Navigator
 const MainStack = () => {
@@ -156,7 +173,9 @@ const AppNavigator = () => {
   return (
     <NavigationContainer ref={navigationRef}>
       <NotificationProvider navigation={navigationRef}>
-        {isAuthenticated ? <MainStack /> : <AuthStack />}
+        <UnreadMessagesProvider>
+          {isAuthenticated ? <MainStack /> : <AuthStack />}
+        </UnreadMessagesProvider>
       </NotificationProvider>
     </NavigationContainer>
   );

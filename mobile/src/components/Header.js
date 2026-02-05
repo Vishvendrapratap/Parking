@@ -36,7 +36,7 @@ const Header = ({
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={styles.brandName}>ParkEase</Text>
+              <Text style={styles.brandName}>Parking Uncle</Text>
             </View>
           ) : null}
         </View>

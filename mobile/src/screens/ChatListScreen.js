@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getConversations } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
+import { useUnreadMessages } from "../contexts/UnreadMessagesContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { COLORS } from "../constants/config";
 import Icon from "../components/Icon";
@@ -21,6 +22,7 @@ import Header from "../components/Header";
 const ChatListScreen = ({ navigation }) => {
   const { user } = useAuth();
   const { socket } = useSocket();
+  const { refreshUnreadCount } = useUnreadMessages();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +31,9 @@ const ChatListScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchConversations();
-    }, []),
+      // Refresh unread count when viewing chat list
+      refreshUnreadCount();
+    }, [refreshUnreadCount]),
   );
 
   // Listen for new messages to update conversation list
