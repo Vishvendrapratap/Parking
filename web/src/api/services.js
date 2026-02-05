@@ -24,9 +24,9 @@ export const authService = {
 
 // Parking Services
 export const parkingService = {
-  search: (params) => api.get("/parking/search", { params }),
+  search: (params) => api.get("/parking", { params }),
   getNearby: (lat, lng, radius = 5000) =>
-    api.get("/parking/nearby", { params: { lat, lng, radius } }),
+    api.get("/parking", { params: { lat, lng, radius } }),
   getById: (id) => api.get(`/parking/${id}`),
   create: (data) => api.post("/parking", data),
   update: (id, data) => api.put(`/parking/${id}`, data),
@@ -38,7 +38,7 @@ export const parkingService = {
   deleteImage: (id, imageId) => api.delete(`/parking/${id}/images/${imageId}`),
   checkAvailability: (id, startTime, endTime) =>
     api.get(`/parking/${id}/availability`, { params: { startTime, endTime } }),
-  getMyListings: () => api.get("/parking/my-listings"),
+  getMyListings: () => api.get("/parking/owner/my-listings"),
 };
 
 // Booking Services
@@ -49,15 +49,22 @@ export const bookingService = {
   updateStatus: (id, status) => api.put(`/bookings/${id}/status`, { status }),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
   addReview: (id, data) => api.post(`/bookings/${id}/review`, data),
-  getOwnerBookings: () => api.get("/bookings/owner"),
+  getOwnerBookings: (params = {}) =>
+    api.get("/bookings", { params: { ...params, role: "owner" } }),
 };
 
 // Chat Services
 export const chatService = {
   getConversations: () => api.get("/chat/conversations"),
-  getMessages: (conversationId) => api.get(`/chat/messages/${conversationId}`),
+  getMessages: (conversationId) =>
+    api.get(`/chat/conversations/${conversationId}/messages`),
   sendMessage: (receiverId, text, parkingSpaceId) =>
     api.post("/chat/messages", { receiverId, text, parkingSpaceId }),
+  markAsRead: (conversationId) =>
+    api.put(`/chat/conversations/${conversationId}/read`),
+  startConversation: (receiverId, parkingSpaceId, initialMessage) =>
+    api.post("/chat/start", { receiverId, parkingSpaceId, initialMessage }),
+  getUnreadCount: () => api.get("/chat/unread-count"),
 };
 
 // User Services
@@ -78,13 +85,15 @@ export const ownerService = {
 
 // Admin Services
 export const adminService = {
-  getDashboard: () => api.get("/admin/dashboard"),
+  getDashboard: () => api.get("/admin/stats"),
   getUsers: (params) => api.get("/admin/users", { params }),
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser: (id) => api.delete(`/admin/users/${id}`),
-  getListings: (params) => api.get("/admin/listings", { params }),
-  updateListing: (id, data) => api.put(`/admin/listings/${id}`, data),
-  deleteListing: (id) => api.delete(`/admin/listings/${id}`),
+  updateUserStatus: (id, status) =>
+    api.put(`/admin/users/${id}/status`, { status }),
+  getListings: (params) => api.get("/admin/parking", { params }),
+  verifyListing: (id) => api.put(`/admin/parking/${id}/verify`),
+  featureListing: (id, featured) =>
+    api.put(`/admin/parking/${id}/feature`, { featured }),
+  deleteListing: (id) => api.delete(`/admin/parking/${id}`),
   getBookings: (params) => api.get("/admin/bookings", { params }),
   getStats: () => api.get("/admin/stats"),
 };

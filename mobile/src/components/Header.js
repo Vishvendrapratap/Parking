@@ -86,15 +86,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 10,
   },
   brandName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: COLORS.primary,
-    marginLeft: 10,
+    marginLeft: 12,
   },
   title: {
     fontSize: 18,

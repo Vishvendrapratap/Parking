@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authService.getProfile();
+      // Note: axios interceptor already returns response.data
       setUser(response.data);
       setIsAuthenticated(true);
     } catch (error) {
@@ -43,7 +44,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      const { token, user: userData } = response.data;
+      // Note: axios interceptor already returns response.data
+      const { token, user: userData } = response;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
@@ -63,7 +65,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (data) => {
     try {
       const response = await authService.register(data);
-      const { token, user: userData } = response.data;
+      // Note: axios interceptor already returns response.data
+      const { token, user: userData } = response;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
@@ -96,6 +99,7 @@ export const AuthProvider = ({ children }) => {
   const switchRole = async (newRole) => {
     try {
       const response = await authService.switchRole(newRole);
+      // Note: axios interceptor already returns response.data
       setUser(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
       toast.success(`Switched to ${newRole} mode`);
@@ -109,10 +113,11 @@ export const AuthProvider = ({ children }) => {
   const sendOTP = async (phone, isRegistration = false) => {
     try {
       const response = await authService.sendOTP(phone, isRegistration);
+      // Note: axios interceptor already returns response.data, so response IS the data
       return {
         success: true,
-        isNewUser: response.data.isNewUser,
-        requiresRegistration: response.data.requiresRegistration,
+        isNewUser: response.isNewUser,
+        requiresRegistration: response.requiresRegistration,
       };
     } catch (error) {
       const message = error.response?.data?.message || "Failed to send OTP";
@@ -127,7 +132,8 @@ export const AuthProvider = ({ children }) => {
         otp,
         registrationData,
       );
-      const { token, user: userData } = response.data;
+      // Note: axios interceptor already returns response.data, so response IS the data
+      const { token, user: userData } = response;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));

@@ -116,7 +116,7 @@ const ChatPage = () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
     setSendingMessage(true);
-    const otherUser = selectedConversation.participants.find(
+    const otherUser = selectedConversation.participants?.find(
       (p) => p._id !== user?._id,
     );
 
@@ -201,7 +201,7 @@ const ChatPage = () => {
         ) : (
           <div className="flex-1 overflow-y-auto">
             {conversations.map((conv) => {
-              const otherUser = conv.participants.find(
+              const otherUser = conv.participants?.find(
                 (p) => p._id !== user?._id,
               );
               return (
@@ -259,14 +259,14 @@ const ChatPage = () => {
             <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
               <span className="text-primary-600 font-semibold">
                 {selectedConversation.participants
-                  .find((p) => p._id !== user?._id)
+                  ?.find((p) => p._id !== user?._id)
                   ?.name?.charAt(0)}
               </span>
             </div>
             <div className="flex-1">
               <p className="font-medium text-gray-800">
                 {
-                  selectedConversation.participants.find(
+                  selectedConversation.participants?.find(
                     (p) => p._id !== user?._id,
                   )?.name
                 }

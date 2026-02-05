@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  ownerService,
-  bookingService,
-  parkingService,
-} from "../../api/services";
+import { bookingService, parkingService } from "../../api/services";
 import toast from "react-hot-toast";
 import Icon from "../../components/Icon";
 
@@ -20,20 +16,39 @@ const OwnerDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [dashboardRes, bookingsRes, listingsRes] = await Promise.all([
-        ownerService.getDashboard(),
+      const [bookingsRes, listingsRes] = await Promise.all([
         bookingService.getOwnerBookings(),
         parkingService.getMyListings(),
       ]);
 
-      setStats(dashboardRes.data);
-      setPendingBookings(
-        bookingsRes.data?.filter((b) => b.status === "pending").slice(0, 5) ||
-          [],
+      const allBookings = bookingsRes.data || [];
+      const listings = listingsRes.data || [];
+
+      // Calculate stats from bookings
+      const confirmedBookings = allBookings.filter(
+        (b) => b.status === "confirmed" || b.status === "completed",
       );
-      setRecentListings(listingsRes.data?.slice(0, 4) || []);
+      const totalEarnings = confirmedBookings.reduce(
+        (sum, b) => sum + (b.totalPrice || 0),
+        0,
+      );
+
+      setStats({
+        totalListings: listings.length,
+        activeListings: listings.filter((l) => l.status === "available").length,
+        totalBookings: allBookings.length,
+        totalEarnings: totalEarnings,
+        pendingBookings: allBookings.filter((b) => b.status === "pending")
+          .length,
+      });
+
+      setPendingBookings(
+        allBookings.filter((b) => b.status === "pending").slice(0, 5),
+      );
+      setRecentListings(listings.slice(0, 4));
     } catch (error) {
       console.error("Dashboard error:", error);
+      toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
