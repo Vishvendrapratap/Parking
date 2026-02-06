@@ -441,332 +441,335 @@ const EditListingScreen = ({ route, navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Status Toggle */}
-        <View style={[styles.statusContainer, !isEditable && styles.disabled]}>
-          <Text style={styles.label}>Availability Status</Text>
-          <View style={styles.statusToggle}>
-            <TouchableOpacity
-              style={[
-                styles.statusOption,
-                formData.status === "available" && styles.statusOptionActive,
-              ]}
-              onPress={() =>
-                isEditable && setFormData({ ...formData, status: "available" })
-              }
-              disabled={!isEditable}
-            >
-              <Text
-                style={[
-                  styles.statusOptionText,
-                  formData.status === "available" &&
-                    styles.statusOptionTextActive,
-                ]}
-              >
-                Available
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.statusOption,
-                formData.status === "unavailable" &&
-                  styles.statusOptionInactive,
-              ]}
-              onPress={() =>
-                setFormData({ ...formData, status: "unavailable" })
-              }
-            >
-              <Text
-                style={[
-                  styles.statusOptionText,
-                  formData.status === "unavailable" &&
-                    styles.statusOptionTextInactive,
-                ]}
-              >
-                Unavailable
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Images */}
-        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
-          <Text style={styles.label}>
-            Photos ({images.length + newImages.length}/5)
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.imagesContainer}>
-              {images.map((image, index) => (
-                <View key={image._id || index} style={styles.imageWrapper}>
-                  <Image
-                    source={{ uri: image.url }}
-                    style={styles.previewImage}
-                  />
-                  {isEditable && (
-                    <TouchableOpacity
-                      style={styles.removeImageButton}
-                      onPress={() => removeExistingImage(image._id, index)}
-                    >
-                      <Icon name="times" size="sm" color={COLORS.white} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))}
-              {newImages.map((image, index) => (
-                <View key={`new_${index}`} style={styles.imageWrapper}>
-                  <Image
-                    source={{ uri: image.uri }}
-                    style={styles.previewImage}
-                  />
-                  {isEditable && (
-                    <TouchableOpacity
-                      style={styles.removeImageButton}
-                      onPress={() => removeNewImage(index)}
-                    >
-                      <Icon name="times" size="sm" color={COLORS.white} />
-                    </TouchableOpacity>
-                  )}
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>New</Text>
-                  </View>
-                </View>
-              ))}
-              {images.length + newImages.length < 5 && isEditable && (
-                <TouchableOpacity
-                  style={styles.addImageButton}
-                  onPress={pickImages}
-                >
-                  <Icon name="camera" size="2xl" color={COLORS.gray[400]} />
-                  <Text style={styles.addImageText}>Add Photo</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Basic Info */}
-        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
-          <Text style={styles.label}>Title *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.title}
-            onChangeText={(text) => setFormData({ ...formData, title: text })}
-            placeholder="e.g., Spacious Driveway Near Downtown"
-            placeholderTextColor={COLORS.gray[400]}
-            editable={isEditable}
-          />
-        </View>
-
-        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.description}
-            onChangeText={(text) =>
-              setFormData({ ...formData, description: text })
-            }
-            placeholder="Describe your parking space..."
-            placeholderTextColor={COLORS.gray[400]}
-            multiline
-            numberOfLines={4}
-            editable={isEditable}
-          />
-        </View>
-
-        {/* Size */}
-        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
-          <Text style={styles.label}>Parking Size</Text>
-          <View style={styles.sizeOptions}>
-            {PARKING_SIZES.map((size) => (
+          <View
+            style={[styles.statusContainer, !isEditable && styles.disabled]}
+          >
+            <Text style={styles.label}>Availability Status</Text>
+            <View style={styles.statusToggle}>
               <TouchableOpacity
-                key={size.value}
                 style={[
-                  styles.sizeOption,
-                  formData.parkingSize === size.value &&
-                    styles.sizeOptionActive,
+                  styles.statusOption,
+                  formData.status === "available" && styles.statusOptionActive,
                 ]}
                 onPress={() =>
-                  setFormData({ ...formData, parkingSize: size.value })
+                  isEditable &&
+                  setFormData({ ...formData, status: "available" })
+                }
+                disabled={!isEditable}
+              >
+                <Text
+                  style={[
+                    styles.statusOptionText,
+                    formData.status === "available" &&
+                      styles.statusOptionTextActive,
+                  ]}
+                >
+                  Available
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.statusOption,
+                  formData.status === "unavailable" &&
+                    styles.statusOptionInactive,
+                ]}
+                onPress={() =>
+                  setFormData({ ...formData, status: "unavailable" })
                 }
               >
-                <Text style={styles.sizeIcon}>{size.icon}</Text>
                 <Text
                   style={[
-                    styles.sizeLabel,
+                    styles.statusOptionText,
+                    formData.status === "unavailable" &&
+                      styles.statusOptionTextInactive,
+                  ]}
+                >
+                  Unavailable
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Images */}
+          <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
+            <Text style={styles.label}>
+              Photos ({images.length + newImages.length}/5)
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.imagesContainer}>
+                {images.map((image, index) => (
+                  <View key={image._id || index} style={styles.imageWrapper}>
+                    <Image
+                      source={{ uri: image.url }}
+                      style={styles.previewImage}
+                    />
+                    {isEditable && (
+                      <TouchableOpacity
+                        style={styles.removeImageButton}
+                        onPress={() => removeExistingImage(image._id, index)}
+                      >
+                        <Icon name="times" size="sm" color={COLORS.white} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+                {newImages.map((image, index) => (
+                  <View key={`new_${index}`} style={styles.imageWrapper}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.previewImage}
+                    />
+                    {isEditable && (
+                      <TouchableOpacity
+                        style={styles.removeImageButton}
+                        onPress={() => removeNewImage(index)}
+                      >
+                        <Icon name="times" size="sm" color={COLORS.white} />
+                      </TouchableOpacity>
+                    )}
+                    <View style={styles.newBadge}>
+                      <Text style={styles.newBadgeText}>New</Text>
+                    </View>
+                  </View>
+                ))}
+                {images.length + newImages.length < 5 && isEditable && (
+                  <TouchableOpacity
+                    style={styles.addImageButton}
+                    onPress={pickImages}
+                  >
+                    <Icon name="camera" size="2xl" color={COLORS.gray[400]} />
+                    <Text style={styles.addImageText}>Add Photo</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Basic Info */}
+          <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
+            <Text style={styles.label}>Title *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.title}
+              onChangeText={(text) => setFormData({ ...formData, title: text })}
+              placeholder="e.g., Spacious Driveway Near Downtown"
+              placeholderTextColor={COLORS.gray[400]}
+              editable={isEditable}
+            />
+          </View>
+
+          <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.description}
+              onChangeText={(text) =>
+                setFormData({ ...formData, description: text })
+              }
+              placeholder="Describe your parking space..."
+              placeholderTextColor={COLORS.gray[400]}
+              multiline
+              numberOfLines={4}
+              editable={isEditable}
+            />
+          </View>
+
+          {/* Size */}
+          <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
+            <Text style={styles.label}>Parking Size</Text>
+            <View style={styles.sizeOptions}>
+              {PARKING_SIZES.map((size) => (
+                <TouchableOpacity
+                  key={size.value}
+                  style={[
+                    styles.sizeOption,
                     formData.parkingSize === size.value &&
-                      styles.sizeLabelActive,
+                      styles.sizeOptionActive,
                   ]}
+                  onPress={() =>
+                    setFormData({ ...formData, parkingSize: size.value })
+                  }
                 >
-                  {size.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text style={styles.sizeIcon}>{size.icon}</Text>
+                  <Text
+                    style={[
+                      styles.sizeLabel,
+                      formData.parkingSize === size.value &&
+                        styles.sizeLabelActive,
+                    ]}
+                  >
+                    {size.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
 
-        {/* Price */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Price per Hour (₹) *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.pricePerHour}
-            onChangeText={(text) =>
-              setFormData({ ...formData, pricePerHour: text })
-            }
-            placeholder="0.00"
-            placeholderTextColor={COLORS.gray[400]}
-            keyboardType="decimal-pad"
-          />
-        </View>
+          {/* Price */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Price per Hour (₹) *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.pricePerHour}
+              onChangeText={(text) =>
+                setFormData({ ...formData, pricePerHour: text })
+              }
+              placeholder="0.00"
+              placeholderTextColor={COLORS.gray[400]}
+              keyboardType="decimal-pad"
+            />
+          </View>
 
-        {/* Amenities */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Amenities</Text>
-          <View style={styles.amenitiesGrid}>
-            {AMENITIES.map((amenity) => (
-              <TouchableOpacity
-                key={amenity.value}
-                style={[
-                  styles.amenityOption,
-                  formData.amenities.includes(amenity.value) &&
-                    styles.amenityOptionActive,
-                ]}
-                onPress={() => toggleAmenity(amenity.value)}
-              >
-                <Text style={styles.amenityIcon}>{amenity.icon}</Text>
-                <Text
+          {/* Amenities */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Amenities</Text>
+            <View style={styles.amenitiesGrid}>
+              {AMENITIES.map((amenity) => (
+                <TouchableOpacity
+                  key={amenity.value}
                   style={[
-                    styles.amenityLabel,
+                    styles.amenityOption,
                     formData.amenities.includes(amenity.value) &&
-                      styles.amenityLabelActive,
+                      styles.amenityOptionActive,
                   ]}
+                  onPress={() => toggleAmenity(amenity.value)}
                 >
-                  {amenity.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text style={styles.amenityIcon}>{amenity.icon}</Text>
+                  <Text
+                    style={[
+                      styles.amenityLabel,
+                      formData.amenities.includes(amenity.value) &&
+                        styles.amenityLabelActive,
+                    ]}
+                  >
+                    {amenity.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
 
-        {/* Access Instructions */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Access Instructions</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.accessInstructions}
-            onChangeText={(text) =>
-              setFormData({ ...formData, accessInstructions: text })
-            }
-            placeholder="How should guests access the parking space?"
-            placeholderTextColor={COLORS.gray[400]}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
+          {/* Access Instructions */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Access Instructions</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.accessInstructions}
+              onChangeText={(text) =>
+                setFormData({ ...formData, accessInstructions: text })
+              }
+              placeholder="How should guests access the parking space?"
+              placeholderTextColor={COLORS.gray[400]}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
 
-        {/* Location - Street Address */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Street Address *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.location.street}
-            onChangeText={(text) =>
-              setFormData({
-                ...formData,
-                location: { ...formData.location, street: text },
-              })
-            }
-            placeholder="e.g., 123 Main Street, Apt 4B"
-            placeholderTextColor={COLORS.gray[400]}
-          />
-        </View>
-
-        {/* City and State */}
-        <View style={styles.rowInputs}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.label}>City *</Text>
+          {/* Location - Street Address */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Street Address *</Text>
             <TextInput
               style={styles.input}
-              value={formData.location.city}
+              value={formData.location.street}
               onChangeText={(text) =>
                 setFormData({
                   ...formData,
-                  location: { ...formData.location, city: text },
+                  location: { ...formData.location, street: text },
                 })
               }
-              placeholder="City"
+              placeholder="e.g., 123 Main Street, Apt 4B"
               placeholderTextColor={COLORS.gray[400]}
             />
           </View>
-          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.label}>State *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.location.state}
-              onChangeText={(text) =>
-                setFormData({
-                  ...formData,
-                  location: { ...formData.location, state: text },
-                })
-              }
-              placeholder="State"
-              placeholderTextColor={COLORS.gray[400]}
-            />
-          </View>
-        </View>
 
-        {/* ZIP Code and Country */}
-        <View style={styles.rowInputs}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.label}>ZIP Code *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.location.zipCode}
-              onChangeText={(text) =>
-                setFormData({
-                  ...formData,
-                  location: { ...formData.location, zipCode: text },
-                })
-              }
-              placeholder="ZIP Code"
-              placeholderTextColor={COLORS.gray[400]}
-              keyboardType="numeric"
-            />
+          {/* City and State */}
+          <View style={styles.rowInputs}>
+            <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+              <Text style={styles.label}>City *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.location.city}
+                onChangeText={(text) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, city: text },
+                  })
+                }
+                placeholder="City"
+                placeholderTextColor={COLORS.gray[400]}
+              />
+            </View>
+            <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+              <Text style={styles.label}>State *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.location.state}
+                onChangeText={(text) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, state: text },
+                  })
+                }
+                placeholder="State"
+                placeholderTextColor={COLORS.gray[400]}
+              />
+            </View>
           </View>
-          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.label}>Country</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.location.country}
-              onChangeText={(text) =>
-                setFormData({
-                  ...formData,
-                  location: { ...formData.location, country: text },
-                })
-              }
-              placeholder="Country"
-              placeholderTextColor={COLORS.gray[400]}
-            />
-          </View>
-        </View>
 
-        {/* Map Preview */}
-        {formData.location.coordinates.latitude !== 0 && (
-          <View style={styles.mapContainer}>
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_GOOGLE}
-              initialRegion={{
-                ...formData.location.coordinates,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              scrollEnabled={false}
-            >
-              <Marker coordinate={formData.location.coordinates} />
-            </MapView>
+          {/* ZIP Code and Country */}
+          <View style={styles.rowInputs}>
+            <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+              <Text style={styles.label}>ZIP Code *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.location.zipCode}
+                onChangeText={(text) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, zipCode: text },
+                  })
+                }
+                placeholder="ZIP Code"
+                placeholderTextColor={COLORS.gray[400]}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+              <Text style={styles.label}>Country</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.location.country}
+                onChangeText={(text) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, country: text },
+                  })
+                }
+                placeholder="Country"
+                placeholderTextColor={COLORS.gray[400]}
+              />
+            </View>
           </View>
-        )}
 
-        <View style={styles.bottomSpacer} />
+          {/* Map Preview */}
+          {formData.location.coordinates.latitude !== 0 && (
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={{
+                  ...formData.location.coordinates,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                scrollEnabled={false}
+              >
+                <Marker coordinate={formData.location.coordinates} />
+              </MapView>
+            </View>
+          )}
+
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

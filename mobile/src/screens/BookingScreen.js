@@ -309,409 +309,417 @@ const BookingScreen = ({ route, navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Parking Summary */}
-        <View style={styles.card}>
-          <Text style={styles.parkingTitle}>{parking.title}</Text>
-          <View style={styles.parkingAddressRow}>
-            <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
-            <Text style={styles.parkingAddress}>
-              {parking.location.address}
-            </Text>
-          </View>
-          <View style={styles.parkingMeta}>
-            <Text style={styles.parkingSize}>
-              {PARKING_SIZES.find((s) => s.value === parking.parkingSize)?.icon}{" "}
-              {
-                PARKING_SIZES.find((s) => s.value === parking.parkingSize)
-                  ?.label
-              }
-            </Text>
-          </View>
-        </View>
-
-        {/* Duration Selection */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Date & Time</Text>
-
-          {/* Date/Time Selection */}
-          <TouchableOpacity
-            style={styles.dateTimeSelector}
-            onPress={openDateTimePicker}
-          >
-            <View style={styles.dateTimeItem}>
-              <Icon name="calendar" size="md" color={COLORS.primary} />
-              <View style={styles.dateTimeTextContainer}>
-                <Text style={styles.dateTimeLabel}>Start Date & Time</Text>
-                <Text style={styles.dateTimeValue}>
-                  {format(startTime, "EEE, MMM d, yyyy")}
-                </Text>
-                <Text style={styles.dateTimeValue}>
-                  {format(startTime, "h:mm a")}
-                </Text>
-              </View>
+          <View style={styles.card}>
+            <Text style={styles.parkingTitle}>{parking.title}</Text>
+            <View style={styles.parkingAddressRow}>
+              <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
+              <Text style={styles.parkingAddress}>
+                {parking.location.address}
+              </Text>
             </View>
-            <Icon name="chevronRight" size="sm" color={COLORS.gray[400]} />
-          </TouchableOpacity>
+            <View style={styles.parkingMeta}>
+              <Text style={styles.parkingSize}>
+                {
+                  PARKING_SIZES.find((s) => s.value === parking.parkingSize)
+                    ?.icon
+                }{" "}
+                {
+                  PARKING_SIZES.find((s) => s.value === parking.parkingSize)
+                    ?.label
+                }
+              </Text>
+            </View>
+          </View>
 
-          <Text style={styles.sectionTitle}>Duration</Text>
-          <View style={styles.durationSelector}>
+          {/* Duration Selection */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Date & Time</Text>
+
+            {/* Date/Time Selection */}
             <TouchableOpacity
-              style={styles.durationButton}
-              onPress={() => setHours(Math.max(1, hours - 1))}
+              style={styles.dateTimeSelector}
+              onPress={openDateTimePicker}
             >
-              <Text style={styles.durationButtonText}>-</Text>
-            </TouchableOpacity>
-            <View style={styles.durationDisplay}>
-              <Text style={styles.durationValue}>{hours}</Text>
-              <Text style={styles.durationUnit}>
-                hour{hours > 1 ? "s" : ""}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.durationButton}
-              onPress={() => setHours(hours + 1)}
-            >
-              <Text style={styles.durationButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.timeDisplay}>
-            <View style={styles.timeItem}>
-              <Text style={styles.timeLabel}>Start</Text>
-              <Text style={styles.timeValue}>
-                {format(startTime, "MMM d, h:mm a")}
-              </Text>
-            </View>
-            <Icon name="arrowRight" size="lg" color={COLORS.text.secondary} />
-            <View style={styles.timeItem}>
-              <Text style={styles.timeLabel}>End</Text>
-              <Text style={styles.timeValue}>
-                {format(endTime, "MMM d, h:mm a")}
-              </Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.checkAvailabilityButton}
-            onPress={handleCheckAvailability}
-            disabled={checkingAvailability}
-          >
-            {checkingAvailability ? (
-              <ActivityIndicator size="small" color={COLORS.primary} />
-            ) : (
-              <Text style={styles.checkAvailabilityText}>
-                Check Availability
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* iOS Date Picker Modal */}
-        {Platform.OS === "ios" && showDatePicker && (
-          <Modal visible={showDatePicker} transparent animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={styles.pickerModal}>
-                <View style={styles.pickerHeader}>
-                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                    <Text style={styles.pickerCancel}>Cancel</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.pickerTitle}>Select Date & Time</Text>
-                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                    <Text style={styles.pickerDone}>Done</Text>
-                  </TouchableOpacity>
+              <View style={styles.dateTimeItem}>
+                <Icon name="calendar" size="md" color={COLORS.primary} />
+                <View style={styles.dateTimeTextContainer}>
+                  <Text style={styles.dateTimeLabel}>Start Date & Time</Text>
+                  <Text style={styles.dateTimeValue}>
+                    {format(startTime, "EEE, MMM d, yyyy")}
+                  </Text>
+                  <Text style={styles.dateTimeValue}>
+                    {format(startTime, "h:mm a")}
+                  </Text>
                 </View>
-                <DateTimePicker
-                  value={startTime}
-                  mode="datetime"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  minimumDate={minStartTime}
-                  style={styles.iosPicker}
-                />
+              </View>
+              <Icon name="chevronRight" size="sm" color={COLORS.gray[400]} />
+            </TouchableOpacity>
+
+            <Text style={styles.sectionTitle}>Duration</Text>
+            <View style={styles.durationSelector}>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setHours(Math.max(1, hours - 1))}
+              >
+                <Text style={styles.durationButtonText}>-</Text>
+              </TouchableOpacity>
+              <View style={styles.durationDisplay}>
+                <Text style={styles.durationValue}>{hours}</Text>
+                <Text style={styles.durationUnit}>
+                  hour{hours > 1 ? "s" : ""}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setHours(hours + 1)}
+              >
+                <Text style={styles.durationButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.timeDisplay}>
+              <View style={styles.timeItem}>
+                <Text style={styles.timeLabel}>Start</Text>
+                <Text style={styles.timeValue}>
+                  {format(startTime, "MMM d, h:mm a")}
+                </Text>
+              </View>
+              <Icon name="arrowRight" size="lg" color={COLORS.text.secondary} />
+              <View style={styles.timeItem}>
+                <Text style={styles.timeLabel}>End</Text>
+                <Text style={styles.timeValue}>
+                  {format(endTime, "MMM d, h:mm a")}
+                </Text>
               </View>
             </View>
-          </Modal>
-        )}
 
-        {/* Android Date Picker */}
-        {Platform.OS === "android" && showDatePicker && (
-          <DateTimePicker
-            value={startTime}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-            minimumDate={minStartTime}
-          />
-        )}
+            <TouchableOpacity
+              style={styles.checkAvailabilityButton}
+              onPress={handleCheckAvailability}
+              disabled={checkingAvailability}
+            >
+              {checkingAvailability ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Text style={styles.checkAvailabilityText}>
+                  Check Availability
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
-        {/* Android Time Picker */}
-        {Platform.OS === "android" && showTimePicker && (
-          <DateTimePicker
-            value={startTime}
-            mode="time"
-            display="default"
-            onChange={handleTimeChange}
-          />
-        )}
+          {/* iOS Date Picker Modal */}
+          {Platform.OS === "ios" && showDatePicker && (
+            <Modal visible={showDatePicker} transparent animationType="slide">
+              <View style={styles.modalOverlay}>
+                <View style={styles.pickerModal}>
+                  <View style={styles.pickerHeader}>
+                    <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                      <Text style={styles.pickerCancel}>Cancel</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.pickerTitle}>Select Date & Time</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                      <Text style={styles.pickerDone}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <DateTimePicker
+                    value={startTime}
+                    mode="datetime"
+                    display="spinner"
+                    onChange={handleDateChange}
+                    minimumDate={minStartTime}
+                    style={styles.iosPicker}
+                  />
+                </View>
+              </View>
+            </Modal>
+          )}
 
-        {/* Vehicle Information */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Vehicle Information</Text>
+          {/* Android Date Picker */}
+          {Platform.OS === "android" && showDatePicker && (
+            <DateTimePicker
+              value={startTime}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+              minimumDate={minStartTime}
+            />
+          )}
 
-          {/* Garage Section - Show saved vehicles */}
-          {loadingVehicles ? (
-            <View style={styles.loadingVehicles}>
-              <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.loadingVehiclesText}>
-                Loading your garage...
-              </Text>
-            </View>
-          ) : garageVehicles.length > 0 ? (
-            <View style={styles.vehicleSelector}>
-              <Text style={styles.vehicleSelectorLabel}>
-                Select from your garage
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.vehicleList}
-              >
-                {garageVehicles.map((vehicle) => (
+          {/* Android Time Picker */}
+          {Platform.OS === "android" && showTimePicker && (
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
+
+          {/* Vehicle Information */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Vehicle Information</Text>
+
+            {/* Garage Section - Show saved vehicles */}
+            {loadingVehicles ? (
+              <View style={styles.loadingVehicles}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text style={styles.loadingVehiclesText}>
+                  Loading your garage...
+                </Text>
+              </View>
+            ) : garageVehicles.length > 0 ? (
+              <View style={styles.vehicleSelector}>
+                <Text style={styles.vehicleSelectorLabel}>
+                  Select from your garage
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.vehicleList}
+                >
+                  {garageVehicles.map((vehicle) => (
+                    <TouchableOpacity
+                      key={vehicle._id}
+                      style={[
+                        styles.vehicleOption,
+                        selectedVehicleId === vehicle._id &&
+                          styles.vehicleOptionSelected,
+                      ]}
+                      onPress={() => handleSelectVehicle(vehicle)}
+                    >
+                      <Icon
+                        name={getVehicleIcon(vehicle.type)}
+                        size="lg"
+                        color={
+                          selectedVehicleId === vehicle._id
+                            ? COLORS.white
+                            : COLORS.text.secondary
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.vehicleOptionName,
+                          selectedVehicleId === vehicle._id &&
+                            styles.vehicleOptionNameSelected,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {vehicle.nickname || vehicle.licensePlate}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.vehicleOptionPlate,
+                          selectedVehicleId === vehicle._id &&
+                            styles.vehicleOptionPlateSelected,
+                        ]}
+                      >
+                        {vehicle.licensePlate}
+                      </Text>
+                      {vehicle.isDefault && (
+                        <View
+                          style={[
+                            styles.defaultBadge,
+                            selectedVehicleId === vehicle._id &&
+                              styles.defaultBadgeSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.defaultBadgeText,
+                              selectedVehicleId === vehicle._id &&
+                                styles.defaultBadgeTextSelected,
+                            ]}
+                          >
+                            Default
+                          </Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+
+                  {/* Add new vehicle option */}
                   <TouchableOpacity
-                    key={vehicle._id}
                     style={[
                       styles.vehicleOption,
-                      selectedVehicleId === vehicle._id &&
+                      styles.vehicleOptionAdd,
+                      selectedVehicleId === null &&
                         styles.vehicleOptionSelected,
                     ]}
-                    onPress={() => handleSelectVehicle(vehicle)}
+                    onPress={handleManualEntry}
                   >
                     <Icon
-                      name={getVehicleIcon(vehicle.type)}
+                      name="plus"
                       size="lg"
                       color={
-                        selectedVehicleId === vehicle._id
+                        selectedVehicleId === null
                           ? COLORS.white
-                          : COLORS.text.secondary
+                          : COLORS.primary
                       }
                     />
                     <Text
                       style={[
                         styles.vehicleOptionName,
-                        selectedVehicleId === vehicle._id &&
-                          styles.vehicleOptionNameSelected,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {vehicle.nickname || vehicle.licensePlate}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.vehicleOptionPlate,
-                        selectedVehicleId === vehicle._id &&
-                          styles.vehicleOptionPlateSelected,
+                        {
+                          color:
+                            selectedVehicleId === null
+                              ? COLORS.white
+                              : COLORS.primary,
+                        },
                       ]}
                     >
-                      {vehicle.licensePlate}
+                      New Vehicle
                     </Text>
-                    {vehicle.isDefault && (
-                      <View
-                        style={[
-                          styles.defaultBadge,
-                          selectedVehicleId === vehicle._id &&
-                            styles.defaultBadgeSelected,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.defaultBadgeText,
-                            selectedVehicleId === vehicle._id &&
-                              styles.defaultBadgeTextSelected,
-                          ]}
-                        >
-                          Default
-                        </Text>
-                      </View>
-                    )}
                   </TouchableOpacity>
-                ))}
+                </ScrollView>
+              </View>
+            ) : null}
 
-                {/* Add new vehicle option */}
-                <TouchableOpacity
-                  style={[
-                    styles.vehicleOption,
-                    styles.vehicleOptionAdd,
-                    selectedVehicleId === null && styles.vehicleOptionSelected,
-                  ]}
-                  onPress={handleManualEntry}
-                >
-                  <Icon
-                    name="plus"
-                    size="lg"
-                    color={
-                      selectedVehicleId === null ? COLORS.white : COLORS.primary
+            {/* Manual Entry Fields - Show when no vehicle selected or no vehicles in garage */}
+            {(selectedVehicleId === null || garageVehicles.length === 0) && (
+              <>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>License Plate *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ABC 1234"
+                    placeholderTextColor={COLORS.gray[400]}
+                    value={vehicleInfo.licensePlate}
+                    onChangeText={(text) =>
+                      setVehicleInfo({ ...vehicleInfo, licensePlate: text })
+                    }
+                    autoCapitalize="characters"
+                  />
+                </View>
+
+                <View style={styles.row}>
+                  <View
+                    style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}
+                  >
+                    <Text style={styles.inputLabel}>Make</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Toyota"
+                      placeholderTextColor={COLORS.gray[400]}
+                      value={vehicleInfo.make}
+                      onChangeText={(text) =>
+                        setVehicleInfo({ ...vehicleInfo, make: text })
+                      }
+                    />
+                  </View>
+                  <View
+                    style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}
+                  >
+                    <Text style={styles.inputLabel}>Model</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Camry"
+                      placeholderTextColor={COLORS.gray[400]}
+                      value={vehicleInfo.model}
+                      onChangeText={(text) =>
+                        setVehicleInfo({ ...vehicleInfo, model: text })
+                      }
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Color</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Silver"
+                    placeholderTextColor={COLORS.gray[400]}
+                    value={vehicleInfo.color}
+                    onChangeText={(text) =>
+                      setVehicleInfo({ ...vehicleInfo, color: text })
                     }
                   />
-                  <Text
+                </View>
+
+                {/* Save to Garage Checkbox */}
+                <TouchableOpacity
+                  style={styles.saveToGarageRow}
+                  onPress={() => setSaveToGarage(!saveToGarage)}
+                >
+                  <View
                     style={[
-                      styles.vehicleOptionName,
-                      {
-                        color:
-                          selectedVehicleId === null
-                            ? COLORS.white
-                            : COLORS.primary,
-                      },
+                      styles.checkbox,
+                      saveToGarage && styles.checkboxChecked,
                     ]}
                   >
-                    New Vehicle
+                    {saveToGarage && (
+                      <Icon name="check" size="xs" color={COLORS.white} />
+                    )}
+                  </View>
+                  <Text style={styles.saveToGarageText}>
+                    Save this vehicle to my garage
                   </Text>
                 </TouchableOpacity>
-              </ScrollView>
-            </View>
-          ) : null}
+              </>
+            )}
 
-          {/* Manual Entry Fields - Show when no vehicle selected or no vehicles in garage */}
-          {(selectedVehicleId === null || garageVehicles.length === 0) && (
-            <>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>License Plate *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="ABC 1234"
-                  placeholderTextColor={COLORS.gray[400]}
-                  value={vehicleInfo.licensePlate}
-                  onChangeText={(text) =>
-                    setVehicleInfo({ ...vehicleInfo, licensePlate: text })
-                  }
-                  autoCapitalize="characters"
-                />
-              </View>
-
-              <View style={styles.row}>
-                <View
-                  style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}
-                >
-                  <Text style={styles.inputLabel}>Make</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Toyota"
-                    placeholderTextColor={COLORS.gray[400]}
-                    value={vehicleInfo.make}
-                    onChangeText={(text) =>
-                      setVehicleInfo({ ...vehicleInfo, make: text })
-                    }
-                  />
-                </View>
-                <View
-                  style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}
-                >
-                  <Text style={styles.inputLabel}>Model</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Camry"
-                    placeholderTextColor={COLORS.gray[400]}
-                    value={vehicleInfo.model}
-                    onChangeText={(text) =>
-                      setVehicleInfo({ ...vehicleInfo, model: text })
-                    }
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Color</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Silver"
-                  placeholderTextColor={COLORS.gray[400]}
-                  value={vehicleInfo.color}
-                  onChangeText={(text) =>
-                    setVehicleInfo({ ...vehicleInfo, color: text })
-                  }
-                />
-              </View>
-
-              {/* Save to Garage Checkbox */}
-              <TouchableOpacity
-                style={styles.saveToGarageRow}
-                onPress={() => setSaveToGarage(!saveToGarage)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    saveToGarage && styles.checkboxChecked,
-                  ]}
-                >
-                  {saveToGarage && (
-                    <Icon name="check" size="xs" color={COLORS.white} />
-                  )}
-                </View>
-                <Text style={styles.saveToGarageText}>
-                  Save this vehicle to my garage
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-
-          {/* Show selected vehicle details */}
-          {selectedVehicleId !== null && garageVehicles.length > 0 && (
-            <View style={styles.selectedVehicleInfo}>
-              <View style={styles.selectedVehicleRow}>
-                <Text style={styles.selectedVehicleLabel}>License Plate:</Text>
-                <Text style={styles.selectedVehicleValue}>
-                  {vehicleInfo.licensePlate}
-                </Text>
-              </View>
-              {vehicleInfo.make && (
+            {/* Show selected vehicle details */}
+            {selectedVehicleId !== null && garageVehicles.length > 0 && (
+              <View style={styles.selectedVehicleInfo}>
                 <View style={styles.selectedVehicleRow}>
-                  <Text style={styles.selectedVehicleLabel}>Vehicle:</Text>
+                  <Text style={styles.selectedVehicleLabel}>
+                    License Plate:
+                  </Text>
                   <Text style={styles.selectedVehicleValue}>
-                    {[vehicleInfo.make, vehicleInfo.model, vehicleInfo.color]
-                      .filter(Boolean)
-                      .join(" ")}
+                    {vehicleInfo.licensePlate}
                   </Text>
                 </View>
-              )}
+                {vehicleInfo.make && (
+                  <View style={styles.selectedVehicleRow}>
+                    <Text style={styles.selectedVehicleLabel}>Vehicle:</Text>
+                    <Text style={styles.selectedVehicleValue}>
+                      {[vehicleInfo.make, vehicleInfo.model, vehicleInfo.color]
+                        .filter(Boolean)
+                        .join(" ")}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Special Requests */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Special Requests (Optional)</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Any special instructions or requests..."
+              placeholderTextColor={COLORS.gray[400]}
+              value={specialRequests}
+              onChangeText={setSpecialRequests}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          {/* Price Breakdown */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Price Summary</Text>
+
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>
+                ₹{parking.pricePerHour} x {hours} hour{hours > 1 ? "s" : ""}
+              </Text>
+              <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
             </View>
-          )}
-        </View>
 
-        {/* Special Requests */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Special Requests (Optional)</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Any special instructions or requests..."
-            placeholderTextColor={COLORS.gray[400]}
-            value={specialRequests}
-            onChangeText={setSpecialRequests}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>Service fee</Text>
+              <Text style={styles.priceValue}>₹{serviceFee.toFixed(2)}</Text>
+            </View>
 
-        {/* Price Breakdown */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Price Summary</Text>
+            <View style={styles.divider} />
 
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>
-              ₹{parking.pricePerHour} x {hours} hour{hours > 1 ? "s" : ""}
-            </Text>
-            <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
+            <View style={styles.priceRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
+            </View>
           </View>
-
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Service fee</Text>
-            <Text style={styles.priceValue}>₹{serviceFee.toFixed(2)}</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.priceRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
-          </View>
-        </View>
 
           <View style={styles.bottomSpacer} />
         </ScrollView>

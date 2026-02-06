@@ -169,77 +169,80 @@ const EditProfileScreen = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Profile Picture */}
-        <View style={styles.avatarSection}>
-          <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
-            {profile.profilePicture ? (
-              <Image
-                source={{ uri: profile.profilePicture }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>
-                  {profile.name?.charAt(0).toUpperCase() || "?"}
-                </Text>
+          <View style={styles.avatarSection}>
+            <TouchableOpacity
+              style={styles.avatarContainer}
+              onPress={pickImage}
+            >
+              {profile.profilePicture ? (
+                <Image
+                  source={{ uri: profile.profilePicture }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarText}>
+                    {profile.name?.charAt(0).toUpperCase() || "?"}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.cameraIcon}>
+                <Icon name="camera" size="md" color={COLORS.white} />
               </View>
-            )}
-            <View style={styles.cameraIcon}>
-              <Icon name="camera" size="md" color={COLORS.white} />
+            </TouchableOpacity>
+            <Text style={styles.changePhotoText}>Change Photo</Text>
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.name}
+                onChangeText={(text) => setProfile({ ...profile, name: text })}
+                placeholder="Enter your full name"
+                placeholderTextColor={COLORS.gray[400]}
+              />
             </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={[styles.input, styles.inputDisabled]}
+                value={profile.email}
+                editable={false}
+                placeholder="Email"
+                placeholderTextColor={COLORS.gray[400]}
+              />
+              <Text style={styles.helperText}>Email cannot be changed</Text>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={profile.phone}
+                onChangeText={(text) => setProfile({ ...profile, phone: text })}
+                placeholder="+1 (555) 000-0000"
+                placeholderTextColor={COLORS.gray[400]}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          {/* Delete Account */}
+          <TouchableOpacity
+            style={styles.deleteAccountButton}
+            onPress={() =>
+              Alert.alert(
+                "Delete Account",
+                "Contact support to delete your account",
+              )
+            }
+          >
+            <Text style={styles.deleteAccountText}>Delete Account</Text>
           </TouchableOpacity>
-          <Text style={styles.changePhotoText}>Change Photo</Text>
-        </View>
-
-        {/* Form Fields */}
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.name}
-              onChangeText={(text) => setProfile({ ...profile, name: text })}
-              placeholder="Enter your full name"
-              placeholderTextColor={COLORS.gray[400]}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, styles.inputDisabled]}
-              value={profile.email}
-              editable={false}
-              placeholder="Email"
-              placeholderTextColor={COLORS.gray[400]}
-            />
-            <Text style={styles.helperText}>Email cannot be changed</Text>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.phone}
-              onChangeText={(text) => setProfile({ ...profile, phone: text })}
-              placeholder="+1 (555) 000-0000"
-              placeholderTextColor={COLORS.gray[400]}
-              keyboardType="phone-pad"
-            />
-          </View>
-        </View>
-
-        {/* Delete Account */}
-        <TouchableOpacity
-          style={styles.deleteAccountButton}
-          onPress={() =>
-            Alert.alert(
-              "Delete Account",
-              "Contact support to delete your account",
-            )
-          }
-        >
-          <Text style={styles.deleteAccountText}>Delete Account</Text>
-        </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
