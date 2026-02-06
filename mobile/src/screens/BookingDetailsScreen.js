@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { format } from "date-fns";
-import { getBooking, updateBookingStatus } from "../api/services";
+import { getBooking, updateBookingStatus, cancelBooking } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
 import Icon from "../components/Icon";
@@ -53,7 +53,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           onPress: async () => {
             try {
               setActionLoading(true);
-              await updateBookingStatus(bookingId, "cancelled");
+              await cancelBooking(bookingId);
               setBooking({ ...booking, status: "cancelled" });
               Alert.alert("Success", "Booking cancelled successfully");
             } catch (error) {

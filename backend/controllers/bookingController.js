@@ -20,7 +20,7 @@ exports.createBooking = async (req, res) => {
     }
 
     // Check if user is trying to book their own parking space
-    if (parkingSpace.owner.toString() === req.user.id) {
+    if (parkingSpace.owner.toString() === req.user._id.toString()) {
       return res.status(400).json({
         success: false,
         message: "You cannot book your own parking space",
@@ -173,8 +173,8 @@ exports.getBooking = async (req, res) => {
 
     // Check authorization
     if (
-      booking.seeker._id.toString() !== req.user.id &&
-      booking.owner._id.toString() !== req.user.id &&
+      booking.seeker._id.toString() !== req.user._id.toString() &&
+      booking.owner._id.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
       return res.status(403).json({
@@ -212,8 +212,11 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-    // Check if user is owner
-    if (booking.owner.toString() !== req.user.id && req.user.role !== "admin") {
+    // Check if user is owner or admin
+    const isOwner = booking.owner.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
@@ -300,6 +303,13 @@ exports.cancelBooking = async (req, res) => {
 
     const booking = await Booking.findById(req.params.id);
 
+    console.log("cancelBooking called:");
+    console.log("  req.params.id:", req.params.id);
+    console.log("  req.user._id:", req.user._id);
+    console.log("  req.user.id:", req.user.id);
+    console.log("  booking seeker:", booking?.seeker);
+    console.log("  booking owner:", booking?.owner);
+
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -307,14 +317,19 @@ exports.cancelBooking = async (req, res) => {
       });
     }
 
-    // Check if user is seeker or owner
-    if (
-      booking.seeker.toString() !== req.user.id &&
-      booking.owner.toString() !== req.user.id
-    ) {
+    // Check if user is seeker, owner, or admin
+    const isSeeker = booking.seeker.toString() === req.user._id.toString();
+    const isOwner = booking.owner.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+
+    console.log("  isSeeker:", isSeeker, "| seeker compare:", booking.seeker.toString(), "vs", req.user._id.toString());
+    console.log("  isOwner:", isOwner, "| owner compare:", booking.owner.toString(), "vs", req.user._id.toString());
+    console.log("  isAdmin:", isAdmin);
+
+    if (!isSeeker && !isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: "Not authorized",
+        message: "Not authorized to cancel this booking",
       });
     }
 
@@ -342,7 +357,7 @@ exports.cancelBooking = async (req, res) => {
 
     // Notify the other party
     const notifyUser =
-      booking.seeker.toString() === req.user.id
+      booking.seeker.toString() === req.user._id.toString()
         ? booking.owner
         : booking.seeker;
 
@@ -383,7 +398,7 @@ exports.addReview = async (req, res) => {
     }
 
     // Only seeker can review
-    if (booking.seeker.toString() !== req.user.id) {
+    if (booking.seeker.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
@@ -455,7 +470,7 @@ exports.checkIn = async (req, res) => {
       });
     }
 
-    if (booking.seeker.toString() !== req.user.id) {
+    if (booking.seeker.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
@@ -510,7 +525,7 @@ exports.checkOut = async (req, res) => {
       });
     }
 
-    if (booking.seeker.toString() !== req.user.id) {
+    if (booking.seeker.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
