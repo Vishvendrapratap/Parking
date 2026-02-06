@@ -684,7 +684,7 @@ exports.getWeeklySlots = async (req, res) => {
 // @access  Public
 exports.getAvailabilityStatus = async (req, res) => {
   try {
-    const { ids } = req.query; // Comma-separated parking IDs
+    const { ids, date } = req.query; // Comma-separated parking IDs, optional date (YYYY-MM-DD)
 
     if (!ids) {
       return res.status(400).json({
@@ -695,11 +695,17 @@ exports.getAvailabilityStatus = async (req, res) => {
 
     const parkingIds = ids.split(",");
 
-    // Get today's date range
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Get target date (today or specified date)
+    let targetDate;
+    if (date) {
+      targetDate = new Date(date + "T00:00:00");
+    } else {
+      targetDate = new Date();
+    }
+    targetDate.setHours(0, 0, 0, 0);
+    
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
 
     const dayNames = [
       "sunday",
@@ -710,7 +716,7 @@ exports.getAvailabilityStatus = async (req, res) => {
       "friday",
       "saturday",
     ];
-    const todayName = dayNames[today.getDay()];
+    const targetDayName = dayNames[targetDate.getDay()];
 
     const results = [];
 
@@ -719,14 +725,14 @@ exports.getAvailabilityStatus = async (req, res) => {
         const parkingSpace = await ParkingSpace.findById(parkingId);
         if (!parkingSpace) continue;
 
-        const schedule = parkingSpace.availabilitySchedule?.[todayName];
+        const schedule = parkingSpace.availabilitySchedule?.[targetDayName];
 
-        // If not available today
+        // If not available on target date
         if (!schedule || !schedule.isAvailable) {
           results.push({
             parkingId,
             status: "unavailable",
-            badge: "Closed Today",
+            badge: "Closed",
             badgeColor: "gray",
             availableSlots: 0,
             totalSlots: 0,
@@ -745,22 +751,23 @@ exports.getAvailabilityStatus = async (req, res) => {
           endHour * 60 + endMin - (startHour * 60 + startMin);
         const totalSlots = Math.floor(totalMinutes / 30);
 
-        // Get bookings for today
+        // Get bookings for target date
         const bookings = await Booking.find({
           parkingSpace: parkingId,
           status: { $in: ["pending", "confirmed", "active"] },
-          startTime: { $lt: tomorrow },
-          endTime: { $gt: today },
+          startTime: { $lt: nextDay },
+          endTime: { $gt: targetDate },
         });
 
         // Calculate booked slots
         let bookedSlotCount = 0;
         const now = new Date();
+        const isToday = targetDate.toDateString() === new Date().toDateString();
 
         // Generate all slots and check availability
-        const dayStart = new Date(today);
+        const dayStart = new Date(targetDate);
         dayStart.setHours(startHour, startMin, 0, 0);
-        const dayEnd = new Date(today);
+        const dayEnd = new Date(targetDate);
         dayEnd.setHours(endHour, endMin, 0, 0);
 
         let slotStart = new Date(dayStart);
@@ -778,7 +785,7 @@ exports.getAvailabilityStatus = async (req, res) => {
             return slotStart < bookingEnd && slotEnd > bookingStart;
           });
 
-          const isPast = slotStart < now;
+          const isPast = isToday && slotStart < now;
 
           if (!isBooked && !isPast) {
             availableCount++;
@@ -828,6 +835,165 @@ exports.getAvailabilityStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching availability status",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get weekly availability status for parking spaces (for tiles with 7-day view)
+// @route   GET /api/parking/weekly-availability
+// @access  Public
+exports.getWeeklyAvailabilityStatus = async (req, res) => {
+  try {
+    const { ids } = req.query; // Comma-separated parking IDs
+
+    if (!ids) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide parking space IDs",
+      });
+    }
+
+    const parkingIds = ids.split(",");
+    const dayNames = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+
+    const results = [];
+
+    for (const parkingId of parkingIds) {
+      try {
+        const parkingSpace = await ParkingSpace.findById(parkingId);
+        if (!parkingSpace) continue;
+
+        const weeklyAvailability = [];
+
+        // Get availability for each of the next 7 days
+        for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+          const targetDate = new Date();
+          targetDate.setDate(targetDate.getDate() + dayOffset);
+          targetDate.setHours(0, 0, 0, 0);
+
+          const nextDay = new Date(targetDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+
+          const targetDayName = dayNames[targetDate.getDay()];
+          const schedule = parkingSpace.availabilitySchedule?.[targetDayName];
+
+          // Day label (Mon, Tue, etc.)
+          const dayLabel = targetDate.toLocaleDateString("en-US", { weekday: "short" });
+          const dateLabel = targetDate.getDate().toString();
+
+          // If not available on this day
+          if (!schedule || !schedule.isAvailable) {
+            weeklyAvailability.push({
+              dayOffset,
+              dayLabel,
+              dateLabel,
+              color: "gray", // Closed
+              availableSlots: 0,
+              status: "closed",
+            });
+            continue;
+          }
+
+          // Calculate total slots for this day
+          const [startHour, startMin] = (schedule.start || "00:00")
+            .split(":")
+            .map(Number);
+          const [endHour, endMin] = (schedule.end || "23:59")
+            .split(":")
+            .map(Number);
+
+          // Get bookings for this day
+          const bookings = await Booking.find({
+            parkingSpace: parkingId,
+            status: { $in: ["pending", "confirmed", "active"] },
+            startTime: { $lt: nextDay },
+            endTime: { $gt: targetDate },
+          });
+
+          // Generate all slots and check availability
+          const dayStart = new Date(targetDate);
+          dayStart.setHours(startHour, startMin, 0, 0);
+          const dayEnd = new Date(targetDate);
+          dayEnd.setHours(endHour, endMin, 0, 0);
+
+          let slotStart = new Date(dayStart);
+          let availableCount = 0;
+          const now = new Date();
+          const isToday = dayOffset === 0;
+
+          while (slotStart < dayEnd) {
+            const slotEnd = new Date(slotStart);
+            slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+
+            if (slotEnd > dayEnd) break;
+
+            const isBooked = bookings.some((booking) => {
+              const bookingStart = new Date(booking.startTime);
+              const bookingEnd = new Date(booking.endTime);
+              return slotStart < bookingEnd && slotEnd > bookingStart;
+            });
+
+            const isPast = isToday && slotStart < now;
+
+            if (!isBooked && !isPast) {
+              availableCount++;
+            }
+
+            slotStart = new Date(slotEnd);
+          }
+
+          // Determine color based on available slots
+          // Green: 8+ slots (4+ hours)
+          // Yellow: 1-7 slots (less than 4 hours)
+          // Red: 0 slots (fully booked)
+          let color, status;
+          if (availableCount === 0) {
+            color = "red";
+            status = "booked";
+          } else if (availableCount < 8) {
+            color = "yellow";
+            status = "partial";
+          } else {
+            color = "green";
+            status = "available";
+          }
+
+          weeklyAvailability.push({
+            dayOffset,
+            dayLabel,
+            dateLabel,
+            color,
+            availableSlots: availableCount,
+            status,
+          });
+        }
+
+        results.push({
+          parkingId,
+          weeklyAvailability,
+        });
+      } catch (err) {
+        console.error(`Error processing parking ${parkingId}:`, err);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching weekly availability status",
       error: error.message,
     });
   }

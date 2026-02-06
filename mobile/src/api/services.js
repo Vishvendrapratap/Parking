@@ -71,8 +71,19 @@ export const getWeeklySlots = async (id) => {
   return response.data;
 };
 
-export const getAvailabilityStatus = async (parkingIds) => {
+export const getAvailabilityStatus = async (parkingIds, date = null) => {
+  const params = { ids: parkingIds.join(",") };
+  if (date) {
+    params.date = date;
+  }
   const response = await api.get(`/parking/availability-status`, {
+    params,
+  });
+  return response.data;
+};
+
+export const getWeeklyAvailabilityStatus = async (parkingIds) => {
+  const response = await api.get(`/parking/weekly-availability`, {
     params: { ids: parkingIds.join(",") },
   });
   return response.data;

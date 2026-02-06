@@ -15,6 +15,7 @@ const {
   deactivateListing,
   getWeeklySlots,
   getAvailabilityStatus,
+  getWeeklyAvailabilityStatus,
 } = require("../controllers/parkingController");
 const { protect, authorize, optionalAuth } = require("../middleware/auth");
 const {
@@ -28,6 +29,7 @@ const { upload } = require("../config/cloudinary");
 // Public routes
 router.get("/", searchValidation, validate, getParkingSpaces);
 router.get("/availability-status", getAvailabilityStatus);
+router.get("/weekly-availability", getWeeklyAvailabilityStatus);
 router.get("/:id", mongoIdValidation, validate, getParkingSpace);
 router.get("/:id/availability", mongoIdValidation, validate, checkAvailability);
 router.get("/:id/slots", mongoIdValidation, validate, getWeeklySlots);

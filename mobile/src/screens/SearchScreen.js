@@ -10,13 +10,16 @@ import {
   Keyboard,
   Alert,
   ScrollView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { format, addDays, differenceInCalendarDays, startOfDay } from "date-fns";
 import {
   searchNearbyParking,
   getPlaceAutocomplete,
   getPlaceDetails,
-  getAvailabilityStatus,
+  getWeeklyAvailabilityStatus,
 } from "../api/services";
 import { useLocation } from "../hooks/useLocation";
 import { COLORS, PARKING_SIZES } from "../constants/config";
@@ -56,12 +59,14 @@ const SearchScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [availabilityStatus, setAvailabilityStatus] = useState({});
+  const [weeklyAvailability, setWeeklyAvailability] = useState({});
   const [filters, setFilters] = useState({
     parkingSize: null,
     maxPrice: null,
+    selectedDate: new Date(), // Default to today
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Location search state
   const [suggestions, setSuggestions] = useState([]);
@@ -71,11 +76,11 @@ const SearchScreen = ({ navigation }) => {
   const sessionTokenRef = useRef(Date.now().toString());
   const skipSuggestionsRef = useRef(false); // Flag to skip suggestions when setting location programmatically
 
-  // Fetch availability status when results change
+  // Fetch weekly availability status when results change
   useEffect(() => {
     const fetchAvailability = async () => {
       if (!results || results.length === 0) {
-        setAvailabilityStatus({});
+        setWeeklyAvailability({});
         return;
       }
 
@@ -83,18 +88,18 @@ const SearchScreen = ({ navigation }) => {
         const parkingIds = results.map((p) => p._id).filter(Boolean);
         if (parkingIds.length === 0) return;
 
-        const response = await getAvailabilityStatus(parkingIds);
+        const response = await getWeeklyAvailabilityStatus(parkingIds);
         if (response?.success && response?.data) {
           const statusMap = {};
           response.data.forEach((item) => {
             if (item?.parkingId) {
-              statusMap[item.parkingId] = item;
+              statusMap[item.parkingId] = item.weeklyAvailability;
             }
           });
-          setAvailabilityStatus(statusMap);
+          setWeeklyAvailability(statusMap);
         }
       } catch (error) {
-        console.error("Error fetching availability status:", error);
+        console.error("Error fetching weekly availability:", error);
       }
     };
 
@@ -437,18 +442,19 @@ const SearchScreen = ({ navigation }) => {
 
   const renderParkingItem = ({ item }) => {
     const distance = getDistanceToParking(item);
-    const availability = availabilityStatus[item._id];
+    const weekly = weeklyAvailability[item._id] || [];
 
-    const getAvailabilityBadgeStyle = () => {
-      if (!availability) return null;
-      switch (availability.badgeColor) {
+    const getDayColor = (color) => {
+      switch (color) {
         case "red":
-          return { backgroundColor: COLORS.error };
-        case "gray":
-          return { backgroundColor: COLORS.gray[400] };
+          return COLORS.error;
+        case "yellow":
+          return "#F59E0B"; // Amber/Yellow
         case "green":
+          return COLORS.success;
+        case "gray":
         default:
-          return { backgroundColor: COLORS.success };
+          return COLORS.gray[100]; // Very faded for closed days
       }
     };
 
@@ -459,62 +465,110 @@ const SearchScreen = ({ navigation }) => {
           navigation.navigate("ParkingDetails", { parkingId: item._id })
         }
       >
-        {/* Distance Badge - Bottom Right */}
-        {distance !== null && (
-          <View style={styles.distanceBadge}>
-            <Icon name="directions" size="xs" color="#FFFFFF" />
-            <Text style={styles.distanceBadgeText}>
-              {formatDistance(distance)}
-            </Text>
+        {/* Weekly Availability Labels - Top Row */}
+        {weekly.length > 0 && (
+          <View style={styles.weeklyAvailabilityContainer}>
+            {weekly.map((day, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dayLabel,
+                  { backgroundColor: getDayColor(day.color) },
+                ]}
+              >
+                <Text style={[styles.dayLabelText, day.color === "gray" && styles.dayLabelTextFaded]}>{day.dayLabel}</Text>
+                <Text style={[styles.dayDateText, day.color === "gray" && styles.dayDateTextFaded]}>{day.dateLabel}</Text>
+              </View>
+            ))}
           </View>
         )}
 
-        {/* Availability Badge - Top Right */}
-        {availability && (
-          <View style={[styles.availabilityBadge, getAvailabilityBadgeStyle()]}>
-            <Text style={styles.availabilityBadgeText}>
-              {availability.badge}
-            </Text>
+        {/* Main Content Row */}
+        <View style={styles.parkingItemContent}>
+          <View style={styles.parkingImageContainer}>
+            {item.images?.[0] ? (
+              <View style={styles.parkingImage}>
+                <Icon name="parking" size="2xl" color={COLORS.primary} />
+              </View>
+            ) : (
+              <View style={styles.parkingImage}>
+                <Icon name="parking" size="2xl" color={COLORS.primary} />
+              </View>
+            )}
+            {/* Distance Badge on Image */}
+            {distance !== null && (
+              <View style={styles.distanceBadge}>
+                <Icon name="directions" size="xs" color="#FFFFFF" />
+                <Text style={styles.distanceBadgeText}>
+                  {formatDistance(distance)}
+                </Text>
+              </View>
+            )}
           </View>
-        )}
-
-        <View style={styles.parkingImageContainer}>
-          {item.images?.[0] ? (
-            <View style={styles.parkingImage}>
-              <Icon name="parking" size="2xl" color={COLORS.primary} />
-            </View>
-          ) : (
-            <View style={styles.parkingImage}>
-              <Icon name="parking" size="2xl" color={COLORS.primary} />
-            </View>
-          )}
-        </View>
-        <View style={styles.parkingInfo}>
-          <Text style={styles.parkingTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <View style={styles.parkingAddressRow}>
-            <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
-            <Text style={styles.parkingAddress} numberOfLines={1}>
-              {item.location.address}
+          <View style={styles.parkingInfo}>
+            <Text style={styles.parkingTitle} numberOfLines={1}>
+              {item.title}
             </Text>
-          </View>
-          <View style={styles.parkingMeta}>
-            <Text style={styles.parkingSize}>
-              {PARKING_SIZES.find((s) => s.value === item.parkingSize)?.label}
-            </Text>
-            <View style={styles.parkingRatingRow}>
-              <Icon name="star" size="xs" color={COLORS.accent} />
-              <Text style={styles.parkingRating}>
-                {item.rating?.toFixed(1) || "New"}
+            <View style={styles.parkingAddressRow}>
+              <Icon name="mapMarker" size="xs" color={COLORS.text.secondary} />
+              <Text style={styles.parkingAddress} numberOfLines={1}>
+                {item.location.address}
               </Text>
             </View>
+            <View style={styles.parkingMeta}>
+              <Text style={styles.parkingSize}>
+                {PARKING_SIZES.find((s) => s.value === item.parkingSize)?.label}
+              </Text>
+              <View style={styles.parkingRatingRow}>
+                <Icon name="star" size="xs" color={COLORS.accent} />
+                <Text style={styles.parkingRating}>
+                  {item.rating?.toFixed(1) || "New"}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.priceContainer}>
+            <Text style={styles.price}>₹{item.pricePerHour}</Text>
+            <Text style={styles.priceUnit}>/hr</Text>
           </View>
         </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>₹{item.pricePerHour}</Text>
-          <Text style={styles.priceUnit}>/hr</Text>
-        </View>
+
+        {/* Selected Date Availability Badge - Bottom Right */}
+        {(() => {
+          const today = startOfDay(new Date());
+          const selected = startOfDay(filters.selectedDate);
+          const dayOffset = differenceInCalendarDays(selected, today);
+          const selectedDay = weekly[dayOffset] || weekly[0];
+          const isToday = dayOffset === 0;
+          const dateLabel = isToday ? "Today" : format(filters.selectedDate, "MMM d");
+          
+          if (!selectedDay) return null;
+
+          // Determine badge color: gray=closed, red=booked, yellow=<4hrs, green=4+hrs
+          const getBadgeColor = () => {
+            if (selectedDay.status === "closed") return COLORS.gray[400];
+            if (selectedDay.availableSlots === 0) return COLORS.error;
+            if (selectedDay.availableSlots < 8) return "#F59E0B"; // Yellow for less than 4 hours
+            return COLORS.success;
+          };
+          
+          return (
+            <View
+              style={[
+                styles.todayBadge,
+                { backgroundColor: getBadgeColor() },
+              ]}
+            >
+              <Text style={styles.todayBadgeText}>
+                {selectedDay.status === "closed"
+                  ? `Closed ${dateLabel}`
+                  : selectedDay.availableSlots === 0
+                  ? `Fully Booked ${dateLabel}`
+                  : `${(selectedDay.availableSlots / 2).toFixed(1).replace(".0", "")} hrs ${dateLabel}`}
+              </Text>
+            </View>
+          );
+        })()}
       </TouchableOpacity>
     );
   };
@@ -641,7 +695,12 @@ const SearchScreen = ({ navigation }) => {
 
       {/* Filters */}
       {showFilters && !showSuggestions && (
-        <View style={styles.filtersContainer}>
+        <ScrollView
+          style={styles.filtersContainer}
+          contentContainerStyle={styles.filtersContentContainer}
+          nestedScrollEnabled
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.filterTitle}>Vehicle Size</Text>
           <View style={styles.filterOptions}>
             {PARKING_SIZES.map((size) => (
@@ -702,14 +761,111 @@ const SearchScreen = ({ navigation }) => {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.applyButton} onPress={handleSearch}>
+          <Text style={styles.filterTitle}>Date</Text>
+          <View style={styles.dateFilterContainer}>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Icon name="calendar" size="sm" color={COLORS.primary} />
+              <Text style={styles.dateButtonText}>
+                {format(filters.selectedDate, "EEE, MMM d, yyyy")}
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.quickDateButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.quickDateButton,
+                  format(filters.selectedDate, "yyyy-MM-dd") ===
+                    format(new Date(), "yyyy-MM-dd") &&
+                    styles.quickDateButtonActive,
+                ]}
+                onPress={() =>
+                  setFilters((prev) => ({ ...prev, selectedDate: new Date() }))
+                }
+              >
+                <Text
+                  style={[
+                    styles.quickDateText,
+                    format(filters.selectedDate, "yyyy-MM-dd") ===
+                      format(new Date(), "yyyy-MM-dd") &&
+                      styles.quickDateTextActive,
+                  ]}
+                >
+                  Today
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.quickDateButton,
+                  format(filters.selectedDate, "yyyy-MM-dd") ===
+                    format(addDays(new Date(), 1), "yyyy-MM-dd") &&
+                    styles.quickDateButtonActive,
+                ]}
+                onPress={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    selectedDate: addDays(new Date(), 1),
+                  }))
+                }
+              >
+                <Text
+                  style={[
+                    styles.quickDateText,
+                    format(filters.selectedDate, "yyyy-MM-dd") ===
+                      format(addDays(new Date(), 1), "yyyy-MM-dd") &&
+                      styles.quickDateTextActive,
+                  ]}
+                >
+                  Tomorrow
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {showDatePicker &&
+            (Platform.OS === "ios" ? (
+              <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                  value={filters.selectedDate}
+                  mode="date"
+                  display="inline"
+                  minimumDate={new Date()}
+                  maximumDate={addDays(new Date(), 6)}
+                  themeVariant="light"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setFilters((prev) => ({ ...prev, selectedDate }));
+                      setShowDatePicker(false);
+                    }
+                  }}
+                  style={{ height: 220, transform: [{ scale: 0.9 }] }}
+                />
+              </View>
+            ) : (
+              <DateTimePicker
+                value={filters.selectedDate}
+                mode="date"
+                display="default"
+                minimumDate={new Date()}
+                maximumDate={addDays(new Date(), 6)}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    setFilters((prev) => ({ ...prev, selectedDate }));
+                  }
+                }}
+              />
+            ))}
+
+          <TouchableOpacity style={styles.applyButton} onPress={() => { handleSearch(); setShowFilters(false); }}>
             <Text style={styles.applyButtonText}>Apply Filters</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       )}
 
-      {/* Search Near Me Button - only show when not showing suggestions */}
-      {!showSuggestions && (
+      {/* Search Near Me Button - only show when not showing suggestions or filters */}
+      {!showSuggestions && !showFilters && (
         <TouchableOpacity
           style={styles.searchNearMeButton}
           onPress={handleSearchNearMe}
@@ -722,6 +878,7 @@ const SearchScreen = ({ navigation }) => {
       {/* Results Count Header */}
       {!loading &&
         !showSuggestions &&
+        !showFilters &&
         results.length > 0 &&
         selectedLocation && (
           <View style={styles.resultsHeader}>
@@ -735,8 +892,9 @@ const SearchScreen = ({ navigation }) => {
           </View>
         )}
 
-      {/* Results - only show when not showing suggestions */}
+      {/* Results - only show when not showing suggestions or filters */}
       {!showSuggestions &&
+        !showFilters &&
         (loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
@@ -914,11 +1072,14 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   filtersContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    maxHeight: 500,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[100],
+  },
+  filtersContentContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   filterTitle: {
     fontSize: 14,
@@ -969,6 +1130,62 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  dateFilterContainer: {
+    marginBottom: 8,
+  },
+  dateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.card,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray[100],
+    gap: 8,
+  },
+  dateButtonText: {
+    fontSize: 14,
+    color: COLORS.text.primary,
+    fontWeight: "500",
+  },
+  quickDateButtons: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
+  },
+  quickDateButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.gray[100],
+  },
+  quickDateButtonActive: {
+    backgroundColor: COLORS.primary + "30",
+    borderColor: COLORS.primary,
+  },
+  quickDateText: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+  },
+  quickDateTextActive: {
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+  datePickerContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 8,
+    paddingTop: 4,
+    paddingHorizontal: 8,
+    paddingBottom: 4,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    overflow: "visible",
+  },
   searchNearMeButton: {
     marginHorizontal: 16,
     marginVertical: 8,
@@ -1016,7 +1233,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   parkingItem: {
-    flexDirection: "row",
     backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 12,
@@ -1024,11 +1240,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.gray[200],
   },
+  parkingItemContent: {
+    flexDirection: "row",
+  },
   parkingImageContainer: {
     width: 80,
     height: 80,
     borderRadius: 8,
-    overflow: "hidden",
+    overflow: "visible",
+    position: "relative",
   },
   parkingImage: {
     width: "100%",
@@ -1036,6 +1256,39 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray[50],
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 8,
+  },
+  distanceBadge: {
+    position: "absolute",
+    bottom: -6,
+    left: -4,
+    right: -4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  distanceBadgeText: {
+    fontSize: 10,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 2,
+  },
+  todayBadge: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  todayBadgeText: {
+    fontSize: 11,
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   placeholderIcon: {
     fontSize: 32,
@@ -1075,48 +1328,33 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  distanceBadge: {
-    position: "absolute",
-    bottom: 8,
-    right: 8,
+  weeklyAvailabilityContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  dayLabel: {
+    paddingHorizontal: 3,
+    paddingVertical: 2,
+    borderRadius: 4,
+    minWidth: 32,
     alignItems: "center",
-    backgroundColor: "#E53935",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    zIndex: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
   },
-  distanceBadgeText: {
-    fontSize: 12,
+  dayLabelText: {
+    fontSize: 8,
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  dayLabelTextFaded: {
+    color: COLORS.gray[300],
+  },
+  dayDateText: {
+    fontSize: 9,
     color: "#FFFFFF",
     fontWeight: "bold",
-    marginLeft: 4,
   },
-  availabilityBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    zIndex: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  availabilityBadgeText: {
-    fontSize: 10,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    textTransform: "uppercase",
+  dayDateTextFaded: {
+    color: COLORS.gray[300],
   },
   distanceRow: {
     flexDirection: "row",
