@@ -662,7 +662,11 @@ const AddListingScreen = ({ navigation }) => {
       setShowTimePicker(false);
       if (event.type === "set" && selectedDate) {
         const timeStr = dateToTimeString(selectedDate);
-        updateDayAvailability(currentTimeEdit.day, currentTimeEdit.field, timeStr);
+        updateDayAvailability(
+          currentTimeEdit.day,
+          currentTimeEdit.field,
+          timeStr,
+        );
       }
     } else {
       // iOS - update temp time

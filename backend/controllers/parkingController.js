@@ -198,7 +198,9 @@ exports.createParkingSpace = async (req, res) => {
     // Parse availabilitySchedule if sent as JSON string
     if (typeof req.body.availabilitySchedule === "string") {
       try {
-        req.body.availabilitySchedule = JSON.parse(req.body.availabilitySchedule);
+        req.body.availabilitySchedule = JSON.parse(
+          req.body.availabilitySchedule,
+        );
       } catch (e) {
         // Keep default if parse fails
         delete req.body.availabilitySchedule;

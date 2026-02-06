@@ -282,7 +282,10 @@ const EditListingScreen = ({ route, navigation }) => {
               setActivating(true);
               await activateListing(parkingId);
               setListingStatus("active");
-              Alert.alert("Success", "Listing is now active and visible to seekers!");
+              Alert.alert(
+                "Success",
+                "Listing is now active and visible to seekers!",
+              );
             } catch (error) {
               Alert.alert(
                 "Error",
@@ -311,7 +314,10 @@ const EditListingScreen = ({ route, navigation }) => {
               setActivating(true);
               await deactivateListing(parkingId);
               setListingStatus("inactive");
-              Alert.alert("Success", "Listing has been deactivated. You can now edit it.");
+              Alert.alert(
+                "Success",
+                "Listing has been deactivated. You can now edit it.",
+              );
             } catch (error) {
               Alert.alert(
                 "Error",
@@ -362,7 +368,8 @@ const EditListingScreen = ({ route, navigation }) => {
         <View style={styles.activeBanner}>
           <Icon name="lock" size="md" color={COLORS.white} />
           <Text style={styles.activeBannerText}>
-            This listing is active and cannot be edited. Deactivate it to make changes.
+            This listing is active and cannot be edited. Deactivate it to make
+            changes.
           </Text>
         </View>
       )}
@@ -432,7 +439,9 @@ const EditListingScreen = ({ route, navigation }) => {
                 styles.statusOption,
                 formData.status === "available" && styles.statusOptionActive,
               ]}
-              onPress={() => isEditable && setFormData({ ...formData, status: "available" })}
+              onPress={() =>
+                isEditable && setFormData({ ...formData, status: "available" })
+              }
               disabled={!isEditable}
             >
               <Text
