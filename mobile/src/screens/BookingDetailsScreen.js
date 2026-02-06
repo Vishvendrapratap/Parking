@@ -194,12 +194,12 @@ const BookingDetailsScreen = ({ route, navigation }) => {
             text: "Enter OTP",
             onPress: () => setShowOtpModal(true),
           },
-        ]
+        ],
       );
     } catch (error) {
       Alert.alert(
         "Error",
-        error.response?.data?.message || "Failed to initiate completion"
+        error.response?.data?.message || "Failed to initiate completion",
       );
     } finally {
       setActionLoading(false);
@@ -222,7 +222,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
     } catch (error) {
       Alert.alert(
         "Error",
-        error.response?.data?.message || "Invalid OTP. Please try again."
+        error.response?.data?.message || "Invalid OTP. Please try again.",
       );
     } finally {
       setOtpLoading(false);
@@ -554,9 +554,10 @@ const BookingDetailsScreen = ({ route, navigation }) => {
                 <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
               </TouchableOpacity>
             </View>
-            
+
             <Text style={styles.modalSubtitle}>
-              Please ask the parking owner for the 6-digit OTP to complete your booking.
+              Please ask the parking owner for the 6-digit OTP to complete your
+              booking.
             </Text>
 
             <TextInput
@@ -580,7 +581,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               >
                 <Text style={styles.modalCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[
                   styles.modalSubmitButton,
@@ -592,7 +593,9 @@ const BookingDetailsScreen = ({ route, navigation }) => {
                 {otpLoading ? (
                   <ActivityIndicator color={COLORS.white} />
                 ) : (
-                  <Text style={styles.modalSubmitButtonText}>Verify & Complete</Text>
+                  <Text style={styles.modalSubmitButtonText}>
+                    Verify & Complete
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>

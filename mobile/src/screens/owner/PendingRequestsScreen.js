@@ -48,12 +48,13 @@ const PendingRequestsScreen = ({ navigation }) => {
   const fetchAllBookings = async () => {
     try {
       setLoading(true);
-      const [pendingResult, inProgressResult, completedResult, rejectedResult] = await Promise.all([
-        getMyBookings({ status: "pending", role: "owner" }),
-        getMyBookings({ status: "confirmed", role: "owner" }),
-        getMyBookings({ status: "completed", role: "owner" }),
-        getMyBookings({ status: "rejected", role: "owner" }),
-      ]);
+      const [pendingResult, inProgressResult, completedResult, rejectedResult] =
+        await Promise.all([
+          getMyBookings({ status: "pending", role: "owner" }),
+          getMyBookings({ status: "confirmed", role: "owner" }),
+          getMyBookings({ status: "completed", role: "owner" }),
+          getMyBookings({ status: "rejected", role: "owner" }),
+        ]);
       setPendingRequests(pendingResult.data || []);
       setInProgressBookings(inProgressResult.data || []);
       setCompletedBookings(completedResult.data || []);
@@ -85,8 +86,13 @@ const PendingRequestsScreen = ({ navigation }) => {
               setActionLoading(booking._id);
               await updateBookingStatus(booking._id, "confirmed");
               // Move from pending to in progress
-              setPendingRequests(pendingRequests.filter((r) => r._id !== booking._id));
-              setInProgressBookings([{ ...booking, status: "confirmed" }, ...inProgressBookings]);
+              setPendingRequests(
+                pendingRequests.filter((r) => r._id !== booking._id),
+              );
+              setInProgressBookings([
+                { ...booking, status: "confirmed" },
+                ...inProgressBookings,
+              ]);
               decrementPendingCount();
               Alert.alert("Success", "Booking approved successfully");
             } catch (error) {
@@ -114,8 +120,13 @@ const PendingRequestsScreen = ({ navigation }) => {
               setActionLoading(booking._id);
               await updateBookingStatus(booking._id, "rejected");
               // Move from pending to rejected
-              setPendingRequests(pendingRequests.filter((r) => r._id !== booking._id));
-              setRejectedBookings([{ ...booking, status: "rejected" }, ...rejectedBookings]);
+              setPendingRequests(
+                pendingRequests.filter((r) => r._id !== booking._id),
+              );
+              setRejectedBookings([
+                { ...booking, status: "rejected" },
+                ...rejectedBookings,
+              ]);
               decrementPendingCount();
               Alert.alert("Success", "Booking rejected");
             } catch (error) {
@@ -247,19 +258,35 @@ const PendingRequestsScreen = ({ navigation }) => {
 
         {/* Status Badge for non-pending */}
         {activeTab !== "pending" && (
-          <View style={[styles.statusBadge, {
-            backgroundColor:
-              item.status === "confirmed" ? COLORS.primary + "20" :
-              item.status === "completed" ? COLORS.success + "20" :
-              COLORS.error + "20"
-          }]}>
-            <Text style={[styles.statusBadgeText, {
-              color:
-                item.status === "confirmed" ? COLORS.primary :
-                item.status === "completed" ? COLORS.success :
-                COLORS.error
-            }]}>
-              {item.status === "confirmed" ? "In Progress" : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor:
+                  item.status === "confirmed"
+                    ? COLORS.primary + "20"
+                    : item.status === "completed"
+                      ? COLORS.success + "20"
+                      : COLORS.error + "20",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusBadgeText,
+                {
+                  color:
+                    item.status === "confirmed"
+                      ? COLORS.primary
+                      : item.status === "completed"
+                        ? COLORS.success
+                        : COLORS.error,
+                },
+              ]}
+            >
+              {item.status === "confirmed"
+                ? "In Progress"
+                : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
             </Text>
           </View>
         )}
@@ -285,13 +312,26 @@ const PendingRequestsScreen = ({ navigation }) => {
   const getEmptyMessage = () => {
     switch (activeTab) {
       case "pending":
-        return { title: "No Pending Requests", subtitle: "When someone books your parking space, their request will appear here for your approval." };
+        return {
+          title: "No Pending Requests",
+          subtitle:
+            "When someone books your parking space, their request will appear here for your approval.",
+        };
       case "inProgress":
-        return { title: "No In Progress Bookings", subtitle: "Approved bookings that are ongoing will appear here." };
+        return {
+          title: "No In Progress Bookings",
+          subtitle: "Approved bookings that are ongoing will appear here.",
+        };
       case "completed":
-        return { title: "No Completed Bookings", subtitle: "Your completed bookings will appear here." };
+        return {
+          title: "No Completed Bookings",
+          subtitle: "Your completed bookings will appear here.",
+        };
       case "rejected":
-        return { title: "No Rejected Requests", subtitle: "Requests you've rejected will appear here." };
+        return {
+          title: "No Rejected Requests",
+          subtitle: "Requests you've rejected will appear here.",
+        };
       default:
         return { title: "No Data", subtitle: "" };
     }
@@ -324,28 +364,47 @@ const PendingRequestsScreen = ({ navigation }) => {
 
       {/* Tab Bar */}
       <View style={styles.tabBarContainer}>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabBar}
         >
           {TABS.map((tab) => {
-            const count = tab.key === "pending" ? pendingRequests.length :
-                          tab.key === "inProgress" ? inProgressBookings.length :
-                          tab.key === "completed" ? completedBookings.length :
-                          rejectedBookings.length;
+            const count =
+              tab.key === "pending"
+                ? pendingRequests.length
+                : tab.key === "inProgress"
+                  ? inProgressBookings.length
+                  : tab.key === "completed"
+                    ? completedBookings.length
+                    : rejectedBookings.length;
             return (
               <TouchableOpacity
                 key={tab.key}
                 style={[styles.tab, activeTab === tab.key && styles.activeTab]}
                 onPress={() => setActiveTab(tab.key)}
               >
-                <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === tab.key && styles.activeTabText,
+                  ]}
+                >
                   {tab.label}
                 </Text>
                 {count > 0 && (
-                  <View style={[styles.tabBadge, activeTab === tab.key && styles.tabBadgeActive]}>
-                    <Text style={[styles.tabBadgeText, activeTab === tab.key && styles.tabBadgeTextActive]}>
+                  <View
+                    style={[
+                      styles.tabBadge,
+                      activeTab === tab.key && styles.tabBadgeActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tabBadgeText,
+                        activeTab === tab.key && styles.tabBadgeTextActive,
+                      ]}
+                    >
                       {count}
                     </Text>
                   </View>

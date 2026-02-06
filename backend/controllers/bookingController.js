@@ -639,7 +639,9 @@ exports.initiateCompletion = async (req, res) => {
       message: `Share this OTP with ${booking.seeker.name} to complete the parking: ${otp}`,
     });
 
-    console.log(`Completion OTP ${otp} sent to owner ${booking.owner._id} for booking ${booking._id}`);
+    console.log(
+      `Completion OTP ${otp} sent to owner ${booking.owner._id} for booking ${booking._id}`,
+    );
 
     res.status(200).json({
       success: true,

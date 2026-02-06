@@ -254,7 +254,8 @@ const EditListingScreen = ({ route, navigation }) => {
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Failed to update listing";
+      const errorMessage =
+        error.response?.data?.message || "Failed to update listing";
       showNotification({
         title: "Error",
         message: errorMessage,

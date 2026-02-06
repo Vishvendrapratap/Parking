@@ -250,7 +250,9 @@ export const getOwnerDashboard = async () => {
   const pendingBookings = pendingBookingsArray.length;
 
   // Get in-progress (confirmed) bookings
-  const inProgressBookingsArray = bookings.filter((b) => b.status === "confirmed");
+  const inProgressBookingsArray = bookings.filter(
+    (b) => b.status === "confirmed",
+  );
   const confirmedBookings = inProgressBookingsArray.length;
   const completedBookings = bookings.filter(
     (b) => b.status === "completed",

@@ -303,12 +303,16 @@ const MyListingsScreen = ({ navigation }) => {
             <View style={styles.emptyContainer}>
               <Icon name="home" size="4xl" color={COLORS.gray[300]} />
               <Text style={styles.emptyText}>No listings yet</Text>
-              <Text style={styles.emptySubtext}>Start earning by listing your parking space</Text>
+              <Text style={styles.emptySubtext}>
+                Start earning by listing your parking space
+              </Text>
               <TouchableOpacity
                 style={styles.addListingButton}
                 onPress={() => navigation.navigate("AddListing")}
               >
-                <Text style={styles.addListingText}>Add Your First Listing</Text>
+                <Text style={styles.addListingText}>
+                  Add Your First Listing
+                </Text>
               </TouchableOpacity>
             </View>
           }

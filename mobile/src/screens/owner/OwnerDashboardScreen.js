@@ -194,9 +194,7 @@ const OwnerDashboardScreen = ({ navigation }) => {
               <Icon name="car" size="lg" color={COLORS.text.primary} />
               <Text style={styles.sectionTitle}>In Progress</Text>
             </View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Requests")}
-            >
+            <TouchableOpacity onPress={() => navigation.navigate("Requests")}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
