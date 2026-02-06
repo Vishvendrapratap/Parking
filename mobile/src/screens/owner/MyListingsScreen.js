@@ -112,9 +112,24 @@ const MyListingsScreen = ({ navigation }) => {
     const sizeInfo = PARKING_SIZES.find((s) => s.value === item.parkingSize);
     const pendingRequests = pendingByListing[item._id] || [];
     const pendingCount = pendingRequests.length;
+    const listingStatus = item.listingStatus || "draft";
 
     return (
       <View style={styles.listingCard}>
+        {/* Listing Status Badge */}
+        <View
+          style={[
+            styles.listingStatusBadge,
+            listingStatus === "active" && styles.listingStatusActive,
+            listingStatus === "draft" && styles.listingStatusDraft,
+            listingStatus === "inactive" && styles.listingStatusInactive,
+          ]}
+        >
+          <Text style={styles.listingStatusText}>
+            {listingStatus.charAt(0).toUpperCase() + listingStatus.slice(1)}
+          </Text>
+        </View>
+
         {/* Pending Badge */}
         {pendingCount > 0 && (
           <TouchableOpacity
@@ -507,6 +522,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginLeft: 4,
+  },
+  listingStatusBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: COLORS.gray[400],
+    zIndex: 1,
+  },
+  listingStatusActive: {
+    backgroundColor: COLORS.secondary,
+  },
+  listingStatusDraft: {
+    backgroundColor: COLORS.gray[500],
+  },
+  listingStatusInactive: {
+    backgroundColor: COLORS.error,
+  },
+  listingStatusText: {
+    color: COLORS.white,
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
   },
   viewRequestsButton: {
     flexDirection: "row",

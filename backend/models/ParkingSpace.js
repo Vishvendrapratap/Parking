@@ -71,11 +71,17 @@ const parkingSpaceSchema = new mongoose.Schema(
         },
       },
     ],
-    // Availability
+    // Availability status (for individual bookings)
     status: {
       type: String,
       enum: ["available", "unavailable", "booked"],
       default: "available",
+    },
+    // Listing status (draft until activated, then cannot edit)
+    listingStatus: {
+      type: String,
+      enum: ["draft", "active", "inactive"],
+      default: "draft",
     },
     // Availability schedule (optional recurring schedule)
     availabilitySchedule: {

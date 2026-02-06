@@ -11,6 +11,8 @@ const {
   getMyListings,
   updateStatus,
   checkAvailability,
+  activateListing,
+  deactivateListing,
 } = require("../controllers/parkingController");
 const { protect, authorize, optionalAuth } = require("../middleware/auth");
 const {
@@ -64,6 +66,24 @@ router.put(
   mongoIdValidation,
   validate,
   updateStatus,
+);
+
+// Activate/Deactivate listing routes
+router.put(
+  "/:id/activate",
+  protect,
+  authorize("owner", "admin"),
+  mongoIdValidation,
+  validate,
+  activateListing,
+);
+router.put(
+  "/:id/deactivate",
+  protect,
+  authorize("owner", "admin"),
+  mongoIdValidation,
+  validate,
+  deactivateListing,
 );
 
 // Image routes

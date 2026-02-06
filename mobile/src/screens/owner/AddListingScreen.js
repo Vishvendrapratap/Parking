@@ -9,11 +9,15 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Switch,
+  Platform,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { createParkingSpace } from "../../api/services";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { createParkingSpace, getMyListings } from "../../api/services";
 import { useLocation } from "../../hooks/useLocation";
 import {
   COLORS,
@@ -23,12 +27,44 @@ import {
 } from "../../constants/config";
 import Icon from "../../components/Icon";
 
+const MAX_LISTINGS = 3;
+const DAYS_OF_WEEK = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
+
+const DEFAULT_AVAILABILITY = {
+  monday: { start: "09:00", end: "18:00", isAvailable: true },
+  tuesday: { start: "09:00", end: "18:00", isAvailable: true },
+  wednesday: { start: "09:00", end: "18:00", isAvailable: true },
+  thursday: { start: "09:00", end: "18:00", isAvailable: true },
+  friday: { start: "09:00", end: "18:00", isAvailable: true },
+  saturday: { start: "09:00", end: "18:00", isAvailable: true },
+  sunday: { start: "09:00", end: "18:00", isAvailable: false },
+};
+
 const AddListingScreen = ({ navigation }) => {
   const { location, getCurrentLocation } = useLocation();
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [checkingLimit, setCheckingLimit] = useState(true);
+  const [listingCount, setListingCount] = useState(0);
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState([]);
+  const [availabilitySchedule, setAvailabilitySchedule] =
+    useState(DEFAULT_AVAILABILITY);
+  const [use24HourFormat, setUse24HourFormat] = useState(true);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [currentTimeEdit, setCurrentTimeEdit] = useState({
+    day: null,
+    field: null,
+  });
+  const [tempTime, setTempTime] = useState(new Date());
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -50,7 +86,25 @@ const AddListingScreen = ({ navigation }) => {
   // Fetch current location when component mounts
   useEffect(() => {
     initializeLocation();
+    checkListingLimit();
   }, []);
+
+  const checkListingLimit = async () => {
+    try {
+      setCheckingLimit(true);
+      const response = await getMyListings();
+      if (response.success) {
+        const activeListings = response.data.filter(
+          (listing) => listing.isActive,
+        );
+        setListingCount(activeListings.length);
+      }
+    } catch (error) {
+      console.log("Error checking listing limit:", error);
+    } finally {
+      setCheckingLimit(false);
+    }
+  };
 
   const initializeLocation = async () => {
     const coords = await getCurrentLocation();
@@ -189,6 +243,9 @@ const AddListingScreen = ({ navigation }) => {
           return false;
         }
         return true;
+      case 4:
+        // Availability schedule is always valid (has defaults)
+        return true;
       default:
         return true;
     }
@@ -204,8 +261,18 @@ const AddListingScreen = ({ navigation }) => {
     setCurrentStep(currentStep - 1);
   };
 
+  const updateDayAvailability = (day, field, value) => {
+    setAvailabilitySchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value,
+      },
+    }));
+  };
+
   const handleSubmit = async () => {
-    if (!validateStep(3)) return;
+    if (!validateStep(4)) return;
 
     try {
       setLoading(true);
@@ -219,6 +286,10 @@ const AddListingScreen = ({ navigation }) => {
       submitData.append("pricePerHour", parseFloat(formData.pricePerHour));
       submitData.append("parkingSize", formData.parkingSize);
       submitData.append("amenities", JSON.stringify(formData.amenities));
+      submitData.append(
+        "availabilitySchedule",
+        JSON.stringify(availabilitySchedule),
+      );
       submitData.append("accessInstructions", formData.accessInstructions);
       submitData.append("address", fullAddress);
       submitData.append("street", formData.location.street);
@@ -240,12 +311,16 @@ const AddListingScreen = ({ navigation }) => {
       const result = await createParkingSpace(submitData);
 
       if (result.success) {
-        Alert.alert("Success", "Listing created successfully!", [
-          {
-            text: "OK",
-            onPress: () => navigation.goBack(),
-          },
-        ]);
+        Alert.alert(
+          "Success",
+          "Listing saved as draft! Activate it from My Listings to make it visible to seekers.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.goBack(),
+            },
+          ],
+        );
       }
     } catch (error) {
       Alert.alert(
@@ -533,6 +608,228 @@ const AddListingScreen = ({ navigation }) => {
     </View>
   );
 
+  // Helper functions for time format conversion
+  const convertTo12Hour = (time24) => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(":");
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  const convertTo24Hour = (time12) => {
+    if (!time12) return "";
+    const match = time12.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return time12; // Return as-is if invalid format
+    let [, hours, minutes, ampm] = match;
+    let hour = parseInt(hours, 10);
+    if (ampm.toUpperCase() === "PM" && hour !== 12) hour += 12;
+    if (ampm.toUpperCase() === "AM" && hour === 12) hour = 0;
+    return `${hour.toString().padStart(2, "0")}:${minutes}`;
+  };
+
+  const getDisplayTime = (time24) => {
+    return use24HourFormat ? time24 : convertTo12Hour(time24);
+  };
+
+  // Convert time string to Date object for picker
+  const timeStringToDate = (timeStr) => {
+    const [hours, minutes] = (timeStr || "09:00").split(":");
+    const date = new Date();
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return date;
+  };
+
+  // Convert Date object to time string
+  const dateToTimeString = (date) => {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  // Open time picker for a specific day and field
+  const openTimePicker = (day, field) => {
+    const currentTime = availabilitySchedule[day][field];
+    setTempTime(timeStringToDate(currentTime));
+    setCurrentTimeEdit({ day, field });
+    setShowTimePicker(true);
+  };
+
+  // Handle time picker change
+  const onTimePickerChange = (event, selectedDate) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+      if (event.type === "set" && selectedDate) {
+        const timeStr = dateToTimeString(selectedDate);
+        updateDayAvailability(currentTimeEdit.day, currentTimeEdit.field, timeStr);
+      }
+    } else {
+      // iOS - update temp time
+      if (selectedDate) {
+        setTempTime(selectedDate);
+      }
+    }
+  };
+
+  // Confirm iOS time picker selection
+  const confirmIOSTime = () => {
+    const timeStr = dateToTimeString(tempTime);
+    updateDayAvailability(currentTimeEdit.day, currentTimeEdit.field, timeStr);
+    setShowTimePicker(false);
+  };
+
+  // Cancel iOS time picker
+  const cancelIOSTime = () => {
+    setShowTimePicker(false);
+  };
+
+  const renderStep4 = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Weekly Availability</Text>
+      <Text style={styles.helperText}>
+        Set your parking space availability for each day of the week
+      </Text>
+
+      {/* Time Format Toggle */}
+      <View style={styles.timeFormatToggle}>
+        <Text style={styles.timeFormatLabel}>Time Format</Text>
+        <View style={styles.timeFormatOptions}>
+          <TouchableOpacity
+            style={[
+              styles.timeFormatOption,
+              !use24HourFormat && styles.timeFormatOptionActive,
+            ]}
+            onPress={() => setUse24HourFormat(false)}
+          >
+            <Text
+              style={[
+                styles.timeFormatOptionText,
+                !use24HourFormat && styles.timeFormatOptionTextActive,
+              ]}
+            >
+              12 Hour
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.timeFormatOption,
+              use24HourFormat && styles.timeFormatOptionActive,
+            ]}
+            onPress={() => setUse24HourFormat(true)}
+          >
+            <Text
+              style={[
+                styles.timeFormatOptionText,
+                use24HourFormat && styles.timeFormatOptionTextActive,
+              ]}
+            >
+              24 Hour
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {DAYS_OF_WEEK.map((day) => (
+        <View key={day} style={styles.dayRow}>
+          <View style={styles.dayHeader}>
+            <Text style={styles.dayLabel}>
+              {day.charAt(0).toUpperCase() + day.slice(1)}
+            </Text>
+            <Switch
+              value={availabilitySchedule[day].isAvailable}
+              onValueChange={(value) =>
+                updateDayAvailability(day, "isAvailable", value)
+              }
+              trackColor={{ false: COLORS.gray[300], true: COLORS.primary }}
+              thumbColor={COLORS.white}
+            />
+          </View>
+          {availabilitySchedule[day].isAvailable && (
+            <View style={styles.timeRow}>
+              <View style={styles.timeInput}>
+                <Text style={styles.timeLabel}>Start</Text>
+                <TouchableOpacity
+                  style={styles.timeField}
+                  onPress={() => openTimePicker(day, "start")}
+                >
+                  <Text style={styles.timeFieldText}>
+                    {getDisplayTime(availabilitySchedule[day].start)}
+                  </Text>
+                  <Icon name="clock" size="sm" color={COLORS.gray[400]} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.timeSeparator}>to</Text>
+              <View style={styles.timeInput}>
+                <Text style={styles.timeLabel}>End</Text>
+                <TouchableOpacity
+                  style={styles.timeField}
+                  onPress={() => openTimePicker(day, "end")}
+                >
+                  <Text style={styles.timeFieldText}>
+                    {getDisplayTime(availabilitySchedule[day].end)}
+                  </Text>
+                  <Icon name="clock" size="sm" color={COLORS.gray[400]} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      ))}
+
+      <View style={styles.draftNotice}>
+        <Icon name="info-circle" size="md" color={COLORS.primary} />
+        <Text style={styles.draftNoticeText}>
+          This listing will be saved as a draft. You can activate it later from
+          My Listings to make it visible to seekers.
+        </Text>
+      </View>
+
+      {/* Time Picker - Android */}
+      {Platform.OS === "android" && showTimePicker && (
+        <DateTimePicker
+          value={tempTime}
+          mode="time"
+          is24Hour={use24HourFormat}
+          display="spinner"
+          onChange={onTimePickerChange}
+        />
+      )}
+
+      {/* Time Picker - iOS Modal */}
+      {Platform.OS === "ios" && (
+        <Modal
+          visible={showTimePicker}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={styles.timePickerModal}>
+            <View style={styles.timePickerContainer}>
+              <View style={styles.timePickerHeader}>
+                <TouchableOpacity onPress={cancelIOSTime}>
+                  <Text style={styles.timePickerCancel}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.timePickerTitle}>Select Time</Text>
+                <TouchableOpacity onPress={confirmIOSTime}>
+                  <Text style={styles.timePickerDone}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={tempTime}
+                mode="time"
+                is24Hour={use24HourFormat}
+                display="spinner"
+                onChange={onTimePickerChange}
+                style={styles.iosTimePicker}
+                textColor={COLORS.text.primary}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
@@ -541,70 +838,100 @@ const AddListingScreen = ({ navigation }) => {
           <Text style={styles.cancelButton}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Listing</Text>
-        <View style={{ width: 50 }} />
+        <Text style={styles.listingCount}>
+          {listingCount}/{MAX_LISTINGS}
+        </Text>
       </View>
 
-      {/* Progress */}
-      <View style={styles.progressContainer}>
-        {[1, 2, 3].map((step) => (
-          <View key={step} style={styles.progressItem}>
-            <View
-              style={[
-                styles.progressDot,
-                currentStep >= step && styles.progressDotActive,
-              ]}
-            >
-              <Text style={styles.progressDotText}>{step}</Text>
-            </View>
-            {step < 3 && (
-              <View
+      {checkingLimit ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Checking listing limit...</Text>
+        </View>
+      ) : listingCount >= MAX_LISTINGS ? (
+        <View style={styles.limitReachedContainer}>
+          <Icon name="exclamation-triangle" size="xl" color={COLORS.error} />
+          <Text style={styles.limitReachedTitle}>Listing Limit Reached</Text>
+          <Text style={styles.limitReachedText}>
+            You have reached the maximum limit of {MAX_LISTINGS} parking spaces.
+            Please delete or deactivate an existing listing to create a new one.
+          </Text>
+          <TouchableOpacity
+            style={styles.goBackButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.goBackButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          {/* Progress */}
+          <View style={styles.progressContainer}>
+            {[1, 2, 3, 4].map((step) => (
+              <View key={step} style={styles.progressItem}>
+                <View
+                  style={[
+                    styles.progressDot,
+                    currentStep >= step && styles.progressDotActive,
+                  ]}
+                >
+                  <Text style={styles.progressDotText}>{step}</Text>
+                </View>
+                {step < 4 && (
+                  <View
+                    style={[
+                      styles.progressLine,
+                      currentStep > step && styles.progressLineActive,
+                    ]}
+                  />
+                )}
+              </View>
+            ))}
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            {currentStep === 1 && renderStep1()}
+            {currentStep === 2 && renderStep2()}
+            {currentStep === 3 && renderStep3()}
+            {currentStep === 4 && renderStep4()}
+          </ScrollView>
+
+          {/* Footer Buttons */}
+          <View style={styles.footer}>
+            {currentStep > 1 && (
+              <TouchableOpacity style={styles.backButton} onPress={prevStep}>
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+            )}
+            {currentStep < 4 ? (
+              <TouchableOpacity
+                style={[styles.nextButton, currentStep === 1 && { flex: 1 }]}
+                onPress={nextStep}
+              >
+                <Text style={styles.nextButtonText}>Next</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
                 style={[
-                  styles.progressLine,
-                  currentStep > step && styles.progressLineActive,
+                  styles.submitButton,
+                  loading && styles.submitButtonDisabled,
                 ]}
-              />
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <Text style={styles.submitButtonText}>Save as Draft</Text>
+                )}
+              </TouchableOpacity>
             )}
           </View>
-        ))}
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {currentStep === 1 && renderStep1()}
-        {currentStep === 2 && renderStep2()}
-        {currentStep === 3 && renderStep3()}
-      </ScrollView>
-
-      {/* Footer Buttons */}
-      <View style={styles.footer}>
-        {currentStep > 1 && (
-          <TouchableOpacity style={styles.backButton} onPress={prevStep}>
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-        )}
-        {currentStep < 3 ? (
-          <TouchableOpacity
-            style={[styles.nextButton, currentStep === 1 && { flex: 1 }]}
-            onPress={nextStep}
-          >
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              loading && styles.submitButtonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <Text style={styles.submitButtonText}>Create Listing</Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
@@ -881,6 +1208,195 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: COLORS.white,
+  },
+  listingCount: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.gray[600],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: COLORS.gray[600],
+  },
+  limitReachedContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+  },
+  limitReachedTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.error,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  limitReachedText: {
+    fontSize: 14,
+    color: COLORS.gray[600],
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  goBackButton: {
+    marginTop: 24,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  goBackButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  timeFormatToggle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  timeFormatLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  timeFormatOptions: {
+    flexDirection: "row",
+    backgroundColor: COLORS.gray[100],
+    borderRadius: 8,
+    padding: 2,
+  },
+  timeFormatOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  timeFormatOptionActive: {
+    backgroundColor: COLORS.primary,
+  },
+  timeFormatOptionText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: COLORS.gray[500],
+  },
+  timeFormatOptionTextActive: {
+    color: COLORS.white,
+  },
+  dayRow: {
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+  },
+  dayHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dayLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+  },
+  timeInput: {
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 12,
+    color: COLORS.gray[500],
+    marginBottom: 4,
+  },
+  timeField: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.gray[50],
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  timeFieldText: {
+    fontSize: 14,
+    color: COLORS.text.primary,
+    fontWeight: "500",
+  },
+  timeSeparator: {
+    fontSize: 14,
+    color: COLORS.gray[500],
+    marginHorizontal: 12,
+    marginTop: 16,
+  },
+  draftNotice: {
+    flexDirection: "row",
+    backgroundColor: COLORS.primary + "10",
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  draftNoticeText: {
+    flex: 1,
+    fontSize: 13,
+    color: COLORS.primary,
+    marginLeft: 12,
+    lineHeight: 20,
+  },
+  timePickerModal: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  timePickerContainer: {
+    backgroundColor: COLORS.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 34,
+  },
+  timePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  timePickerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+  },
+  timePickerCancel: {
+    fontSize: 16,
+    color: COLORS.gray[500],
+  },
+  timePickerDone: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  iosTimePicker: {
+    height: 200,
+    backgroundColor: COLORS.card,
   },
 });
 

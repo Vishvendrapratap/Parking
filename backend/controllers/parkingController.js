@@ -22,6 +22,9 @@ exports.getParkingSpaces = async (req, res) => {
 
     let query = { isActive: true };
 
+    // Only show active listings to seekers (not draft or inactive)
+    query.listingStatus = "active";
+
     // Only add status filter if there are parking spaces
     // This prevents issues when db is empty
     query.status = "available";
@@ -140,6 +143,19 @@ exports.createParkingSpace = async (req, res) => {
   try {
     req.body.owner = req.user.id;
 
+    // Check if owner has reached the maximum limit of 3 parking spaces
+    const existingCount = await ParkingSpace.countDocuments({
+      owner: req.user.id,
+      isActive: true,
+    });
+
+    if (existingCount >= 3) {
+      return res.status(400).json({
+        success: false,
+        message: "You have reached the maximum limit of 3 parking spaces",
+      });
+    }
+
     // Handle FormData from mobile app (latitude, longitude, address as separate fields)
     if (req.body.latitude && req.body.longitude && !req.body.location) {
       req.body.location = {
@@ -176,6 +192,16 @@ exports.createParkingSpace = async (req, res) => {
         req.body.amenities = JSON.parse(req.body.amenities);
       } catch (e) {
         req.body.amenities = [];
+      }
+    }
+
+    // Parse availabilitySchedule if sent as JSON string
+    if (typeof req.body.availabilitySchedule === "string") {
+      try {
+        req.body.availabilitySchedule = JSON.parse(req.body.availabilitySchedule);
+      } catch (e) {
+        // Keep default if parse fails
+        delete req.body.availabilitySchedule;
       }
     }
 
@@ -216,6 +242,14 @@ exports.updateParkingSpace = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this parking space",
+      });
+    }
+
+    // Block updates if listing is active (except for status changes by admin)
+    if (parkingSpace.listingStatus === "active" && req.user.role !== "admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot edit an active listing. Please deactivate it first.",
       });
     }
 
@@ -501,6 +535,104 @@ exports.checkAvailability = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error checking availability",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Activate a parking space listing
+// @route   PUT /api/parking/:id/activate
+// @access  Private (Owner)
+exports.activateListing = async (req, res) => {
+  try {
+    const parkingSpace = await ParkingSpace.findById(req.params.id);
+
+    if (!parkingSpace) {
+      return res.status(404).json({
+        success: false,
+        message: "Parking space not found",
+      });
+    }
+
+    // Check ownership
+    if (
+      parkingSpace.owner.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to activate this listing",
+      });
+    }
+
+    if (parkingSpace.listingStatus === "active") {
+      return res.status(400).json({
+        success: false,
+        message: "Listing is already active",
+      });
+    }
+
+    parkingSpace.listingStatus = "active";
+    await parkingSpace.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Listing activated successfully",
+      data: parkingSpace,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error activating listing",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Deactivate a parking space listing
+// @route   PUT /api/parking/:id/deactivate
+// @access  Private (Owner)
+exports.deactivateListing = async (req, res) => {
+  try {
+    const parkingSpace = await ParkingSpace.findById(req.params.id);
+
+    if (!parkingSpace) {
+      return res.status(404).json({
+        success: false,
+        message: "Parking space not found",
+      });
+    }
+
+    // Check ownership
+    if (
+      parkingSpace.owner.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to deactivate this listing",
+      });
+    }
+
+    if (parkingSpace.listingStatus !== "active") {
+      return res.status(400).json({
+        success: false,
+        message: "Listing is not active",
+      });
+    }
+
+    parkingSpace.listingStatus = "inactive";
+    await parkingSpace.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Listing deactivated successfully",
+      data: parkingSpace,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error deactivating listing",
       error: error.message,
     });
   }

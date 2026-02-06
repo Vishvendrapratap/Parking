@@ -39,6 +39,8 @@ export const parkingService = {
   checkAvailability: (id, startTime, endTime) =>
     api.get(`/parking/${id}/availability`, { params: { startTime, endTime } }),
   getMyListings: () => api.get("/parking/owner/my-listings"),
+  activate: (id) => api.put(`/parking/${id}/activate`),
+  deactivate: (id) => api.put(`/parking/${id}/deactivate`),
 };
 
 // Booking Services

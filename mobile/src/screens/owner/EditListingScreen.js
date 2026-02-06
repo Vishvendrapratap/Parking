@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -18,16 +19,42 @@ import {
   updateParkingSpace,
   deleteParkingImage,
   addParkingImages,
+  activateListing,
+  deactivateListing,
 } from "../../api/services";
 import { COLORS, PARKING_SIZES, AMENITIES } from "../../constants/config";
 import Icon from "../../components/Icon";
+
+const DAYS_OF_WEEK = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
+
+const DEFAULT_AVAILABILITY = {
+  monday: { start: "09:00", end: "18:00", isAvailable: true },
+  tuesday: { start: "09:00", end: "18:00", isAvailable: true },
+  wednesday: { start: "09:00", end: "18:00", isAvailable: true },
+  thursday: { start: "09:00", end: "18:00", isAvailable: true },
+  friday: { start: "09:00", end: "18:00", isAvailable: true },
+  saturday: { start: "09:00", end: "18:00", isAvailable: true },
+  sunday: { start: "09:00", end: "18:00", isAvailable: false },
+};
 
 const EditListingScreen = ({ route, navigation }) => {
   const { parkingId } = route.params;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [listingStatus, setListingStatus] = useState("draft");
   const [images, setImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
+  const [availabilitySchedule, setAvailabilitySchedule] =
+    useState(DEFAULT_AVAILABILITY);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -95,6 +122,13 @@ const EditListingScreen = ({ route, navigation }) => {
         },
       });
       setImages(parking.images || []);
+      setListingStatus(parking.listingStatus || "draft");
+      if (parking.availabilitySchedule) {
+        setAvailabilitySchedule({
+          ...DEFAULT_AVAILABILITY,
+          ...parking.availabilitySchedule,
+        });
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to load listing");
       navigation.goBack();
@@ -225,6 +259,75 @@ const EditListingScreen = ({ route, navigation }) => {
     }
   };
 
+  const updateDayAvailability = (day, field, value) => {
+    setAvailabilitySchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleActivate = async () => {
+    Alert.alert(
+      "Activate Listing",
+      "Once activated, you won't be able to edit this listing. Are you sure you want to activate it?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Activate",
+          onPress: async () => {
+            try {
+              setActivating(true);
+              await activateListing(parkingId);
+              setListingStatus("active");
+              Alert.alert("Success", "Listing is now active and visible to seekers!");
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                error.response?.data?.message || "Failed to activate listing",
+              );
+            } finally {
+              setActivating(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDeactivate = async () => {
+    Alert.alert(
+      "Deactivate Listing",
+      "This will hide your listing from seekers. You can edit it after deactivation. Continue?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Deactivate",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActivating(true);
+              await deactivateListing(parkingId);
+              setListingStatus("inactive");
+              Alert.alert("Success", "Listing has been deactivated. You can now edit it.");
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                error.response?.data?.message || "Failed to deactivate listing",
+              );
+            } finally {
+              setActivating(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const isEditable = listingStatus !== "active";
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -241,26 +344,96 @@ const EditListingScreen = ({ route, navigation }) => {
           <Text style={styles.cancelButton}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Listing</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving}>
-          <Text
-            style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-          >
-            {saving ? "Saving..." : "Save"}
+        {isEditable ? (
+          <TouchableOpacity onPress={handleSave} disabled={saving}>
+            <Text
+              style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+            >
+              {saving ? "Saving..." : "Save"}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 50 }} />
+        )}
+      </View>
+
+      {/* Active Listing Banner */}
+      {!isEditable && (
+        <View style={styles.activeBanner}>
+          <Icon name="lock" size="md" color={COLORS.white} />
+          <Text style={styles.activeBannerText}>
+            This listing is active and cannot be edited. Deactivate it to make changes.
           </Text>
-        </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Listing Status Badge */}
+      <View style={styles.listingStatusContainer}>
+        <View
+          style={[
+            styles.listingStatusBadge,
+            listingStatus === "active" && styles.listingStatusActive,
+            listingStatus === "draft" && styles.listingStatusDraft,
+            listingStatus === "inactive" && styles.listingStatusInactive,
+          ]}
+        >
+          <Text style={styles.listingStatusText}>
+            {listingStatus.charAt(0).toUpperCase() + listingStatus.slice(1)}
+          </Text>
+        </View>
+        {listingStatus === "draft" && (
+          <TouchableOpacity
+            style={styles.activateButton}
+            onPress={handleActivate}
+            disabled={activating}
+          >
+            {activating ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <Text style={styles.activateButtonText}>Activate Listing</Text>
+            )}
+          </TouchableOpacity>
+        )}
+        {listingStatus === "active" && (
+          <TouchableOpacity
+            style={styles.deactivateButton}
+            onPress={handleDeactivate}
+            disabled={activating}
+          >
+            {activating ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <Text style={styles.deactivateButtonText}>Deactivate</Text>
+            )}
+          </TouchableOpacity>
+        )}
+        {listingStatus === "inactive" && (
+          <TouchableOpacity
+            style={styles.activateButton}
+            onPress={handleActivate}
+            disabled={activating}
+          >
+            {activating ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <Text style={styles.activateButtonText}>Reactivate</Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Status Toggle */}
-        <View style={styles.statusContainer}>
-          <Text style={styles.label}>Listing Status</Text>
+        <View style={[styles.statusContainer, !isEditable && styles.disabled]}>
+          <Text style={styles.label}>Availability Status</Text>
           <View style={styles.statusToggle}>
             <TouchableOpacity
               style={[
                 styles.statusOption,
                 formData.status === "available" && styles.statusOptionActive,
               ]}
-              onPress={() => setFormData({ ...formData, status: "available" })}
+              onPress={() => isEditable && setFormData({ ...formData, status: "available" })}
+              disabled={!isEditable}
             >
               <Text
                 style={[
@@ -296,7 +469,7 @@ const EditListingScreen = ({ route, navigation }) => {
         </View>
 
         {/* Images */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
           <Text style={styles.label}>
             Photos ({images.length + newImages.length}/5)
           </Text>
@@ -308,12 +481,14 @@ const EditListingScreen = ({ route, navigation }) => {
                     source={{ uri: image.url }}
                     style={styles.previewImage}
                   />
-                  <TouchableOpacity
-                    style={styles.removeImageButton}
-                    onPress={() => removeExistingImage(image._id, index)}
-                  >
-                    <Icon name="times" size="sm" color={COLORS.white} />
-                  </TouchableOpacity>
+                  {isEditable && (
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeExistingImage(image._id, index)}
+                    >
+                      <Icon name="times" size="sm" color={COLORS.white} />
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))}
               {newImages.map((image, index) => (
@@ -322,18 +497,20 @@ const EditListingScreen = ({ route, navigation }) => {
                     source={{ uri: image.uri }}
                     style={styles.previewImage}
                   />
-                  <TouchableOpacity
-                    style={styles.removeImageButton}
-                    onPress={() => removeNewImage(index)}
-                  >
-                    <Icon name="times" size="sm" color={COLORS.white} />
-                  </TouchableOpacity>
+                  {isEditable && (
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeNewImage(index)}
+                    >
+                      <Icon name="times" size="sm" color={COLORS.white} />
+                    </TouchableOpacity>
+                  )}
                   <View style={styles.newBadge}>
                     <Text style={styles.newBadgeText}>New</Text>
                   </View>
                 </View>
               ))}
-              {images.length + newImages.length < 5 && (
+              {images.length + newImages.length < 5 && isEditable && (
                 <TouchableOpacity
                   style={styles.addImageButton}
                   onPress={pickImages}
@@ -347,7 +524,7 @@ const EditListingScreen = ({ route, navigation }) => {
         </View>
 
         {/* Basic Info */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
           <Text style={styles.label}>Title *</Text>
           <TextInput
             style={styles.input}
@@ -355,10 +532,11 @@ const EditListingScreen = ({ route, navigation }) => {
             onChangeText={(text) => setFormData({ ...formData, title: text })}
             placeholder="e.g., Spacious Driveway Near Downtown"
             placeholderTextColor={COLORS.gray[400]}
+            editable={isEditable}
           />
         </View>
 
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
@@ -370,11 +548,12 @@ const EditListingScreen = ({ route, navigation }) => {
             placeholderTextColor={COLORS.gray[400]}
             multiline
             numberOfLines={4}
+            editable={isEditable}
           />
         </View>
 
         {/* Size */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, !isEditable && styles.disabled]}>
           <Text style={styles.label}>Parking Size</Text>
           <View style={styles.sizeOptions}>
             {PARKING_SIZES.map((size) => (
@@ -804,6 +983,73 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  activeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.error,
+    padding: 12,
+  },
+  activeBannerText: {
+    flex: 1,
+    color: COLORS.white,
+    fontSize: 13,
+    marginLeft: 10,
+  },
+  listingStatusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.gray[50],
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  listingStatusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: COLORS.gray[300],
+  },
+  listingStatusActive: {
+    backgroundColor: COLORS.secondary,
+  },
+  listingStatusDraft: {
+    backgroundColor: COLORS.gray[400],
+  },
+  listingStatusInactive: {
+    backgroundColor: COLORS.error,
+  },
+  listingStatusText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  activateButton: {
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  activateButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  deactivateButton: {
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  deactivateButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
 

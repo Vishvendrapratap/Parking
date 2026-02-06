@@ -49,6 +49,16 @@ export const updateParkingStatus = async (id, status) => {
   return response.data;
 };
 
+export const activateListing = async (id) => {
+  const response = await api.put(`/parking/${id}/activate`);
+  return response.data;
+};
+
+export const deactivateListing = async (id) => {
+  const response = await api.put(`/parking/${id}/deactivate`);
+  return response.data;
+};
+
 export const checkParkingAvailability = async (id, startTime, endTime) => {
   const response = await api.get(`/parking/${id}/availability`, {
     params: { startTime, endTime },
