@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
   Image,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -19,8 +20,19 @@ import { COLORS } from "../../constants/config";
 import Icon from "../../components/Icon";
 import Header from "../../components/Header";
 
+const TABS = [
+  { key: "pending", label: "Pending" },
+  { key: "inProgress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "rejected", label: "Rejected" },
+];
+
 const PendingRequestsScreen = ({ navigation }) => {
-  const [requests, setRequests] = useState([]);
+  const [activeTab, setActiveTab] = useState("pending");
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [inProgressBookings, setInProgressBookings] = useState([]);
+  const [completedBookings, setCompletedBookings] = useState([]);
+  const [rejectedBookings, setRejectedBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
@@ -28,18 +40,26 @@ const PendingRequestsScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchPendingRequests();
+      fetchAllBookings();
       refreshPendingCount();
     }, []),
   );
 
-  const fetchPendingRequests = async () => {
+  const fetchAllBookings = async () => {
     try {
       setLoading(true);
-      const result = await getMyBookings({ status: "pending", role: "owner" });
-      setRequests(result.data || []);
+      const [pendingResult, inProgressResult, completedResult, rejectedResult] = await Promise.all([
+        getMyBookings({ status: "pending", role: "owner" }),
+        getMyBookings({ status: "confirmed", role: "owner" }),
+        getMyBookings({ status: "completed", role: "owner" }),
+        getMyBookings({ status: "rejected", role: "owner" }),
+      ]);
+      setPendingRequests(pendingResult.data || []);
+      setInProgressBookings(inProgressResult.data || []);
+      setCompletedBookings(completedResult.data || []);
+      setRejectedBookings(rejectedResult.data || []);
     } catch (error) {
-      console.error("Error fetching pending requests:", error);
+      console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
     }
@@ -47,7 +67,7 @@ const PendingRequestsScreen = ({ navigation }) => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchPendingRequests();
+    await fetchAllBookings();
     refreshPendingCount();
     setRefreshing(false);
   };
@@ -64,7 +84,9 @@ const PendingRequestsScreen = ({ navigation }) => {
             try {
               setActionLoading(booking._id);
               await updateBookingStatus(booking._id, "confirmed");
-              setRequests(requests.filter((r) => r._id !== booking._id));
+              // Move from pending to in progress
+              setPendingRequests(pendingRequests.filter((r) => r._id !== booking._id));
+              setInProgressBookings([{ ...booking, status: "confirmed" }, ...inProgressBookings]);
               decrementPendingCount();
               Alert.alert("Success", "Booking approved successfully");
             } catch (error) {
@@ -91,7 +113,9 @@ const PendingRequestsScreen = ({ navigation }) => {
             try {
               setActionLoading(booking._id);
               await updateBookingStatus(booking._id, "rejected");
-              setRequests(requests.filter((r) => r._id !== booking._id));
+              // Move from pending to rejected
+              setPendingRequests(pendingRequests.filter((r) => r._id !== booking._id));
+              setRejectedBookings([{ ...booking, status: "rejected" }, ...rejectedBookings]);
               decrementPendingCount();
               Alert.alert("Success", "Booking rejected");
             } catch (error) {
@@ -195,45 +219,96 @@ const PendingRequestsScreen = ({ navigation }) => {
           <Text style={styles.priceValue}>₹{item.totalAmount?.toFixed(2)}</Text>
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          {isProcessing ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
-          ) : (
-            <>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.rejectButton]}
-                onPress={() => handleReject(item)}
-              >
-                <Icon name="close" size="sm" color={COLORS.error} />
-                <Text style={styles.rejectButtonText}>Reject</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.approveButton]}
-                onPress={() => handleApprove(item)}
-              >
-                <Icon name="check" size="sm" color={COLORS.white} />
-                <Text style={styles.approveButtonText}>Approve</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+        {/* Action Buttons - only for pending */}
+        {activeTab === "pending" && (
+          <View style={styles.actionButtons}>
+            {isProcessing ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.rejectButton]}
+                  onPress={() => handleReject(item)}
+                >
+                  <Icon name="close" size="sm" color={COLORS.error} />
+                  <Text style={styles.rejectButtonText}>Reject</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.approveButton]}
+                  onPress={() => handleApprove(item)}
+                >
+                  <Icon name="check" size="sm" color={COLORS.white} />
+                  <Text style={styles.approveButtonText}>Approve</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        )}
+
+        {/* Status Badge for non-pending */}
+        {activeTab !== "pending" && (
+          <View style={[styles.statusBadge, {
+            backgroundColor:
+              item.status === "confirmed" ? COLORS.primary + "20" :
+              item.status === "completed" ? COLORS.success + "20" :
+              COLORS.error + "20"
+          }]}>
+            <Text style={[styles.statusBadgeText, {
+              color:
+                item.status === "confirmed" ? COLORS.primary :
+                item.status === "completed" ? COLORS.success :
+                COLORS.error
+            }]}>
+              {item.status === "confirmed" ? "In Progress" : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconContainer}>
-        <Icon name="clipboard" size="4xl" color={COLORS.gray[300]} />
+  const getActiveData = () => {
+    switch (activeTab) {
+      case "pending":
+        return pendingRequests;
+      case "inProgress":
+        return inProgressBookings;
+      case "completed":
+        return completedBookings;
+      case "rejected":
+        return rejectedBookings;
+      default:
+        return [];
+    }
+  };
+
+  const getEmptyMessage = () => {
+    switch (activeTab) {
+      case "pending":
+        return { title: "No Pending Requests", subtitle: "When someone books your parking space, their request will appear here for your approval." };
+      case "inProgress":
+        return { title: "No In Progress Bookings", subtitle: "Approved bookings that are ongoing will appear here." };
+      case "completed":
+        return { title: "No Completed Bookings", subtitle: "Your completed bookings will appear here." };
+      case "rejected":
+        return { title: "No Rejected Requests", subtitle: "Requests you've rejected will appear here." };
+      default:
+        return { title: "No Data", subtitle: "" };
+    }
+  };
+
+  const renderEmptyState = () => {
+    const emptyMessage = getEmptyMessage();
+    return (
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyIconContainer}>
+          <Icon name="clipboard" size="4xl" color={COLORS.gray[300]} />
+        </View>
+        <Text style={styles.emptyTitle}>{emptyMessage.title}</Text>
+        <Text style={styles.emptyText}>{emptyMessage.subtitle}</Text>
       </View>
-      <Text style={styles.emptyTitle}>No Pending Requests</Text>
-      <Text style={styles.emptyText}>
-        When someone books your parking space, their request will appear here
-        for your approval.
-      </Text>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -247,15 +322,42 @@ const PendingRequestsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header showLogo={true} />
 
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Pending Requests</Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{requests.length}</Text>
-        </View>
+      {/* Tab Bar */}
+      <View style={styles.tabBarContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabBar}
+        >
+          {TABS.map((tab) => {
+            const count = tab.key === "pending" ? pendingRequests.length :
+                          tab.key === "inProgress" ? inProgressBookings.length :
+                          tab.key === "completed" ? completedBookings.length :
+                          rejectedBookings.length;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+                onPress={() => setActiveTab(tab.key)}
+              >
+                <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
+                  {tab.label}
+                </Text>
+                {count > 0 && (
+                  <View style={[styles.tabBadge, activeTab === tab.key && styles.tabBadgeActive]}>
+                    <Text style={[styles.tabBadgeText, activeTab === tab.key && styles.tabBadgeTextActive]}>
+                      {count}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <FlatList
-        data={requests}
+        data={getActiveData()}
         renderItem={renderRequest}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
@@ -280,28 +382,56 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: COLORS.background,
   },
-  titleContainer: {
+  // Tab Bar Styles
+  tabBarContainer: {
+    backgroundColor: COLORS.card,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
+  },
+  tabBar: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
+  },
+  tab: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 4,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: COLORS.text.primary,
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.primary,
   },
-  badge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginLeft: 12,
-  },
-  badgeText: {
-    color: COLORS.white,
+  tabText: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: "500",
+    color: COLORS.gray[500],
+  },
+  activeTabText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+  tabBadge: {
+    backgroundColor: COLORS.gray[200],
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 6,
+    paddingHorizontal: 6,
+  },
+  tabBadgeActive: {
+    backgroundColor: COLORS.primary,
+  },
+  tabBadgeText: {
+    color: COLORS.gray[600],
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  tabBadgeTextActive: {
+    color: COLORS.white,
   },
   listContent: {
     padding: 16,
@@ -480,6 +610,17 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     textAlign: "center",
     lineHeight: 22,
+  },
+  statusBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  statusBadgeText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
 

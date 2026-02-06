@@ -583,3 +583,174 @@ exports.checkOut = async (req, res) => {
     });
   }
 };
+
+// @desc    Initiate booking completion (generates OTP for owner)
+// @route   PUT /api/bookings/:id/initiate-completion
+// @access  Private (Seeker)
+exports.initiateCompletion = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate("parkingSpace", "title")
+      .populate("seeker", "name")
+      .populate("owner", "name");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Only seeker can initiate completion
+    if (booking.seeker._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the seeker can initiate completion",
+      });
+    }
+
+    // Booking must be confirmed or active
+    if (!["confirmed", "active"].includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking must be confirmed or active to complete",
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    booking.completionOtp = {
+      code: otp,
+      expiresAt: otpExpiry,
+      verified: false,
+    };
+
+    await booking.save();
+
+    // Send OTP to owner via socket
+    const io = req.app.get("io");
+    io.to(`user_${booking.owner._id}`).emit("completion_otp", {
+      bookingId: booking._id,
+      otp: otp,
+      seekerName: booking.seeker.name,
+      parkingTitle: booking.parkingSpace.title,
+      message: `Share this OTP with ${booking.seeker.name} to complete the parking: ${otp}`,
+    });
+
+    console.log(`Completion OTP ${otp} sent to owner ${booking.owner._id} for booking ${booking._id}`);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to owner. Please ask owner for the OTP to complete.",
+      data: {
+        bookingId: booking._id,
+        expiresAt: otpExpiry,
+      },
+    });
+  } catch (error) {
+    console.error("Error initiating completion:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error initiating completion",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Verify completion OTP and complete booking
+// @route   PUT /api/bookings/:id/verify-completion
+// @access  Private (Seeker)
+exports.verifyCompletion = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP is required",
+      });
+    }
+
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Only seeker can verify completion
+    if (booking.seeker.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the seeker can verify completion",
+      });
+    }
+
+    // Check if OTP exists
+    if (!booking.completionOtp?.code) {
+      return res.status(400).json({
+        success: false,
+        message: "Please initiate completion first",
+      });
+    }
+
+    // Check if OTP expired
+    if (new Date() > new Date(booking.completionOtp.expiresAt)) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please request a new one.",
+      });
+    }
+
+    // Verify OTP
+    if (booking.completionOtp.code !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    // Mark as completed
+    booking.status = "completed";
+    booking.completionOtp.verified = true;
+    booking.checkOut = {
+      time: new Date(),
+    };
+
+    await booking.save();
+
+    // Update parking space status
+    await ParkingSpace.findByIdAndUpdate(booking.parkingSpace, {
+      status: "available",
+    });
+
+    // Update parking space booking count
+    await ParkingSpace.findByIdAndUpdate(booking.parkingSpace, {
+      $inc: { totalBookings: 1 },
+    });
+
+    // Notify owner of completion
+    const io = req.app.get("io");
+    io.to(`user_${booking.owner}`).emit("booking_completed", {
+      bookingId: booking._id,
+      message: "Booking has been completed successfully",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Booking completed successfully!",
+      data: booking,
+    });
+  } catch (error) {
+    console.error("Error verifying completion:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error completing booking",
+      error: error.message,
+    });
+  }
+};

@@ -37,7 +37,7 @@ const MyListingsScreen = ({ navigation }) => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const [listingsResult, bookingsResult] = await Promise.all([
+      const [listingsResult, pendingResult] = await Promise.all([
         getMyListings(),
         getMyBookings({ role: "owner", status: "pending" }),
       ]);
@@ -46,7 +46,7 @@ const MyListingsScreen = ({ navigation }) => {
 
       // Group pending bookings by parking space ID
       const pendingMap = {};
-      (bookingsResult.data || []).forEach((booking) => {
+      (pendingResult.data || []).forEach((booking) => {
         const parkingId = booking.parkingSpace?._id || booking.parkingSpace;
         if (parkingId) {
           if (!pendingMap[parkingId]) {
@@ -284,7 +284,7 @@ const MyListingsScreen = ({ navigation }) => {
         }
       />
 
-      {/* Listings */}
+      {/* Content */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
@@ -303,16 +303,12 @@ const MyListingsScreen = ({ navigation }) => {
             <View style={styles.emptyContainer}>
               <Icon name="home" size="4xl" color={COLORS.gray[300]} />
               <Text style={styles.emptyText}>No listings yet</Text>
-              <Text style={styles.emptySubtext}>
-                Start earning by listing your parking space
-              </Text>
+              <Text style={styles.emptySubtext}>Start earning by listing your parking space</Text>
               <TouchableOpacity
                 style={styles.addListingButton}
                 onPress={() => navigation.navigate("AddListing")}
               >
-                <Text style={styles.addListingText}>
-                  Add Your First Listing
-                </Text>
+                <Text style={styles.addListingText}>Add Your First Listing</Text>
               </TouchableOpacity>
             </View>
           }

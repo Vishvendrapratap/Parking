@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Modal,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -16,6 +18,8 @@ import {
   getBooking,
   updateBookingStatus,
   cancelBooking,
+  initiateBookingCompletion,
+  verifyBookingCompletion,
 } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
@@ -27,6 +31,9 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
 
   useEffect(() => {
     fetchBookingDetails();
@@ -168,6 +175,58 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   const canApproveOrReject = () => {
     // Only owner can approve/reject, and only pending bookings
     return isOwner() && booking?.status === "pending";
+  };
+
+  const canComplete = () => {
+    // Only seeker can initiate completion, only for confirmed or active bookings
+    return !isOwner() && ["confirmed", "active"].includes(booking?.status);
+  };
+
+  const handleInitiateCompletion = async () => {
+    try {
+      setActionLoading(true);
+      await initiateBookingCompletion(bookingId);
+      Alert.alert(
+        "OTP Sent",
+        "An OTP has been sent to the parking owner. Please ask them to share it with you to complete the booking.",
+        [
+          {
+            text: "Enter OTP",
+            onPress: () => setShowOtpModal(true),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to initiate completion"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      Alert.alert("Error", "Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    try {
+      setOtpLoading(true);
+      await verifyBookingCompletion(bookingId, otp);
+      setShowOtpModal(false);
+      setOtp("");
+      setBooking({ ...booking, status: "completed" });
+      Alert.alert("Success", "Booking completed successfully!");
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Invalid OTP. Please try again."
+      );
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   if (loading) {
@@ -432,6 +491,27 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         )}
 
+        {/* Seeker Complete Booking Button */}
+        {canComplete() && (
+          <TouchableOpacity
+            style={[
+              styles.completeButton,
+              actionLoading && styles.buttonDisabled,
+            ]}
+            onPress={handleInitiateCompletion}
+            disabled={actionLoading}
+          >
+            {actionLoading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Icon name="check" size="md" color={COLORS.white} />
+                <Text style={styles.completeButtonText}> Complete Booking</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
         {/* Seeker Info for Owner */}
         {isOwner() && booking.seeker && (
           <View style={styles.card}>
@@ -458,6 +538,77 @@ const BookingDetailsScreen = ({ route, navigation }) => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* OTP Verification Modal */}
+      <Modal
+        visible={showOtpModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowOtpModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Enter Completion OTP</Text>
+              <TouchableOpacity onPress={() => setShowOtpModal(false)}>
+                <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.modalSubtitle}>
+              Please ask the parking owner for the 6-digit OTP to complete your booking.
+            </Text>
+
+            <TextInput
+              style={styles.otpInput}
+              value={otp}
+              onChangeText={setOtp}
+              placeholder="Enter 6-digit OTP"
+              placeholderTextColor={COLORS.gray[400]}
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowOtpModal(false);
+                  setOtp("");
+                }}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.modalSubmitButton,
+                  otpLoading && styles.buttonDisabled,
+                ]}
+                onPress={handleVerifyOtp}
+                disabled={otpLoading}
+              >
+                {otpLoading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <Text style={styles.modalSubmitButtonText}>Verify & Complete</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.resendButton}
+              onPress={handleInitiateCompletion}
+              disabled={actionLoading}
+            >
+              <Text style={styles.resendButtonText}>
+                {actionLoading ? "Sending..." : "Resend OTP"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -750,6 +901,105 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 32,
+  },
+  // Complete Button Styles
+  completeButton: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    paddingVertical: 14,
+    backgroundColor: COLORS.success,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  completeButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.text.primary,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: COLORS.text.secondary,
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 24,
+    fontWeight: "600",
+    textAlign: "center",
+    letterSpacing: 8,
+    color: COLORS.text.primary,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    alignItems: "center",
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.gray[600],
+  },
+  modalSubmitButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: COLORS.success,
+    alignItems: "center",
+  },
+  modalSubmitButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  resendButton: {
+    marginTop: 16,
+    alignItems: "center",
+  },
+  resendButtonText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: "500",
   },
 });
 

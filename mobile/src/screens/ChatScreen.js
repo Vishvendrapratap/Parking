@@ -121,7 +121,7 @@ const ChatScreen = ({ route, navigation }) => {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       const result = await getMessages(conversationId);
@@ -211,7 +211,9 @@ const ChatScreen = ({ route, navigation }) => {
     if (!item) return null;
     const senderId = item.sender?._id || item.sender;
     const isMe = senderId === user?._id;
-    const messageTime = item.createdAt ? format(new Date(item.createdAt), "HH:mm") : "";
+    const messageTime = item.createdAt
+      ? format(new Date(item.createdAt), "HH:mm")
+      : "";
 
     return (
       <View

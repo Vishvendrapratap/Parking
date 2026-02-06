@@ -143,6 +143,16 @@ export const checkOutBooking = async (id, photo = null) => {
   return response.data;
 };
 
+export const initiateBookingCompletion = async (id) => {
+  const response = await api.put(`/bookings/${id}/initiate-completion`);
+  return response.data;
+};
+
+export const verifyBookingCompletion = async (id, otp) => {
+  const response = await api.put(`/bookings/${id}/verify-completion`, { otp });
+  return response.data;
+};
+
 // ==================== CHAT ====================
 
 export const getConversations = async () => {
@@ -239,9 +249,9 @@ export const getOwnerDashboard = async () => {
   const pendingBookingsArray = bookings.filter((b) => b.status === "pending");
   const pendingBookings = pendingBookingsArray.length;
 
-  const confirmedBookings = bookings.filter(
-    (b) => b.status === "confirmed",
-  ).length;
+  // Get in-progress (confirmed) bookings
+  const inProgressBookingsArray = bookings.filter((b) => b.status === "confirmed");
+  const confirmedBookings = inProgressBookingsArray.length;
   const completedBookings = bookings.filter(
     (b) => b.status === "completed",
   ).length;
@@ -275,6 +285,7 @@ export const getOwnerDashboard = async () => {
       totalBookings,
       pendingBookings: pendingBookingsArray, // Return full array for dashboard display
       pendingCount: pendingBookings,
+      inProgressBookings: inProgressBookingsArray, // Return full array for dashboard display
       confirmedBookings,
       completedBookings,
       totalEarnings,

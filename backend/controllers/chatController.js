@@ -49,10 +49,19 @@ exports.getMessages = async (req, res) => {
     const { conversationId } = req.params;
     const { page = 1, limit = 50 } = req.query;
 
-    console.log("getMessages called with conversationId:", conversationId, "user:", req.user._id);
+    console.log(
+      "getMessages called with conversationId:",
+      conversationId,
+      "user:",
+      req.user._id,
+    );
 
     // Return empty array if no valid conversationId
-    if (!conversationId || conversationId === "undefined" || conversationId === "null") {
+    if (
+      !conversationId ||
+      conversationId === "undefined" ||
+      conversationId === "null"
+    ) {
       return res.status(200).json({
         success: true,
         data: [],

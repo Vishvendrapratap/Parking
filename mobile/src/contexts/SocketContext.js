@@ -196,6 +196,25 @@ export const SocketProvider = ({ children }) => {
     [socket],
   );
 
+  const onCompletionOtp = useCallback(
+    (callback) => {
+      if (socket) {
+        console.log("Registering completion_otp listener");
+        socket.on("completion_otp", (data) => {
+          console.log("Socket received completion_otp:", data);
+          callback(data);
+        });
+        return () => {
+          console.log("Unregistering completion_otp listener");
+          socket.off("completion_otp", callback);
+        };
+      }
+      console.log("No socket available for completion_otp listener");
+      return () => {};
+    },
+    [socket],
+  );
+
   const value = {
     socket,
     connected,
@@ -213,6 +232,7 @@ export const SocketProvider = ({ children }) => {
     onMessagesRead,
     onBookingUpdate,
     onNewBooking,
+    onCompletionOtp,
   };
 
   return (

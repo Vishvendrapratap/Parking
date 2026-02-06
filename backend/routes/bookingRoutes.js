@@ -9,6 +9,8 @@ const {
   addReview,
   checkIn,
   checkOut,
+  initiateCompletion,
+  verifyCompletion,
 } = require("../controllers/bookingController");
 const { protect } = require("../middleware/auth");
 const {
@@ -31,5 +33,7 @@ router.put("/:id/cancel", protect, mongoIdValidation, validate, cancelBooking);
 router.put("/:id/review", protect, mongoIdValidation, validate, addReview);
 router.put("/:id/checkin", protect, mongoIdValidation, validate, checkIn);
 router.put("/:id/checkout", protect, mongoIdValidation, validate, checkOut);
+router.put("/:id/initiate-completion", protect, mongoIdValidation, validate, initiateCompletion);
+router.put("/:id/verify-completion", protect, mongoIdValidation, validate, verifyCompletion);
 
 module.exports = router;

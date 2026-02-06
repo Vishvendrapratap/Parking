@@ -187,6 +187,58 @@ const OwnerDashboardScreen = ({ navigation }) => {
           )}
         </View>
 
+        {/* In Progress Bookings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="car" size="lg" color={COLORS.text.primary} />
+              <Text style={styles.sectionTitle}>In Progress</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Requests")}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          {dashboard?.inProgressBookings?.length > 0 ? (
+            dashboard.inProgressBookings.slice(0, 3).map((booking) => (
+              <TouchableOpacity
+                key={booking._id}
+                style={styles.bookingItem}
+                onPress={() =>
+                  navigation.navigate("BookingDetails", {
+                    bookingId: booking._id,
+                  })
+                }
+              >
+                <View style={styles.bookingInfo}>
+                  <Text style={styles.bookingTitle}>
+                    {booking.parkingSpace?.title}
+                  </Text>
+                  <Text style={styles.bookingDate}>
+                    {format(new Date(booking.startTime), "MMM d, h:mm a")}
+                  </Text>
+                  <Text style={styles.bookingUser}>
+                    By {booking.seeker?.name || booking.user?.name}
+                  </Text>
+                </View>
+                <View style={styles.bookingActions}>
+                  <Text style={styles.bookingPrice}>
+                    ₹{booking.totalPrice?.toFixed(2)}
+                  </Text>
+                  <View style={styles.inProgressBadge}>
+                    <Text style={styles.inProgressText}>In Progress</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No bookings in progress</Text>
+            </View>
+          )}
+        </View>
+
         {/* My Listings */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -503,6 +555,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "600",
     color: COLORS.warning,
+  },
+  inProgressBadge: {
+    backgroundColor: COLORS.primary + "20",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  inProgressText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: COLORS.primary,
   },
   listingItem: {
     flexDirection: "row",

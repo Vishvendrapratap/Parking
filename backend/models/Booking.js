@@ -117,6 +117,12 @@ const bookingSchema = new mongoose.Schema(
       time: Date,
       photo: String,
     },
+    // Completion OTP (for seeker-initiated completion)
+    completionOtp: {
+      code: String,
+      expiresAt: Date,
+      verified: { type: Boolean, default: false },
+    },
     // Notifications sent
     notificationsSent: {
       bookingConfirmed: { type: Boolean, default: false },

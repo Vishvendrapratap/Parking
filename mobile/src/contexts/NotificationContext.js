@@ -22,7 +22,7 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider = ({ children, navigation }) => {
-  const { onBookingUpdate, onNewBooking } = useSocket();
+  const { onBookingUpdate, onNewBooking, onCompletionOtp } = useSocket();
   const { user } = useAuth();
   const [notification, setNotification] = useState({
     visible: false,
@@ -110,6 +110,27 @@ export const NotificationProvider = ({ children, navigation }) => {
       return unsubscribe;
     }
   }, [onNewBooking, user?.role, showNotification]);
+
+  // Listen for completion OTP (for owners - when seeker wants to complete booking)
+  useEffect(() => {
+    if (user?.role === "owner") {
+      console.log("Setting up completion_otp listener for owner");
+      const unsubscribe = onCompletionOtp((data) => {
+        console.log("Received completion_otp event:", data);
+        const { otp, seekerName, parkingTitle, bookingId } = data;
+
+        showNotification({
+          title: "🔑 Completion OTP",
+          message: `${seekerName} wants to complete their booking at ${parkingTitle}. Share this OTP: ${otp}`,
+          type: "info",
+          data: { bookingId, otp },
+          duration: 30000, // Keep visible for 30 seconds since it contains OTP
+        });
+      });
+
+      return unsubscribe;
+    }
+  }, [onCompletionOtp, user?.role, showNotification]);
 
   const hideNotification = useCallback(() => {
     setNotification((prev) => ({ ...prev, visible: false }));

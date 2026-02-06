@@ -287,47 +287,49 @@ const ChatPage = () => {
               <div className="flex-1 flex items-center justify-center h-full">
                 <div className="text-center text-gray-500">
                   <p className="text-lg mb-2">No messages yet</p>
-                  <p className="text-sm">Start the conversation by sending a message</p>
+                  <p className="text-sm">
+                    Start the conversation by sending a message
+                  </p>
                 </div>
               </div>
             ) : (
-            messages.map((message, index) => {
-              const isOwn =
-                message.sender?._id === user?._id ||
-                message.sender === user?._id;
-              const showDate =
-                index === 0 ||
-                formatDate(message.createdAt) !==
-                  formatDate(messages[index - 1].createdAt);
+              messages.map((message, index) => {
+                const isOwn =
+                  message.sender?._id === user?._id ||
+                  message.sender === user?._id;
+                const showDate =
+                  index === 0 ||
+                  formatDate(message.createdAt) !==
+                    formatDate(messages[index - 1].createdAt);
 
-              return (
-                <div key={message._id || index}>
-                  {showDate && (
-                    <div className="text-center text-xs text-gray-500 my-4">
-                      {formatDate(message.createdAt)}
-                    </div>
-                  )}
-                  <div
-                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                  >
+                return (
+                  <div key={message._id || index}>
+                    {showDate && (
+                      <div className="text-center text-xs text-gray-500 my-4">
+                        {formatDate(message.createdAt)}
+                      </div>
+                    )}
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                        isOwn
-                          ? "bg-primary-600 text-white"
-                          : "bg-white text-gray-800 shadow-sm"
-                      }`}
+                      className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
-                      <p>{message.text}</p>
-                      <p
-                        className={`text-xs mt-1 ${isOwn ? "text-primary-200" : "text-gray-400"}`}
+                      <div
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                          isOwn
+                            ? "bg-primary-600 text-white"
+                            : "bg-white text-gray-800 shadow-sm"
+                        }`}
                       >
-                        {formatTime(message.createdAt)}
-                      </p>
+                        <p>{message.text}</p>
+                        <p
+                          className={`text-xs mt-1 ${isOwn ? "text-primary-200" : "text-gray-400"}`}
+                        >
+                          {formatTime(message.createdAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })
             )}
 
             {isTyping && (

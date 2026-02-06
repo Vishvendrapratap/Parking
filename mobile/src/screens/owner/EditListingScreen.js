@@ -26,6 +26,7 @@ import {
 } from "../../api/services";
 import { COLORS, PARKING_SIZES, AMENITIES } from "../../constants/config";
 import Icon from "../../components/Icon";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const DAYS_OF_WEEK = [
   "monday",
@@ -49,6 +50,7 @@ const DEFAULT_AVAILABILITY = {
 
 const EditListingScreen = ({ route, navigation }) => {
   const { parkingId } = route.params;
+  const { showNotification } = useNotification();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activating, setActivating] = useState(false);
@@ -252,10 +254,12 @@ const EditListingScreen = ({ route, navigation }) => {
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to update listing",
-      );
+      const errorMessage = error.response?.data?.message || "Failed to update listing";
+      showNotification({
+        title: "Error",
+        message: errorMessage,
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }
