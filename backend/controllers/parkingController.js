@@ -703,7 +703,7 @@ exports.getAvailabilityStatus = async (req, res) => {
       targetDate = new Date();
     }
     targetDate.setHours(0, 0, 0, 0);
-    
+
     const nextDay = new Date(targetDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
@@ -887,7 +887,9 @@ exports.getWeeklyAvailabilityStatus = async (req, res) => {
           const schedule = parkingSpace.availabilitySchedule?.[targetDayName];
 
           // Day label (Mon, Tue, etc.)
-          const dayLabel = targetDate.toLocaleDateString("en-US", { weekday: "short" });
+          const dayLabel = targetDate.toLocaleDateString("en-US", {
+            weekday: "short",
+          });
           const dateLabel = targetDate.getDate().toString();
 
           // If not available on this day

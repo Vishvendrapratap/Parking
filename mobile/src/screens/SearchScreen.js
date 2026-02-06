@@ -14,7 +14,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { format, addDays, differenceInCalendarDays, startOfDay } from "date-fns";
+import {
+  format,
+  addDays,
+  differenceInCalendarDays,
+  startOfDay,
+} from "date-fns";
 import {
   searchNearbyParking,
   getPlaceAutocomplete,
@@ -476,8 +481,22 @@ const SearchScreen = ({ navigation }) => {
                   { backgroundColor: getDayColor(day.color) },
                 ]}
               >
-                <Text style={[styles.dayLabelText, day.color === "gray" && styles.dayLabelTextFaded]}>{day.dayLabel}</Text>
-                <Text style={[styles.dayDateText, day.color === "gray" && styles.dayDateTextFaded]}>{day.dateLabel}</Text>
+                <Text
+                  style={[
+                    styles.dayLabelText,
+                    day.color === "gray" && styles.dayLabelTextFaded,
+                  ]}
+                >
+                  {day.dayLabel}
+                </Text>
+                <Text
+                  style={[
+                    styles.dayDateText,
+                    day.color === "gray" && styles.dayDateTextFaded,
+                  ]}
+                >
+                  {day.dateLabel}
+                </Text>
               </View>
             ))}
           </View>
@@ -540,8 +559,10 @@ const SearchScreen = ({ navigation }) => {
           const dayOffset = differenceInCalendarDays(selected, today);
           const selectedDay = weekly[dayOffset] || weekly[0];
           const isToday = dayOffset === 0;
-          const dateLabel = isToday ? "Today" : format(filters.selectedDate, "MMM d");
-          
+          const dateLabel = isToday
+            ? "Today"
+            : format(filters.selectedDate, "MMM d");
+
           if (!selectedDay) return null;
 
           // Determine badge color: gray=closed, red=booked, yellow=<4hrs, green=4+hrs
@@ -551,20 +572,17 @@ const SearchScreen = ({ navigation }) => {
             if (selectedDay.availableSlots < 8) return "#F59E0B"; // Yellow for less than 4 hours
             return COLORS.success;
           };
-          
+
           return (
             <View
-              style={[
-                styles.todayBadge,
-                { backgroundColor: getBadgeColor() },
-              ]}
+              style={[styles.todayBadge, { backgroundColor: getBadgeColor() }]}
             >
               <Text style={styles.todayBadgeText}>
                 {selectedDay.status === "closed"
                   ? `Closed ${dateLabel}`
                   : selectedDay.availableSlots === 0
-                  ? `Fully Booked ${dateLabel}`
-                  : `${(selectedDay.availableSlots / 2).toFixed(1).replace(".0", "")} hrs ${dateLabel}`}
+                    ? `Fully Booked ${dateLabel}`
+                    : `${(selectedDay.availableSlots / 2).toFixed(1).replace(".0", "")} hrs ${dateLabel}`}
               </Text>
             </View>
           );
@@ -858,7 +876,13 @@ const SearchScreen = ({ navigation }) => {
               />
             ))}
 
-          <TouchableOpacity style={styles.applyButton} onPress={() => { handleSearch(); setShowFilters(false); }}>
+          <TouchableOpacity
+            style={styles.applyButton}
+            onPress={() => {
+              handleSearch();
+              setShowFilters(false);
+            }}
+          >
             <Text style={styles.applyButtonText}>Apply Filters</Text>
           </TouchableOpacity>
         </ScrollView>
