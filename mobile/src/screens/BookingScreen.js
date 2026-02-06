@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format, addHours, isAfter, isBefore, addMinutes } from "date-fns";
-import { createBooking, checkParkingAvailability } from "../api/services";
+import { createBooking, checkParkingAvailability, getVehicles, addVehicle } from "../api/services";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
 
@@ -23,12 +23,19 @@ const BookingScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [hours, setHours] = useState(1);
+  
+  // Vehicle state
+  const [garageVehicles, setGarageVehicles] = useState([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+  const [selectedVehicleId, setSelectedVehicleId] = useState(null); // null = manual entry
   const [vehicleInfo, setVehicleInfo] = useState({
     licensePlate: "",
     make: "",
     model: "",
     color: "",
   });
+  const [saveToGarage, setSaveToGarage] = useState(false);
+  
   const [specialRequests, setSpecialRequests] = useState("");
 
   // Date/Time picker state
@@ -47,6 +54,68 @@ const BookingScreen = ({ route, navigation }) => {
 
   // Minimum start time is 15 minutes from now
   const minStartTime = addMinutes(new Date(), 15);
+
+  // Fetch user's vehicles on mount
+  useEffect(() => {
+    fetchGarageVehicles();
+  }, []);
+
+  const fetchGarageVehicles = async () => {
+    try {
+      setLoadingVehicles(true);
+      const result = await getVehicles();
+      const vehicles = result.data || [];
+      setGarageVehicles(vehicles);
+      
+      // Auto-select default vehicle if available
+      const defaultVehicle = vehicles.find(v => v.isDefault);
+      if (defaultVehicle) {
+        setSelectedVehicleId(defaultVehicle._id);
+        setVehicleInfo({
+          licensePlate: defaultVehicle.licensePlate,
+          make: defaultVehicle.make || "",
+          model: defaultVehicle.model || "",
+          color: defaultVehicle.color || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+    } finally {
+      setLoadingVehicles(false);
+    }
+  };
+
+  const handleSelectVehicle = (vehicle) => {
+    setSelectedVehicleId(vehicle._id);
+    setVehicleInfo({
+      licensePlate: vehicle.licensePlate,
+      make: vehicle.make || "",
+      model: vehicle.model || "",
+      color: vehicle.color || "",
+    });
+    setSaveToGarage(false);
+  };
+
+  const handleManualEntry = () => {
+    setSelectedVehicleId(null);
+    setVehicleInfo({
+      licensePlate: "",
+      make: "",
+      model: "",
+      color: "",
+    });
+  };
+
+  const getVehicleIcon = (type) => {
+    switch (type) {
+      case "small":
+        return "car";
+      case "suv":
+        return "van";
+      default:
+        return "carSide";
+    }
+  };
 
   const handleDateChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
@@ -168,6 +237,25 @@ const BookingScreen = ({ route, navigation }) => {
 
     try {
       setLoading(true);
+
+      // Save vehicle to garage if requested
+      if (saveToGarage && !selectedVehicleId) {
+        try {
+          await addVehicle({
+            nickname: vehicleInfo.make && vehicleInfo.model 
+              ? `${vehicleInfo.make} ${vehicleInfo.model}`
+              : vehicleInfo.licensePlate,
+            type: parking.parkingSize,
+            licensePlate: vehicleInfo.licensePlate,
+            make: vehicleInfo.make,
+            model: vehicleInfo.model,
+            color: vehicleInfo.color,
+          });
+        } catch (error) {
+          console.log("Failed to save vehicle to garage:", error);
+          // Don't block booking if garage save fails
+        }
+      }
 
       const result = await createBooking({
         parkingSpaceId: parking._id,
@@ -353,59 +441,181 @@ const BookingScreen = ({ route, navigation }) => {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Vehicle Information</Text>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>License Plate *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="ABC 1234"
-              placeholderTextColor={COLORS.gray[400]}
-              value={vehicleInfo.licensePlate}
-              onChangeText={(text) =>
-                setVehicleInfo({ ...vehicleInfo, licensePlate: text })
-              }
-              autoCapitalize="characters"
-            />
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-              <Text style={styles.inputLabel}>Make</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Toyota"
-                placeholderTextColor={COLORS.gray[400]}
-                value={vehicleInfo.make}
-                onChangeText={(text) =>
-                  setVehicleInfo({ ...vehicleInfo, make: text })
-                }
-              />
+          {/* Garage Section - Show saved vehicles */}
+          {loadingVehicles ? (
+            <View style={styles.loadingVehicles}>
+              <ActivityIndicator size="small" color={COLORS.primary} />
+              <Text style={styles.loadingVehiclesText}>Loading your garage...</Text>
             </View>
-            <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.inputLabel}>Model</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Camry"
-                placeholderTextColor={COLORS.gray[400]}
-                value={vehicleInfo.model}
-                onChangeText={(text) =>
-                  setVehicleInfo({ ...vehicleInfo, model: text })
-                }
-              />
+          ) : garageVehicles.length > 0 ? (
+            <View style={styles.vehicleSelector}>
+              <Text style={styles.vehicleSelectorLabel}>Select from your garage</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.vehicleList}
+              >
+                {garageVehicles.map((vehicle) => (
+                  <TouchableOpacity
+                    key={vehicle._id}
+                    style={[
+                      styles.vehicleOption,
+                      selectedVehicleId === vehicle._id && styles.vehicleOptionSelected,
+                    ]}
+                    onPress={() => handleSelectVehicle(vehicle)}
+                  >
+                    <Icon
+                      name={getVehicleIcon(vehicle.type)}
+                      size="lg"
+                      color={selectedVehicleId === vehicle._id ? COLORS.white : COLORS.text.secondary}
+                    />
+                    <Text
+                      style={[
+                        styles.vehicleOptionName,
+                        selectedVehicleId === vehicle._id && styles.vehicleOptionNameSelected,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {vehicle.nickname || vehicle.licensePlate}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.vehicleOptionPlate,
+                        selectedVehicleId === vehicle._id && styles.vehicleOptionPlateSelected,
+                      ]}
+                    >
+                      {vehicle.licensePlate}
+                    </Text>
+                    {vehicle.isDefault && (
+                      <View style={[
+                        styles.defaultBadge,
+                        selectedVehicleId === vehicle._id && styles.defaultBadgeSelected,
+                      ]}>
+                        <Text style={[
+                          styles.defaultBadgeText,
+                          selectedVehicleId === vehicle._id && styles.defaultBadgeTextSelected,
+                        ]}>Default</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                ))}
+                
+                {/* Add new vehicle option */}
+                <TouchableOpacity
+                  style={[
+                    styles.vehicleOption,
+                    styles.vehicleOptionAdd,
+                    selectedVehicleId === null && styles.vehicleOptionSelected,
+                  ]}
+                  onPress={handleManualEntry}
+                >
+                  <Icon
+                    name="plus"
+                    size="lg"
+                    color={selectedVehicleId === null ? COLORS.white : COLORS.primary}
+                  />
+                  <Text
+                    style={[
+                      styles.vehicleOptionName,
+                      { color: selectedVehicleId === null ? COLORS.white : COLORS.primary },
+                    ]}
+                  >
+                    New Vehicle
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
-          </View>
+          ) : null}
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Color</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Silver"
-              placeholderTextColor={COLORS.gray[400]}
-              value={vehicleInfo.color}
-              onChangeText={(text) =>
-                setVehicleInfo({ ...vehicleInfo, color: text })
-              }
-            />
-          </View>
+          {/* Manual Entry Fields - Show when no vehicle selected or no vehicles in garage */}
+          {(selectedVehicleId === null || garageVehicles.length === 0) && (
+            <>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>License Plate *</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="ABC 1234"
+                  placeholderTextColor={COLORS.gray[400]}
+                  value={vehicleInfo.licensePlate}
+                  onChangeText={(text) =>
+                    setVehicleInfo({ ...vehicleInfo, licensePlate: text })
+                  }
+                  autoCapitalize="characters"
+                />
+              </View>
+
+              <View style={styles.row}>
+                <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.inputLabel}>Make</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Toyota"
+                    placeholderTextColor={COLORS.gray[400]}
+                    value={vehicleInfo.make}
+                    onChangeText={(text) =>
+                      setVehicleInfo({ ...vehicleInfo, make: text })
+                    }
+                  />
+                </View>
+                <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.inputLabel}>Model</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Camry"
+                    placeholderTextColor={COLORS.gray[400]}
+                    value={vehicleInfo.model}
+                    onChangeText={(text) =>
+                      setVehicleInfo({ ...vehicleInfo, model: text })
+                    }
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Color</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Silver"
+                  placeholderTextColor={COLORS.gray[400]}
+                  value={vehicleInfo.color}
+                  onChangeText={(text) =>
+                    setVehicleInfo({ ...vehicleInfo, color: text })
+                  }
+                />
+              </View>
+
+              {/* Save to Garage Checkbox */}
+              <TouchableOpacity
+                style={styles.saveToGarageRow}
+                onPress={() => setSaveToGarage(!saveToGarage)}
+              >
+                <View style={[styles.checkbox, saveToGarage && styles.checkboxChecked]}>
+                  {saveToGarage && (
+                    <Icon name="check" size="xs" color={COLORS.white} />
+                  )}
+                </View>
+                <Text style={styles.saveToGarageText}>Save this vehicle to my garage</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Show selected vehicle details */}
+          {selectedVehicleId !== null && garageVehicles.length > 0 && (
+            <View style={styles.selectedVehicleInfo}>
+              <View style={styles.selectedVehicleRow}>
+                <Text style={styles.selectedVehicleLabel}>License Plate:</Text>
+                <Text style={styles.selectedVehicleValue}>{vehicleInfo.licensePlate}</Text>
+              </View>
+              {vehicleInfo.make && (
+                <View style={styles.selectedVehicleRow}>
+                  <Text style={styles.selectedVehicleLabel}>Vehicle:</Text>
+                  <Text style={styles.selectedVehicleValue}>
+                    {[vehicleInfo.make, vehicleInfo.model, vehicleInfo.color].filter(Boolean).join(" ")}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Special Requests */}
@@ -695,6 +905,129 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+  },
+  // Vehicle selector styles
+  loadingVehicles: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  loadingVehiclesText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: COLORS.text.secondary,
+  },
+  vehicleSelector: {
+    marginBottom: 16,
+  },
+  vehicleSelectorLabel: {
+    fontSize: 12,
+    color: COLORS.text.secondary,
+    marginBottom: 8,
+  },
+  vehicleList: {
+    flexDirection: "row",
+  },
+  vehicleOption: {
+    width: 100,
+    padding: 12,
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12,
+    alignItems: "center",
+    marginRight: 10,
+    borderWidth: 2,
+    borderColor: COLORS.gray[100],
+  },
+  vehicleOptionSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  vehicleOptionAdd: {
+    borderStyle: "dashed",
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+  },
+  vehicleOptionName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    marginTop: 6,
+    textAlign: "center",
+  },
+  vehicleOptionNameSelected: {
+    color: COLORS.white,
+  },
+  vehicleOptionPlate: {
+    fontSize: 10,
+    color: COLORS.text.secondary,
+    marginTop: 2,
+  },
+  vehicleOptionPlateSelected: {
+    color: COLORS.white,
+    opacity: 0.8,
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.primary + "20",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  defaultBadgeSelected: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  defaultBadgeText: {
+    fontSize: 8,
+    fontWeight: "600",
+    color: COLORS.primary,
+    textTransform: "uppercase",
+  },
+  defaultBadgeTextSelected: {
+    color: COLORS.white,
+  },
+  saveToGarageRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: COLORS.gray[300],
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  saveToGarageText: {
+    fontSize: 14,
+    color: COLORS.text.secondary,
+  },
+  selectedVehicleInfo: {
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 4,
+  },
+  selectedVehicleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  selectedVehicleLabel: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+  },
+  selectedVehicleValue: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: COLORS.text.primary,
   },
   priceRow: {
     flexDirection: "row",

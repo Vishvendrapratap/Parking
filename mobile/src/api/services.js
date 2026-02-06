@@ -306,3 +306,30 @@ export const geocodeAddress = async (address) => {
     return { success: false, data: null };
   }
 };
+
+// ==================== VEHICLES/GARAGE ====================
+
+export const getVehicles = async () => {
+  const response = await api.get("/users/vehicles");
+  return response.data;
+};
+
+export const addVehicle = async (vehicleData) => {
+  const response = await api.post("/users/vehicles", vehicleData);
+  return response.data;
+};
+
+export const updateVehicle = async (vehicleId, vehicleData) => {
+  const response = await api.put(`/users/vehicles/${vehicleId}`, vehicleData);
+  return response.data;
+};
+
+export const deleteVehicle = async (vehicleId) => {
+  const response = await api.delete(`/users/vehicles/${vehicleId}`);
+  return response.data;
+};
+
+export const setDefaultVehicle = async (vehicleId) => {
+  const response = await api.put(`/users/vehicles/${vehicleId}/default`);
+  return response.data;
+};

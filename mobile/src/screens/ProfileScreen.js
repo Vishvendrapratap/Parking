@@ -197,6 +197,19 @@ const ProfileScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
+
+          {user?.role === "seeker" && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate("Garage")}
+            >
+              <View style={styles.menuIcon}>
+                <Icon name="car" size="lg" color={COLORS.text.secondary} />
+              </View>
+              <Text style={styles.menuText}>My Garage</Text>
+              <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.menuSection}>

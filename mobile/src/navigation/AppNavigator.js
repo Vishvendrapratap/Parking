@@ -47,6 +47,9 @@ import EditListingScreen from "../screens/owner/EditListingScreen";
 import MyListingsScreen from "../screens/owner/MyListingsScreen";
 import PendingRequestsScreen from "../screens/owner/PendingRequestsScreen";
 
+// Seeker Screens
+import GarageScreen from "../screens/seeker/GarageScreen";
+
 // Profile
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
@@ -169,6 +172,9 @@ const MainStack = () => {
       {/* Owner Screens */}
       <Stack.Screen name="AddListing" component={AddListingScreen} />
       <Stack.Screen name="EditListing" component={EditListingScreen} />
+
+      {/* Seeker Screens */}
+      <Stack.Screen name="Garage" component={GarageScreen} />
 
       {/* Profile Screens */}
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />

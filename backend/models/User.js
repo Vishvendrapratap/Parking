@@ -85,6 +85,41 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    // User's garage - saved vehicles
+    vehicles: [
+      {
+        nickname: {
+          type: String,
+          maxlength: 50,
+        },
+        type: {
+          type: String,
+          enum: ["small", "sedan", "suv"],
+          required: true,
+        },
+        licensePlate: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        make: {
+          type: String,
+          trim: true,
+        },
+        model: {
+          type: String,
+          trim: true,
+        },
+        color: {
+          type: String,
+          trim: true,
+        },
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,
