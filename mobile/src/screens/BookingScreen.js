@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,26 +9,21 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  Modal,
   KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { format, addHours, isAfter, isBefore, addMinutes } from "date-fns";
-import {
-  createBooking,
-  checkParkingAvailability,
-  getVehicles,
-  addVehicle,
-} from "../api/services";
+import { format } from "date-fns";
+import { createBooking, getVehicles, addVehicle } from "../api/services";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
+import SlotPicker from "../components/SlotPicker";
 
 const BookingScreen = ({ route, navigation }) => {
   const { parking } = route.params;
   const [loading, setLoading] = useState(false);
-  const [checkingAvailability, setCheckingAvailability] = useState(false);
-  const [hours, setHours] = useState(1);
+
+  // Slot selection state - now stores the selection info object from SlotPicker
+  const [slotSelection, setSlotSelection] = useState(null);
 
   // Vehicle state
   const [garageVehicles, setGarageVehicles] = useState([]);
@@ -44,24 +39,13 @@ const BookingScreen = ({ route, navigation }) => {
 
   const [specialRequests, setSpecialRequests] = useState("");
 
-  // Date/Time picker state
-  const [startTime, setStartTime] = useState(addMinutes(new Date(), 30)); // Default to 30 mins from now
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState("date"); // 'date' or 'time'
-
-  // Ref to store latest datetime for time picker (avoids stale state issues)
-  const pendingDateTimeRef = useRef(startTime);
-
-  const endTime = addHours(startTime, hours);
+  // Price calculation based on selected slots (each slot is 30 mins)
+  const hours = slotSelection?.hours || 0;
   const subtotal = parking.pricePerHour * hours;
   const serviceFee = subtotal * 0.1;
   const total = subtotal + serviceFee;
 
-  // Minimum start time is 15 minutes from now
-  const minStartTime = addMinutes(new Date(), 15);
-
-  // Fetch user's vehicles on mount
+  // Fetch vehicles on mount
   useEffect(() => {
     fetchGarageVehicles();
   }, []);
@@ -123,123 +107,29 @@ const BookingScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    if (Platform.OS === "android") {
-      setShowDatePicker(false);
-      // Don't process if user dismissed/cancelled the picker
-      if (event.type === "dismissed") {
-        return;
-      }
-    }
-
-    if (selectedDate) {
-      let newDateTime;
-
-      if (Platform.OS === "ios") {
-        // iOS datetime picker returns complete date+time, use it directly
-        newDateTime = new Date(selectedDate);
-      } else {
-        // Android date-only picker: keep the time from current selection, just change the date
-        const currentTime = pendingDateTimeRef.current;
-        newDateTime = new Date(selectedDate);
-        newDateTime.setHours(currentTime.getHours());
-        newDateTime.setMinutes(currentTime.getMinutes());
-      }
-
-      // Ensure the selected datetime is not in the past
-      if (isBefore(newDateTime, minStartTime)) {
-        Alert.alert(
-          "Invalid Time",
-          "Please select a time at least 15 minutes from now.",
-        );
-        return;
-      }
-
-      // Update both state and ref
-      pendingDateTimeRef.current = newDateTime;
-      setStartTime(newDateTime);
-
-      // On Android, show time picker after date selection
-      if (Platform.OS === "android" && pickerMode === "date") {
-        setTimeout(() => {
-          setPickerMode("time");
-          setShowTimePicker(true);
-        }, 150);
-      }
-    }
-  };
-
-  const handleTimeChange = (event, selectedTime) => {
-    if (Platform.OS === "android") {
-      setShowTimePicker(false);
-      // Don't process if user dismissed/cancelled the picker
-      if (event.type === "dismissed") {
-        return;
-      }
-    }
-
-    if (selectedTime) {
-      // Use ref to get the latest date (set by handleDateChange)
-      const currentDateTime = pendingDateTimeRef.current;
-      const newDateTime = new Date(currentDateTime);
-      newDateTime.setHours(selectedTime.getHours());
-      newDateTime.setMinutes(selectedTime.getMinutes());
-
-      // Ensure the selected datetime is not in the past
-      if (isBefore(newDateTime, minStartTime)) {
-        Alert.alert(
-          "Invalid Time",
-          "Please select a time at least 15 minutes from now.",
-        );
-        return;
-      }
-
-      // Update both state and ref
-      pendingDateTimeRef.current = newDateTime;
-      setStartTime(newDateTime);
-    }
-  };
-
-  const openDateTimePicker = () => {
-    // Sync ref with current state before opening picker
-    pendingDateTimeRef.current = startTime;
-    setPickerMode("date");
-    if (Platform.OS === "ios") {
-      setShowDatePicker(true);
-    } else {
-      setShowDatePicker(true);
-    }
-  };
-
-  const handleCheckAvailability = async () => {
-    try {
-      setCheckingAvailability(true);
-      const result = await checkParkingAvailability(
-        parking._id,
-        startTime.toISOString(),
-        endTime.toISOString(),
-      );
-
-      if (result.available) {
-        Alert.alert("Available", "This time slot is available!");
-      } else {
-        Alert.alert(
-          "Not Available",
-          result.message || "This time slot is not available",
-        );
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to check availability");
-    } finally {
-      setCheckingAvailability(false);
-    }
-  };
+  const handleSlotSelection = useCallback((selection) => {
+    setSlotSelection(selection);
+  }, []);
 
   const handleBooking = async () => {
     if (!vehicleInfo.licensePlate) {
       Alert.alert("Error", "Please enter your vehicle license plate");
       return;
     }
+
+    if (!slotSelection || !slotSelection.isValid) {
+      const minHours = slotSelection?.minimumSlots
+        ? slotSelection.minimumSlots / 2
+        : 4;
+      Alert.alert(
+        "Error",
+        `Please select at least ${minHours} hours of parking time`,
+      );
+      return;
+    }
+
+    const startTime = new Date(slotSelection.startTime);
+    const endTime = new Date(slotSelection.endTime);
 
     try {
       setLoading(true);
@@ -331,130 +221,19 @@ const BookingScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Duration Selection */}
+          {/* Slot Selection */}
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Date & Time</Text>
+            <Text style={styles.sectionTitle}>Select Time Slots</Text>
+            <Text style={styles.sectionSubtitle}>
+              Choose your parking time slots (minimum 4 hours)
+            </Text>
 
-            {/* Date/Time Selection */}
-            <TouchableOpacity
-              style={styles.dateTimeSelector}
-              onPress={openDateTimePicker}
-            >
-              <View style={styles.dateTimeItem}>
-                <Icon name="calendar" size="md" color={COLORS.primary} />
-                <View style={styles.dateTimeTextContainer}>
-                  <Text style={styles.dateTimeLabel}>Start Date & Time</Text>
-                  <Text style={styles.dateTimeValue}>
-                    {format(startTime, "EEE, MMM d, yyyy")}
-                  </Text>
-                  <Text style={styles.dateTimeValue}>
-                    {format(startTime, "h:mm a")}
-                  </Text>
-                </View>
-              </View>
-              <Icon name="chevronRight" size="sm" color={COLORS.gray[400]} />
-            </TouchableOpacity>
-
-            <Text style={styles.sectionTitle}>Duration</Text>
-            <View style={styles.durationSelector}>
-              <TouchableOpacity
-                style={styles.durationButton}
-                onPress={() => setHours(Math.max(1, hours - 1))}
-              >
-                <Text style={styles.durationButtonText}>-</Text>
-              </TouchableOpacity>
-              <View style={styles.durationDisplay}>
-                <Text style={styles.durationValue}>{hours}</Text>
-                <Text style={styles.durationUnit}>
-                  hour{hours > 1 ? "s" : ""}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.durationButton}
-                onPress={() => setHours(hours + 1)}
-              >
-                <Text style={styles.durationButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.timeDisplay}>
-              <View style={styles.timeItem}>
-                <Text style={styles.timeLabel}>Start</Text>
-                <Text style={styles.timeValue}>
-                  {format(startTime, "MMM d, h:mm a")}
-                </Text>
-              </View>
-              <Icon name="arrowRight" size="lg" color={COLORS.text.secondary} />
-              <View style={styles.timeItem}>
-                <Text style={styles.timeLabel}>End</Text>
-                <Text style={styles.timeValue}>
-                  {format(endTime, "MMM d, h:mm a")}
-                </Text>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.checkAvailabilityButton}
-              onPress={handleCheckAvailability}
-              disabled={checkingAvailability}
-            >
-              {checkingAvailability ? (
-                <ActivityIndicator size="small" color={COLORS.primary} />
-              ) : (
-                <Text style={styles.checkAvailabilityText}>
-                  Check Availability
-                </Text>
-              )}
-            </TouchableOpacity>
+            <SlotPicker
+              parkingId={parking._id}
+              pricePerHour={parking.pricePerHour}
+              onSlotsSelected={handleSlotSelection}
+            />
           </View>
-
-          {/* iOS Date Picker Modal */}
-          {Platform.OS === "ios" && showDatePicker && (
-            <Modal visible={showDatePicker} transparent animationType="slide">
-              <View style={styles.modalOverlay}>
-                <View style={styles.pickerModal}>
-                  <View style={styles.pickerHeader}>
-                    <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                      <Text style={styles.pickerCancel}>Cancel</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.pickerTitle}>Select Date & Time</Text>
-                    <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                      <Text style={styles.pickerDone}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <DateTimePicker
-                    value={startTime}
-                    mode="datetime"
-                    display="spinner"
-                    onChange={handleDateChange}
-                    minimumDate={minStartTime}
-                    style={styles.iosPicker}
-                  />
-                </View>
-              </View>
-            </Modal>
-          )}
-
-          {/* Android Date Picker */}
-          {Platform.OS === "android" && showDatePicker && (
-            <DateTimePicker
-              value={startTime}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
-              minimumDate={minStartTime}
-            />
-          )}
-
-          {/* Android Time Picker */}
-          {Platform.OS === "android" && showTimePicker && (
-            <DateTimePicker
-              value={startTime}
-              mode="time"
-              display="default"
-              onChange={handleTimeChange}
-            />
-          )}
 
           {/* Vehicle Information */}
           <View style={styles.card}>
@@ -698,28 +477,30 @@ const BookingScreen = ({ route, navigation }) => {
           </View>
 
           {/* Price Breakdown */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Price Summary</Text>
+          {slotSelection?.isValid && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Price Summary</Text>
 
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>
-                ₹{parking.pricePerHour} x {hours} hour{hours > 1 ? "s" : ""}
-              </Text>
-              <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>
+                  ₹{parking.pricePerHour} x {hours} hour{hours !== 1 ? "s" : ""}
+                </Text>
+                <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
+              </View>
+
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Service fee</Text>
+                <Text style={styles.priceValue}>₹{serviceFee.toFixed(2)}</Text>
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.priceRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
+              </View>
             </View>
-
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>Service fee</Text>
-              <Text style={styles.priceValue}>₹{serviceFee.toFixed(2)}</Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.priceRow}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>₹{total.toFixed(2)}</Text>
-            </View>
-          </View>
+          )}
 
           <View style={styles.bottomSpacer} />
         </ScrollView>
@@ -730,13 +511,20 @@ const BookingScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={[
             styles.confirmButton,
-            loading && styles.confirmButtonDisabled,
+            (loading || !slotSelection?.isValid) &&
+              styles.confirmButtonDisabled,
           ]}
           onPress={handleBooking}
-          disabled={loading}
+          disabled={loading || !slotSelection?.isValid}
         >
           {loading ? (
             <ActivityIndicator color={COLORS.white} />
+          ) : !slotSelection?.isValid ? (
+            <Text style={styles.confirmButtonText}>
+              {slotSelection?.minimumSlots
+                ? `Select at least ${slotSelection.minimumSlots / 2} hours`
+                : "Select time slots"}
+            </Text>
           ) : (
             <Text style={styles.confirmButtonText}>
               Confirm Booking - ₹{total.toFixed(2)}
@@ -810,6 +598,44 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.text.primary,
     marginBottom: 12,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+    marginBottom: 16,
+    marginTop: -8,
+  },
+  loadingSlots: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  loadingSlotsText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: COLORS.text.secondary,
+  },
+  errorSlots: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  errorSlotsText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: COLORS.error,
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
   },
   dateTimeSelector: {
     flexDirection: "row",

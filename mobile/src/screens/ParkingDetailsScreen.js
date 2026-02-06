@@ -301,7 +301,7 @@ const ParkingDetailsScreen = ({ route, navigation }) => {
           const buttonText = isOwnListing
             ? "Your Listing"
             : parking.status === "available"
-              ? "Book Now"
+              ? "Check Slots"
               : "Not Available";
 
           return (

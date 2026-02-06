@@ -362,7 +362,7 @@ const ParkingDetailsPage = () => {
                 className="btn-primary w-full py-3"
                 disabled={space.owner?._id === user?._id}
               >
-                Book Now
+                Check Slots
               </button>
 
               <button

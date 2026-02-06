@@ -41,6 +41,11 @@ export const parkingService = {
   getMyListings: () => api.get("/parking/owner/my-listings"),
   activate: (id) => api.put(`/parking/${id}/activate`),
   deactivate: (id) => api.put(`/parking/${id}/deactivate`),
+  getWeeklySlots: (id) => api.get(`/parking/${id}/slots`),
+  getAvailabilityStatus: (parkingIds) =>
+    api.get("/parking/availability-status", {
+      params: { ids: parkingIds.join(",") },
+    }),
 };
 
 // Booking Services

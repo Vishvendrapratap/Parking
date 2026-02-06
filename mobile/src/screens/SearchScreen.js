@@ -16,6 +16,7 @@ import {
   searchNearbyParking,
   getPlaceAutocomplete,
   getPlaceDetails,
+  getAvailabilityStatus,
 } from "../api/services";
 import { useLocation } from "../hooks/useLocation";
 import { COLORS, PARKING_SIZES } from "../constants/config";
@@ -55,6 +56,7 @@ const SearchScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState({});
   const [filters, setFilters] = useState({
     parkingSize: null,
     maxPrice: null,
@@ -68,6 +70,36 @@ const SearchScreen = ({ navigation }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const sessionTokenRef = useRef(Date.now().toString());
   const skipSuggestionsRef = useRef(false); // Flag to skip suggestions when setting location programmatically
+
+  // Fetch availability status when results change
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!results || results.length === 0) {
+        setAvailabilityStatus({});
+        return;
+      }
+
+      try {
+        const parkingIds = results.map((p) => p._id).filter(Boolean);
+        if (parkingIds.length === 0) return;
+
+        const response = await getAvailabilityStatus(parkingIds);
+        if (response?.success && response?.data) {
+          const statusMap = {};
+          response.data.forEach((item) => {
+            if (item?.parkingId) {
+              statusMap[item.parkingId] = item;
+            }
+          });
+          setAvailabilityStatus(statusMap);
+        }
+      } catch (error) {
+        console.error("Error fetching availability status:", error);
+      }
+    };
+
+    fetchAvailability();
+  }, [results]);
 
   // Fetch autocomplete suggestions when search query changes
   useEffect(() => {
@@ -405,6 +437,20 @@ const SearchScreen = ({ navigation }) => {
 
   const renderParkingItem = ({ item }) => {
     const distance = getDistanceToParking(item);
+    const availability = availabilityStatus[item._id];
+
+    const getAvailabilityBadgeStyle = () => {
+      if (!availability) return null;
+      switch (availability.badgeColor) {
+        case "red":
+          return { backgroundColor: COLORS.error };
+        case "gray":
+          return { backgroundColor: COLORS.gray[400] };
+        case "green":
+        default:
+          return { backgroundColor: COLORS.success };
+      }
+    };
 
     return (
       <TouchableOpacity
@@ -419,6 +465,15 @@ const SearchScreen = ({ navigation }) => {
             <Icon name="directions" size="xs" color="#FFFFFF" />
             <Text style={styles.distanceBadgeText}>
               {formatDistance(distance)}
+            </Text>
+          </View>
+        )}
+
+        {/* Availability Badge - Top Right */}
+        {availability && (
+          <View style={[styles.availabilityBadge, getAvailabilityBadgeStyle()]}>
+            <Text style={styles.availabilityBadgeText}>
+              {availability.badge}
             </Text>
           </View>
         )}
@@ -1042,6 +1097,26 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
     marginLeft: 4,
+  },
+  availabilityBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  availabilityBadgeText: {
+    fontSize: 10,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    textTransform: "uppercase",
   },
   distanceRow: {
     flexDirection: "row",

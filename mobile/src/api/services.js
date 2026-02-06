@@ -66,6 +66,18 @@ export const checkParkingAvailability = async (id, startTime, endTime) => {
   return response.data;
 };
 
+export const getWeeklySlots = async (id) => {
+  const response = await api.get(`/parking/${id}/slots`);
+  return response.data;
+};
+
+export const getAvailabilityStatus = async (parkingIds) => {
+  const response = await api.get(`/parking/availability-status`, {
+    params: { ids: parkingIds.join(",") },
+  });
+  return response.data;
+};
+
 export const uploadParkingImages = async (id, formData) => {
   const response = await api.post(`/parking/${id}/images`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
