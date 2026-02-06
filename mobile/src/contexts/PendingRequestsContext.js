@@ -89,7 +89,7 @@ export const usePendingRequests = () => {
   const context = useContext(PendingRequestsContext);
   if (!context) {
     throw new Error(
-      "usePendingRequests must be used within a PendingRequestsProvider"
+      "usePendingRequests must be used within a PendingRequestsProvider",
     );
   }
   return context;

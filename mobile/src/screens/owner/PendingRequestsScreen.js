@@ -30,7 +30,7 @@ const PendingRequestsScreen = ({ navigation }) => {
     useCallback(() => {
       fetchPendingRequests();
       refreshPendingCount();
-    }, [])
+    }, []),
   );
 
   const fetchPendingRequests = async () => {
@@ -74,7 +74,7 @@ const PendingRequestsScreen = ({ navigation }) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -101,7 +101,7 @@ const PendingRequestsScreen = ({ navigation }) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -111,7 +111,9 @@ const PendingRequestsScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         style={styles.requestCard}
-        onPress={() => navigation.navigate("BookingDetails", { bookingId: item._id })}
+        onPress={() =>
+          navigation.navigate("BookingDetails", { bookingId: item._id })
+        }
         disabled={isProcessing}
       >
         {/* Parking Space Info */}
@@ -154,7 +156,9 @@ const PendingRequestsScreen = ({ navigation }) => {
             )}
           </View>
           <View style={styles.seekerDetails}>
-            <Text style={styles.seekerName}>{item.seeker?.name || "Unknown"}</Text>
+            <Text style={styles.seekerName}>
+              {item.seeker?.name || "Unknown"}
+            </Text>
             <Text style={styles.seekerPhone}>
               {item.seeker?.phone || "No phone"}
             </Text>
