@@ -10,6 +10,8 @@ import {
   Linking,
   Modal,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -20,6 +22,7 @@ import {
   cancelBooking,
   initiateBookingCompletion,
   verifyBookingCompletion,
+  addBookingReview,
 } from "../api/services";
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS, BOOKING_STATUSES } from "../constants/config";
@@ -34,6 +37,10 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
     fetchBookingDetails();
@@ -130,7 +137,11 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   };
 
   const openNavigation = () => {
-    const { coordinates } = booking.parkingSpace.location;
+    const coordinates = booking.parkingSpace?.location?.coordinates;
+    if (!coordinates) {
+      Alert.alert("Error", "Location not available");
+      return;
+    }
     const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates[1]},${coordinates[0]}`;
     Linking.openURL(url);
   };
@@ -147,13 +158,13 @@ const BookingDetailsScreen = ({ route, navigation }) => {
       navigation.navigate("ChatRoom", {
         receiverId: booking.seeker?._id || booking.seeker,
         receiverName: booking.seeker?.name || "Seeker",
-        parkingSpaceId: booking.parkingSpace._id,
+        parkingSpaceId: booking.parkingSpace?._id,
       });
     } else {
       navigation.navigate("ChatRoom", {
-        receiverId: booking.parkingSpace.owner?._id || booking.owner,
-        receiverName: booking.parkingSpace.owner?.name || "Owner",
-        parkingSpaceId: booking.parkingSpace._id,
+        receiverId: booking.parkingSpace?.owner?._id || booking.owner,
+        receiverName: booking.parkingSpace?.owner?.name || "Owner",
+        parkingSpaceId: booking.parkingSpace?._id,
       });
     }
   };
@@ -229,6 +240,53 @@ const BookingDetailsScreen = ({ route, navigation }) => {
     }
   };
 
+  const canReview = () => {
+    // Can only review completed bookings
+    if (booking?.status !== "completed") return false;
+    
+    // Check if current user has already reviewed
+    if (isOwner()) {
+      return !booking.ownerReview?.rating;
+    } else {
+      return !booking.seekerReview?.rating && !booking.review?.rating;
+    }
+  };
+
+  const hasReviewed = () => {
+    if (isOwner()) {
+      return !!booking?.ownerReview?.rating;
+    } else {
+      return !!booking?.seekerReview?.rating || !!booking?.review?.rating;
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating < 1 || reviewRating > 5) {
+      Alert.alert("Error", "Please select a rating between 1 and 5");
+      return;
+    }
+
+    try {
+      setReviewLoading(true);
+      const result = await addBookingReview(bookingId, {
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      });
+      setShowReviewModal(false);
+      setBooking(result.data);
+      Alert.alert("Success", "Thank you for your review!");
+      setReviewRating(5);
+      setReviewComment("");
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to submit review",
+      );
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -271,15 +329,16 @@ const BookingDetailsScreen = ({ route, navigation }) => {
         {/* Parking Info */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Parking Space</Text>
-          <Text style={styles.parkingTitle}>{booking.parkingSpace.title}</Text>
+          <Text style={styles.parkingTitle}>{booking.parkingSpace?.title}</Text>
           <View style={styles.parkingAddressRow}>
             <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
             <Text style={styles.parkingAddress}>
-              {booking.parkingSpace.location.address}
+              {booking.parkingSpace?.location?.address || "Address not available"}
             </Text>
           </View>
 
           {/* Mini Map */}
+          {booking.parkingSpace?.location?.coordinates && (
           <View style={styles.mapContainer}>
             <MapView
               style={styles.map}
@@ -301,6 +360,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               />
             </MapView>
           </View>
+          )}
 
           <View style={styles.actionButtons}>
             <TouchableOpacity
@@ -369,12 +429,12 @@ const BookingDetailsScreen = ({ route, navigation }) => {
         )}
 
         {/* Access Instructions */}
-        {booking.parkingSpace.accessInstructions && (
+        {booking.parkingSpace?.accessInstructions && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Access Instructions</Text>
             <View style={styles.instructionsBox}>
               <Text style={styles.instructionsText}>
-                {booking.parkingSpace.accessInstructions}
+                {booking.parkingSpace?.accessInstructions}
               </Text>
             </View>
           </View>
@@ -386,11 +446,11 @@ const BookingDetailsScreen = ({ route, navigation }) => {
 
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>
-              ₹{booking.parkingSpace.pricePerHour} x {booking.duration} hour(s)
+              ₹{booking.parkingSpace?.pricePerHour || 0} x {booking.duration} hour(s)
             </Text>
             <Text style={styles.priceValue}>
               ₹
-              {(booking.parkingSpace.pricePerHour * booking.duration).toFixed(
+              {((booking.parkingSpace?.pricePerHour || 0) * booking.duration).toFixed(
                 2,
               )}
             </Text>
@@ -402,7 +462,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               ₹
               {(
                 booking.totalPrice -
-                booking.parkingSpace.pricePerHour * booking.duration
+                (booking.parkingSpace?.pricePerHour || 0) * booking.duration
               ).toFixed(2)}
             </Text>
           </View>
@@ -536,6 +596,49 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           </View>
         )}
 
+        {/* Review Section for Completed Bookings */}
+        {booking.status === "completed" && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Review</Text>
+            {canReview() ? (
+              <TouchableOpacity
+                style={styles.reviewButton}
+                onPress={() => setShowReviewModal(true)}
+              >
+                <Icon name="star" size="md" color={COLORS.accent} />
+                <Text style={styles.reviewButtonText}>
+                  {isOwner() ? "Rate Seeker" : "Rate Parking Experience"}
+                </Text>
+              </TouchableOpacity>
+            ) : hasReviewed() ? (
+              <View style={styles.reviewedContainer}>
+                <View style={styles.ratingStars}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Icon
+                      key={star}
+                      name="star"
+                      size="md"
+                      color={
+                        star <= (isOwner() ? booking.ownerReview?.rating : (booking.seekerReview?.rating || booking.review?.rating))
+                          ? COLORS.accent
+                          : COLORS.gray[300]
+                      }
+                    />
+                  ))}
+                </View>
+                <Text style={styles.reviewedText}>
+                  {isOwner() 
+                    ? booking.ownerReview?.comment || "You've rated this seeker"
+                    : booking.seekerReview?.comment || booking.review?.comment || "You've rated this booking"
+                  }
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.noReviewText}>No review yet</Text>
+            )}
+          </View>
+        )}
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
@@ -546,8 +649,10 @@ const BookingDetailsScreen = ({ route, navigation }) => {
         animationType="slide"
         onRequestClose={() => setShowOtpModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Enter Completion OTP</Text>
               <TouchableOpacity onPress={() => setShowOtpModal(false)}>
@@ -600,17 +705,107 @@ const BookingDetailsScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={handleInitiateCompletion}
-              disabled={actionLoading}
-            >
-              <Text style={styles.resendButtonText}>
-                {actionLoading ? "Sending..." : "Resend OTP"}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={handleInitiateCompletion}
+                disabled={actionLoading}
+              >
+                <Text style={styles.resendButtonText}>
+                  {actionLoading ? "Sending..." : "Resend OTP"}
+                </Text>
+              </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        visible={showReviewModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowReviewModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {isOwner() ? "Rate Seeker" : "Rate Your Experience"}
+              </Text>
+              <TouchableOpacity onPress={() => setShowReviewModal(false)}>
+                <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              {isOwner()
+                ? "How was your experience with this seeker?"
+                : "How was your parking experience?"}
+            </Text>
+
+            {/* Star Rating */}
+            <View style={styles.ratingContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setReviewRating(star)}
+                  style={styles.starButton}
+                >
+                  <Icon
+                    name="star"
+                    size="2xl"
+                    color={star <= reviewRating ? COLORS.accent : COLORS.gray[300]}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Comment Input */}
+            <TextInput
+              style={styles.reviewInput}
+              value={reviewComment}
+              onChangeText={setReviewComment}
+              placeholder="Add a comment (optional)"
+              placeholderTextColor={COLORS.gray[400]}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowReviewModal(false);
+                  setReviewRating(5);
+                  setReviewComment("");
+                }}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modalSubmitButton,
+                  reviewLoading && styles.buttonDisabled,
+                ]}
+                onPress={handleSubmitReview}
+                disabled={reviewLoading}
+              >
+                {reviewLoading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <Text style={styles.modalSubmitButtonText}>Submit Review</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );
@@ -945,17 +1140,17 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: COLORS.text.primary,
+    color: "#1F2937",
   },
   modalSubtitle: {
     fontSize: 14,
-    color: COLORS.text.secondary,
+    color: "#6B7280",
     marginBottom: 20,
     lineHeight: 20,
   },
   otpInput: {
     borderWidth: 1,
-    borderColor: COLORS.gray[300],
+    borderColor: "#D1D5DB",
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -963,7 +1158,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     letterSpacing: 8,
-    color: COLORS.text.primary,
+    color: "#1F2937",
+    backgroundColor: "#F9FAFB",
     marginBottom: 20,
   },
   modalButtons: {
@@ -975,13 +1171,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.gray[300],
+    borderColor: "#D1D5DB",
     alignItems: "center",
   },
   modalCancelButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.gray[600],
+    color: "#4B5563",
   },
   modalSubmitButton: {
     flex: 1,
@@ -1003,6 +1199,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.primary,
     fontWeight: "500",
+  },
+  // Review styles
+  reviewButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.accent + "15",
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  reviewButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.accent,
+  },
+  reviewedContainer: {
+    alignItems: "center",
+    gap: 8,
+  },
+  ratingStars: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  reviewedText: {
+    fontSize: 14,
+    color: COLORS.gray[600],
+    textAlign: "center",
+  },
+  noReviewText: {
+    fontSize: 14,
+    color: COLORS.gray[500],
+    textAlign: "center",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginVertical: 20,
+  },
+  starButton: {
+    padding: 4,
+  },
+  reviewInput: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    color: "#1F2937",
+    backgroundColor: "#F9FAFB",
+    minHeight: 100,
+    marginBottom: 20,
   },
 });
 

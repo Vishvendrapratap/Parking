@@ -397,7 +397,7 @@ exports.cancelBooking = async (req, res) => {
 
 // @desc    Add review to booking
 // @route   PUT /api/bookings/:id/review
-// @access  Private (Seeker)
+// @access  Private (Seeker or Owner)
 exports.addReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -411,8 +411,11 @@ exports.addReview = async (req, res) => {
       });
     }
 
-    // Only seeker can review
-    if (booking.seeker.toString() !== req.user._id.toString()) {
+    const isSeeker = booking.seeker.toString() === req.user._id.toString();
+    const isOwner = booking.owner.toString() === req.user._id.toString();
+
+    // Only seeker or owner can review
+    if (!isSeeker && !isOwner) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
@@ -427,39 +430,76 @@ exports.addReview = async (req, res) => {
       });
     }
 
-    if (booking.review?.rating) {
-      return res.status(400).json({
-        success: false,
-        message: "Already reviewed",
-      });
+    if (isSeeker) {
+      // Seeker reviewing the parking/owner
+      if (booking.seekerReview?.rating) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already reviewed this booking",
+        });
+      }
+
+      booking.seekerReview = {
+        rating,
+        comment,
+        createdAt: new Date(),
+      };
+
+      // Also set legacy review field for backward compatibility
+      if (!booking.review?.rating) {
+        booking.review = booking.seekerReview;
+      }
+
+      await booking.save();
+
+      // Update parking space rating
+      const parkingSpace = await ParkingSpace.findById(booking.parkingSpace);
+      const totalRating =
+        parkingSpace.rating * parkingSpace.totalReviews + rating;
+      parkingSpace.totalReviews += 1;
+      parkingSpace.rating = totalRating / parkingSpace.totalReviews;
+      await parkingSpace.save();
+
+      // Update owner rating
+      const owner = await User.findById(booking.owner);
+      const ownerTotalRating = owner.rating * owner.totalReviews + rating;
+      owner.totalReviews += 1;
+      owner.rating = ownerTotalRating / owner.totalReviews;
+      await owner.save();
+    } else {
+      // Owner reviewing the seeker
+      if (booking.ownerReview?.rating) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already reviewed this booking",
+        });
+      }
+
+      booking.ownerReview = {
+        rating,
+        comment,
+        createdAt: new Date(),
+      };
+
+      await booking.save();
+
+      // Update seeker rating
+      const seeker = await User.findById(booking.seeker);
+      const seekerTotalRating = seeker.rating * seeker.totalReviews + rating;
+      seeker.totalReviews += 1;
+      seeker.rating = seekerTotalRating / seeker.totalReviews;
+      await seeker.save();
     }
 
-    booking.review = {
-      rating,
-      comment,
-      createdAt: new Date(),
-    };
-
-    await booking.save();
-
-    // Update parking space rating
-    const parkingSpace = await ParkingSpace.findById(booking.parkingSpace);
-    const totalRating =
-      parkingSpace.rating * parkingSpace.totalReviews + rating;
-    parkingSpace.totalReviews += 1;
-    parkingSpace.rating = totalRating / parkingSpace.totalReviews;
-    await parkingSpace.save();
-
-    // Update owner rating
-    const owner = await User.findById(booking.owner);
-    const ownerTotalRating = owner.rating * owner.totalReviews + rating;
-    owner.totalReviews += 1;
-    owner.rating = ownerTotalRating / owner.totalReviews;
-    await owner.save();
+    // Populate booking before returning
+    const populatedBooking = await Booking.findById(booking._id)
+      .populate("parkingSpace", "title location images pricePerHour address")
+      .populate("seeker", "name avatar phone email")
+      .populate("owner", "name avatar phone email");
 
     res.status(200).json({
       success: true,
-      data: booking,
+      data: populatedBooking,
     });
   } catch (error) {
     res.status(500).json({

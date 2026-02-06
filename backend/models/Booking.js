@@ -93,7 +93,27 @@ const bookingSchema = new mongoose.Schema(
       cancelledAt: Date,
       refundAmount: Number,
     },
-    // Review
+    // Seeker Review (seeker reviews the parking/owner)
+    seekerReview: {
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      comment: String,
+      createdAt: Date,
+    },
+    // Owner Review (owner reviews the seeker)
+    ownerReview: {
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      comment: String,
+      createdAt: Date,
+    },
+    // Legacy review field (for backward compatibility)
     review: {
       rating: {
         type: Number,

@@ -128,7 +128,7 @@ export const cancelBooking = async (id, reason = "") => {
   return response.data;
 };
 
-export const addBookingReview = async (id, rating, comment) => {
+export const addBookingReview = async (id, { rating, comment }) => {
   const response = await api.put(`/bookings/${id}/review`, { rating, comment });
   return response.data;
 };
