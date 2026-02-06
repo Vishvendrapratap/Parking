@@ -322,8 +322,22 @@ exports.cancelBooking = async (req, res) => {
     const isOwner = booking.owner.toString() === req.user._id.toString();
     const isAdmin = req.user.role === "admin";
 
-    console.log("  isSeeker:", isSeeker, "| seeker compare:", booking.seeker.toString(), "vs", req.user._id.toString());
-    console.log("  isOwner:", isOwner, "| owner compare:", booking.owner.toString(), "vs", req.user._id.toString());
+    console.log(
+      "  isSeeker:",
+      isSeeker,
+      "| seeker compare:",
+      booking.seeker.toString(),
+      "vs",
+      req.user._id.toString(),
+    );
+    console.log(
+      "  isOwner:",
+      isOwner,
+      "| owner compare:",
+      booking.owner.toString(),
+      "vs",
+      req.user._id.toString(),
+    );
     console.log("  isAdmin:", isAdmin);
 
     if (!isSeeker && !isOwner && !isAdmin) {
