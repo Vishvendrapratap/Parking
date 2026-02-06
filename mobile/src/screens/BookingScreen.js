@@ -14,7 +14,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format, addHours, isAfter, isBefore, addMinutes } from "date-fns";
-import { createBooking, checkParkingAvailability, getVehicles, addVehicle } from "../api/services";
+import {
+  createBooking,
+  checkParkingAvailability,
+  getVehicles,
+  addVehicle,
+} from "../api/services";
 import { COLORS, PARKING_SIZES } from "../constants/config";
 import Icon from "../components/Icon";
 
@@ -23,7 +28,7 @@ const BookingScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [hours, setHours] = useState(1);
-  
+
   // Vehicle state
   const [garageVehicles, setGarageVehicles] = useState([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
@@ -35,7 +40,7 @@ const BookingScreen = ({ route, navigation }) => {
     color: "",
   });
   const [saveToGarage, setSaveToGarage] = useState(false);
-  
+
   const [specialRequests, setSpecialRequests] = useState("");
 
   // Date/Time picker state
@@ -66,9 +71,9 @@ const BookingScreen = ({ route, navigation }) => {
       const result = await getVehicles();
       const vehicles = result.data || [];
       setGarageVehicles(vehicles);
-      
+
       // Auto-select default vehicle if available
-      const defaultVehicle = vehicles.find(v => v.isDefault);
+      const defaultVehicle = vehicles.find((v) => v.isDefault);
       if (defaultVehicle) {
         setSelectedVehicleId(defaultVehicle._id);
         setVehicleInfo({
@@ -242,9 +247,10 @@ const BookingScreen = ({ route, navigation }) => {
       if (saveToGarage && !selectedVehicleId) {
         try {
           await addVehicle({
-            nickname: vehicleInfo.make && vehicleInfo.model 
-              ? `${vehicleInfo.make} ${vehicleInfo.model}`
-              : vehicleInfo.licensePlate,
+            nickname:
+              vehicleInfo.make && vehicleInfo.model
+                ? `${vehicleInfo.make} ${vehicleInfo.model}`
+                : vehicleInfo.licensePlate,
             type: parking.parkingSize,
             licensePlate: vehicleInfo.licensePlate,
             make: vehicleInfo.make,
@@ -445,13 +451,17 @@ const BookingScreen = ({ route, navigation }) => {
           {loadingVehicles ? (
             <View style={styles.loadingVehicles}>
               <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.loadingVehiclesText}>Loading your garage...</Text>
+              <Text style={styles.loadingVehiclesText}>
+                Loading your garage...
+              </Text>
             </View>
           ) : garageVehicles.length > 0 ? (
             <View style={styles.vehicleSelector}>
-              <Text style={styles.vehicleSelectorLabel}>Select from your garage</Text>
-              <ScrollView 
-                horizontal 
+              <Text style={styles.vehicleSelectorLabel}>
+                Select from your garage
+              </Text>
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.vehicleList}
               >
@@ -460,19 +470,25 @@ const BookingScreen = ({ route, navigation }) => {
                     key={vehicle._id}
                     style={[
                       styles.vehicleOption,
-                      selectedVehicleId === vehicle._id && styles.vehicleOptionSelected,
+                      selectedVehicleId === vehicle._id &&
+                        styles.vehicleOptionSelected,
                     ]}
                     onPress={() => handleSelectVehicle(vehicle)}
                   >
                     <Icon
                       name={getVehicleIcon(vehicle.type)}
                       size="lg"
-                      color={selectedVehicleId === vehicle._id ? COLORS.white : COLORS.text.secondary}
+                      color={
+                        selectedVehicleId === vehicle._id
+                          ? COLORS.white
+                          : COLORS.text.secondary
+                      }
                     />
                     <Text
                       style={[
                         styles.vehicleOptionName,
-                        selectedVehicleId === vehicle._id && styles.vehicleOptionNameSelected,
+                        selectedVehicleId === vehicle._id &&
+                          styles.vehicleOptionNameSelected,
                       ]}
                       numberOfLines={1}
                     >
@@ -481,25 +497,34 @@ const BookingScreen = ({ route, navigation }) => {
                     <Text
                       style={[
                         styles.vehicleOptionPlate,
-                        selectedVehicleId === vehicle._id && styles.vehicleOptionPlateSelected,
+                        selectedVehicleId === vehicle._id &&
+                          styles.vehicleOptionPlateSelected,
                       ]}
                     >
                       {vehicle.licensePlate}
                     </Text>
                     {vehicle.isDefault && (
-                      <View style={[
-                        styles.defaultBadge,
-                        selectedVehicleId === vehicle._id && styles.defaultBadgeSelected,
-                      ]}>
-                        <Text style={[
-                          styles.defaultBadgeText,
-                          selectedVehicleId === vehicle._id && styles.defaultBadgeTextSelected,
-                        ]}>Default</Text>
+                      <View
+                        style={[
+                          styles.defaultBadge,
+                          selectedVehicleId === vehicle._id &&
+                            styles.defaultBadgeSelected,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.defaultBadgeText,
+                            selectedVehicleId === vehicle._id &&
+                              styles.defaultBadgeTextSelected,
+                          ]}
+                        >
+                          Default
+                        </Text>
                       </View>
                     )}
                   </TouchableOpacity>
                 ))}
-                
+
                 {/* Add new vehicle option */}
                 <TouchableOpacity
                   style={[
@@ -512,12 +537,19 @@ const BookingScreen = ({ route, navigation }) => {
                   <Icon
                     name="plus"
                     size="lg"
-                    color={selectedVehicleId === null ? COLORS.white : COLORS.primary}
+                    color={
+                      selectedVehicleId === null ? COLORS.white : COLORS.primary
+                    }
                   />
                   <Text
                     style={[
                       styles.vehicleOptionName,
-                      { color: selectedVehicleId === null ? COLORS.white : COLORS.primary },
+                      {
+                        color:
+                          selectedVehicleId === null
+                            ? COLORS.white
+                            : COLORS.primary,
+                      },
                     ]}
                   >
                     New Vehicle
@@ -545,7 +577,9 @@ const BookingScreen = ({ route, navigation }) => {
               </View>
 
               <View style={styles.row}>
-                <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                <View
+                  style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}
+                >
                   <Text style={styles.inputLabel}>Make</Text>
                   <TextInput
                     style={styles.input}
@@ -557,7 +591,9 @@ const BookingScreen = ({ route, navigation }) => {
                     }
                   />
                 </View>
-                <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                <View
+                  style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}
+                >
                   <Text style={styles.inputLabel}>Model</Text>
                   <TextInput
                     style={styles.input}
@@ -589,12 +625,19 @@ const BookingScreen = ({ route, navigation }) => {
                 style={styles.saveToGarageRow}
                 onPress={() => setSaveToGarage(!saveToGarage)}
               >
-                <View style={[styles.checkbox, saveToGarage && styles.checkboxChecked]}>
+                <View
+                  style={[
+                    styles.checkbox,
+                    saveToGarage && styles.checkboxChecked,
+                  ]}
+                >
                   {saveToGarage && (
                     <Icon name="check" size="xs" color={COLORS.white} />
                   )}
                 </View>
-                <Text style={styles.saveToGarageText}>Save this vehicle to my garage</Text>
+                <Text style={styles.saveToGarageText}>
+                  Save this vehicle to my garage
+                </Text>
               </TouchableOpacity>
             </>
           )}
@@ -604,13 +647,17 @@ const BookingScreen = ({ route, navigation }) => {
             <View style={styles.selectedVehicleInfo}>
               <View style={styles.selectedVehicleRow}>
                 <Text style={styles.selectedVehicleLabel}>License Plate:</Text>
-                <Text style={styles.selectedVehicleValue}>{vehicleInfo.licensePlate}</Text>
+                <Text style={styles.selectedVehicleValue}>
+                  {vehicleInfo.licensePlate}
+                </Text>
               </View>
               {vehicleInfo.make && (
                 <View style={styles.selectedVehicleRow}>
                   <Text style={styles.selectedVehicleLabel}>Vehicle:</Text>
                   <Text style={styles.selectedVehicleValue}>
-                    {[vehicleInfo.make, vehicleInfo.model, vehicleInfo.color].filter(Boolean).join(" ")}
+                    {[vehicleInfo.make, vehicleInfo.model, vehicleInfo.color]
+                      .filter(Boolean)
+                      .join(" ")}
                   </Text>
                 </View>
               )}

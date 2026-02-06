@@ -257,7 +257,8 @@ exports.addVehicle = async (req, res) => {
     if (existingVehicle) {
       return res.status(400).json({
         success: false,
-        message: "Vehicle with this license plate already exists in your garage",
+        message:
+          "Vehicle with this license plate already exists in your garage",
       });
     }
 

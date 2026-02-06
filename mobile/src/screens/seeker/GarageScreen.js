@@ -47,7 +47,7 @@ const GarageScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchVehicles();
-    }, [])
+    }, []),
   );
 
   const fetchVehicles = async () => {
@@ -106,9 +106,10 @@ const GarageScreen = ({ navigation }) => {
 
     if (!formData.nickname.trim()) {
       // Auto-generate nickname from make/model or license plate
-      const autoNickname = formData.make && formData.model 
-        ? `${formData.make} ${formData.model}`
-        : formData.licensePlate;
+      const autoNickname =
+        formData.make && formData.model
+          ? `${formData.make} ${formData.model}`
+          : formData.licensePlate;
       formData.nickname = autoNickname;
     }
 
@@ -125,7 +126,10 @@ const GarageScreen = ({ navigation }) => {
       fetchVehicles();
     } catch (error) {
       console.error("Error saving vehicle:", error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to save vehicle");
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to save vehicle",
+      );
     } finally {
       setSaving(false);
     }
@@ -149,7 +153,7 @@ const GarageScreen = ({ navigation }) => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -204,7 +208,8 @@ const GarageScreen = ({ navigation }) => {
             </Text>
           )}
           <Text style={styles.vehicleType}>
-            {VEHICLE_TYPES.find((t) => t.value === vehicle.type)?.label || "Sedan"}
+            {VEHICLE_TYPES.find((t) => t.value === vehicle.type)?.label ||
+              "Sedan"}
           </Text>
         </View>
       </View>
@@ -224,14 +229,18 @@ const GarageScreen = ({ navigation }) => {
           onPress={() => openEditModal(vehicle)}
         >
           <Icon name="edit" size="sm" color={COLORS.info} />
-          <Text style={[styles.actionButtonText, { color: COLORS.info }]}>Edit</Text>
+          <Text style={[styles.actionButtonText, { color: COLORS.info }]}>
+            Edit
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => handleDelete(vehicle)}
         >
           <Icon name="trash" size="sm" color={COLORS.error} />
-          <Text style={[styles.actionButtonText, { color: COLORS.error }]}>Delete</Text>
+          <Text style={[styles.actionButtonText, { color: COLORS.error }]}>
+            Delete
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -264,10 +273,7 @@ const GarageScreen = ({ navigation }) => {
           <Icon name="arrowLeft" size="md" color={COLORS.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Garage</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={openAddModal}
-        >
+        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Icon name="plus" size="md" color={COLORS.primary} />
         </TouchableOpacity>
       </View>
@@ -329,7 +335,8 @@ const GarageScreen = ({ navigation }) => {
                       key={type.value}
                       style={[
                         styles.typeOption,
-                        formData.type === type.value && styles.typeOptionSelected,
+                        formData.type === type.value &&
+                          styles.typeOptionSelected,
                       ]}
                       onPress={() =>
                         setFormData({ ...formData, type: type.value })
@@ -367,7 +374,10 @@ const GarageScreen = ({ navigation }) => {
                   placeholderTextColor={COLORS.gray[400]}
                   value={formData.licensePlate}
                   onChangeText={(text) =>
-                    setFormData({ ...formData, licensePlate: text.toUpperCase() })
+                    setFormData({
+                      ...formData,
+                      licensePlate: text.toUpperCase(),
+                    })
                   }
                   autoCapitalize="characters"
                 />
