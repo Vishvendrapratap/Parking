@@ -243,7 +243,7 @@ const BookingDetailsScreen = ({ route, navigation }) => {
   const canReview = () => {
     // Can only review completed bookings
     if (booking?.status !== "completed") return false;
-    
+
     // Check if current user has already reviewed
     if (isOwner()) {
       return !booking.ownerReview?.rating;
@@ -333,33 +333,34 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.parkingAddressRow}>
             <Icon name="mapMarker" size="sm" color={COLORS.text.secondary} />
             <Text style={styles.parkingAddress}>
-              {booking.parkingSpace?.location?.address || "Address not available"}
+              {booking.parkingSpace?.location?.address ||
+                "Address not available"}
             </Text>
           </View>
 
           {/* Mini Map */}
           {booking.parkingSpace?.location?.coordinates && (
-          <View style={styles.mapContainer}>
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_GOOGLE}
-              initialRegion={{
-                latitude: booking.parkingSpace.location.coordinates[1],
-                longitude: booking.parkingSpace.location.coordinates[0],
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              scrollEnabled={false}
-              zoomEnabled={false}
-            >
-              <Marker
-                coordinate={{
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={{
                   latitude: booking.parkingSpace.location.coordinates[1],
                   longitude: booking.parkingSpace.location.coordinates[0],
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 }}
-              />
-            </MapView>
-          </View>
+                scrollEnabled={false}
+                zoomEnabled={false}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: booking.parkingSpace.location.coordinates[1],
+                    longitude: booking.parkingSpace.location.coordinates[0],
+                  }}
+                />
+              </MapView>
+            </View>
           )}
 
           <View style={styles.actionButtons}>
@@ -446,13 +447,14 @@ const BookingDetailsScreen = ({ route, navigation }) => {
 
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>
-              ₹{booking.parkingSpace?.pricePerHour || 0} x {booking.duration} hour(s)
+              ₹{booking.parkingSpace?.pricePerHour || 0} x {booking.duration}{" "}
+              hour(s)
             </Text>
             <Text style={styles.priceValue}>
               ₹
-              {((booking.parkingSpace?.pricePerHour || 0) * booking.duration).toFixed(
-                2,
-              )}
+              {(
+                (booking.parkingSpace?.pricePerHour || 0) * booking.duration
+              ).toFixed(2)}
             </Text>
           </View>
 
@@ -619,7 +621,11 @@ const BookingDetailsScreen = ({ route, navigation }) => {
                       name="star"
                       size="md"
                       color={
-                        star <= (isOwner() ? booking.ownerReview?.rating : (booking.seekerReview?.rating || booking.review?.rating))
+                        star <=
+                        (isOwner()
+                          ? booking.ownerReview?.rating
+                          : booking.seekerReview?.rating ||
+                            booking.review?.rating)
                           ? COLORS.accent
                           : COLORS.gray[300]
                       }
@@ -627,10 +633,11 @@ const BookingDetailsScreen = ({ route, navigation }) => {
                   ))}
                 </View>
                 <Text style={styles.reviewedText}>
-                  {isOwner() 
+                  {isOwner()
                     ? booking.ownerReview?.comment || "You've rated this seeker"
-                    : booking.seekerReview?.comment || booking.review?.comment || "You've rated this booking"
-                  }
+                    : booking.seekerReview?.comment ||
+                      booking.review?.comment ||
+                      "You've rated this booking"}
                 </Text>
               </View>
             ) : (
@@ -653,67 +660,67 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Enter Completion OTP</Text>
-              <TouchableOpacity onPress={() => setShowOtpModal(false)}>
-                <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
-              </TouchableOpacity>
-            </View>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Enter Completion OTP</Text>
+                  <TouchableOpacity onPress={() => setShowOtpModal(false)}>
+                    <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
+                  </TouchableOpacity>
+                </View>
 
-            <Text style={styles.modalSubtitle}>
-              Please ask the parking owner for the 6-digit OTP to complete your
-              booking.
-            </Text>
-
-            <TextInput
-              style={styles.otpInput}
-              value={otp}
-              onChangeText={setOtp}
-              placeholder="Enter 6-digit OTP"
-              placeholderTextColor={COLORS.gray[400]}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => {
-                  setShowOtpModal(false);
-                  setOtp("");
-                }}
-              >
-                <Text style={styles.modalCancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalSubmitButton,
-                  otpLoading && styles.buttonDisabled,
-                ]}
-                onPress={handleVerifyOtp}
-                disabled={otpLoading}
-              >
-                {otpLoading ? (
-                  <ActivityIndicator color={COLORS.white} />
-                ) : (
-                  <Text style={styles.modalSubmitButtonText}>
-                    Verify & Complete
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-              <TouchableOpacity
-                style={styles.resendButton}
-                onPress={handleInitiateCompletion}
-                disabled={actionLoading}
-              >
-                <Text style={styles.resendButtonText}>
-                  {actionLoading ? "Sending..." : "Resend OTP"}
+                <Text style={styles.modalSubtitle}>
+                  Please ask the parking owner for the 6-digit OTP to complete
+                  your booking.
                 </Text>
-              </TouchableOpacity>
+
+                <TextInput
+                  style={styles.otpInput}
+                  value={otp}
+                  onChangeText={setOtp}
+                  placeholder="Enter 6-digit OTP"
+                  placeholderTextColor={COLORS.gray[400]}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus
+                />
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => {
+                      setShowOtpModal(false);
+                      setOtp("");
+                    }}
+                  >
+                    <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.modalSubmitButton,
+                      otpLoading && styles.buttonDisabled,
+                    ]}
+                    onPress={handleVerifyOtp}
+                    disabled={otpLoading}
+                  >
+                    {otpLoading ? (
+                      <ActivityIndicator color={COLORS.white} />
+                    ) : (
+                      <Text style={styles.modalSubmitButtonText}>
+                        Verify & Complete
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.resendButton}
+                  onPress={handleInitiateCompletion}
+                  disabled={actionLoading}
+                >
+                  <Text style={styles.resendButtonText}>
+                    {actionLoading ? "Sending..." : "Resend OTP"}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -731,77 +738,83 @@ const BookingDetailsScreen = ({ route, navigation }) => {
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {isOwner() ? "Rate Seeker" : "Rate Your Experience"}
-              </Text>
-              <TouchableOpacity onPress={() => setShowReviewModal(false)}>
-                <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
-              </TouchableOpacity>
-            </View>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>
+                    {isOwner() ? "Rate Seeker" : "Rate Your Experience"}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowReviewModal(false)}>
+                    <Icon name="xmark" size="lg" color={COLORS.gray[500]} />
+                  </TouchableOpacity>
+                </View>
 
-            <Text style={styles.modalSubtitle}>
-              {isOwner()
-                ? "How was your experience with this seeker?"
-                : "How was your parking experience?"}
-            </Text>
+                <Text style={styles.modalSubtitle}>
+                  {isOwner()
+                    ? "How was your experience with this seeker?"
+                    : "How was your parking experience?"}
+                </Text>
 
-            {/* Star Rating */}
-            <View style={styles.ratingContainer}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => setReviewRating(star)}
-                  style={styles.starButton}
-                >
-                  <Icon
-                    name="star"
-                    size="2xl"
-                    color={star <= reviewRating ? COLORS.accent : COLORS.gray[300]}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
+                {/* Star Rating */}
+                <View style={styles.ratingContainer}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => setReviewRating(star)}
+                      style={styles.starButton}
+                    >
+                      <Icon
+                        name="star"
+                        size="2xl"
+                        color={
+                          star <= reviewRating
+                            ? COLORS.accent
+                            : COLORS.gray[300]
+                        }
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-            {/* Comment Input */}
-            <TextInput
-              style={styles.reviewInput}
-              value={reviewComment}
-              onChangeText={setReviewComment}
-              placeholder="Add a comment (optional)"
-              placeholderTextColor={COLORS.gray[400]}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
+                {/* Comment Input */}
+                <TextInput
+                  style={styles.reviewInput}
+                  value={reviewComment}
+                  onChangeText={setReviewComment}
+                  placeholder="Add a comment (optional)"
+                  placeholderTextColor={COLORS.gray[400]}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => {
-                  setShowReviewModal(false);
-                  setReviewRating(5);
-                  setReviewComment("");
-                }}
-              >
-                <Text style={styles.modalCancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => {
+                      setShowReviewModal(false);
+                      setReviewRating(5);
+                      setReviewComment("");
+                    }}
+                  >
+                    <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.modalSubmitButton,
-                  reviewLoading && styles.buttonDisabled,
-                ]}
-                onPress={handleSubmitReview}
-                disabled={reviewLoading}
-              >
-                {reviewLoading ? (
-                  <ActivityIndicator color={COLORS.white} />
-                ) : (
-                  <Text style={styles.modalSubmitButtonText}>Submit Review</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.modalSubmitButton,
+                      reviewLoading && styles.buttonDisabled,
+                    ]}
+                    onPress={handleSubmitReview}
+                    disabled={reviewLoading}
+                  >
+                    {reviewLoading ? (
+                      <ActivityIndicator color={COLORS.white} />
+                    ) : (
+                      <Text style={styles.modalSubmitButtonText}>
+                        Submit Review
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableWithoutFeedback>
           </View>
