@@ -304,6 +304,7 @@ export const TabIcon = ({
     Dashboard: "dashboard",
     Listings: "parking",
     "My Listings": "parking",
+    Requests: "clock",
   };
 
   const iconName = tabIcons[name] || "location";

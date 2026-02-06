@@ -21,10 +21,13 @@ export { default as ChatScreen } from "./ChatScreen";
 // Profile Screens
 export { default as ProfileScreen } from "./ProfileScreen";
 export { default as EditProfileScreen } from "./EditProfileScreen";
+export { default as HelpCenterScreen } from "./HelpCenterScreen";
+export { default as PrivacyPolicyScreen } from "./PrivacyPolicyScreen";
+export { default as TermsOfServiceScreen } from "./TermsOfServiceScreen";
 
 // Owner Screens
 export { default as OwnerDashboardScreen } from "./owner/OwnerDashboardScreen";
 export { default as AddListingScreen } from "./owner/AddListingScreen";
 export { default as MyListingsScreen } from "./owner/MyListingsScreen";
 export { default as EditListingScreen } from "./owner/EditListingScreen";
-
+export { default as PendingRequestsScreen } from "./owner/PendingRequestsScreen";

@@ -123,7 +123,7 @@ const HomeMapScreen = ({ navigation }) => {
             style={styles.searchButton}
             onPress={() => navigation.navigate("Search")}
           >
-            <Icon name="search" size="sm" color={COLORS.primary} />
+            <Icon name="search" size="lg" color={COLORS.primary} />
           </TouchableOpacity>
         }
       />

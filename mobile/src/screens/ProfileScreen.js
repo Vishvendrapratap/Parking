@@ -226,7 +226,10 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("HelpCenter")}
+          >
             <View style={styles.menuIcon}>
               <Icon name="help" size="lg" color={COLORS.text.secondary} />
             </View>
@@ -234,7 +237,10 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("TermsOfService")}
+          >
             <View style={styles.menuIcon}>
               <Icon name="file" size="lg" color={COLORS.text.secondary} />
             </View>
@@ -242,7 +248,10 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="chevronRight" size="sm" color={COLORS.text.light} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("PrivacyPolicy")}
+          >
             <View style={styles.menuIcon}>
               <Icon name="shield" size="lg" color={COLORS.text.secondary} />
             </View>

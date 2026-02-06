@@ -13,6 +13,10 @@ import {
   UnreadMessagesProvider,
   useUnreadMessages,
 } from "../contexts/UnreadMessagesContext";
+import {
+  PendingRequestsProvider,
+  usePendingRequests,
+} from "../contexts/PendingRequestsContext";
 import { COLORS } from "../constants/config";
 import { TabIcon } from "../components/Icon";
 
@@ -41,10 +45,14 @@ import OwnerDashboardScreen from "../screens/owner/OwnerDashboardScreen";
 import AddListingScreen from "../screens/owner/AddListingScreen";
 import EditListingScreen from "../screens/owner/EditListingScreen";
 import MyListingsScreen from "../screens/owner/MyListingsScreen";
+import PendingRequestsScreen from "../screens/owner/PendingRequestsScreen";
 
 // Profile
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
+import HelpCenterScreen from "../screens/HelpCenterScreen";
+import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
+import TermsOfServiceScreen from "../screens/TermsOfServiceScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -91,6 +99,13 @@ const SeekerTabs = () => {
 // Owner Tab Navigator
 const OwnerTabs = () => {
   const { unreadCount } = useUnreadMessages();
+  const { pendingCount } = usePendingRequests();
+
+  const getBadgeCount = (routeName) => {
+    if (routeName === "Chat") return unreadCount;
+    if (routeName === "Requests") return pendingCount;
+    return 0;
+  };
 
   return (
     <Tab.Navigator
@@ -100,7 +115,7 @@ const OwnerTabs = () => {
           <TabIcon
             name={route.name}
             focused={focused}
-            badge={route.name === "Chat" ? unreadCount : 0}
+            badge={getBadgeCount(route.name)}
           />
         ),
         tabBarActiveTintColor: COLORS.primary,
@@ -113,7 +128,12 @@ const OwnerTabs = () => {
       <Tab.Screen
         name="My Listings"
         component={MyListingsScreen}
-        options={{ tabBarLabel: "My Listings" }}
+        options={{ tabBarLabel: "Listings" }}
+      />
+      <Tab.Screen
+        name="Requests"
+        component={PendingRequestsScreen}
+        options={{ tabBarLabel: "Requests" }}
       />
       <Tab.Screen name="Chat" component={ChatListScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
@@ -152,6 +172,9 @@ const MainStack = () => {
 
       {/* Profile Screens */}
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
     </Stack.Navigator>
   );
 };
@@ -177,7 +200,9 @@ const AppNavigator = () => {
     <NavigationContainer ref={navigationRef}>
       <NotificationProvider navigation={navigationRef}>
         <UnreadMessagesProvider>
-          {isAuthenticated ? <MainStack /> : <AuthStack />}
+          <PendingRequestsProvider>
+            {isAuthenticated ? <MainStack /> : <AuthStack />}
+          </PendingRequestsProvider>
         </UnreadMessagesProvider>
       </NotificationProvider>
     </NavigationContainer>

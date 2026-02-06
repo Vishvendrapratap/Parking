@@ -23,30 +23,29 @@ const Header = ({
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* Left side - Back button or Logo */}
+        {/* Left side - Back button or Logo icon */}
         <View style={styles.left}>
           {showBack ? (
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
               <Icon name="arrowLeft" size={24} color={COLORS.text.primary} />
             </TouchableOpacity>
           ) : showLogo ? (
-            <View style={styles.logoContainer}>
-              <Image
-                source={require("../../assets/icon.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.brandName}>Parking Uncle</Text>
-            </View>
+            <Image
+              source={require("../../assets/icon.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           ) : null}
         </View>
 
-        {/* Center - Title (if provided and no logo) */}
-        {title && !showLogo && (
-          <View style={styles.center}>
+        {/* Center - Brand name or Title */}
+        <View style={styles.center}>
+          {showLogo ? (
+            <Text style={styles.brandName}>Parking Uncle</Text>
+          ) : title ? (
             <Text style={styles.title}>{title}</Text>
-          </View>
-        )}
+          ) : null}
+        </View>
 
         {/* Right side - Optional component */}
         <View style={styles.right}>{rightComponent}</View>
@@ -81,20 +80,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-end",
   },
-  logoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   logo: {
     width: 48,
     height: 48,
     borderRadius: 10,
   },
   brandName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginLeft: 12,
+    fontSize: 24,
+    fontFamily: "LotusEater",
+    color: COLORS.white,
   },
   title: {
     fontSize: 18,
