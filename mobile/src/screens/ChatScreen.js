@@ -115,12 +115,20 @@ const ChatScreen = ({ route, navigation }) => {
   }, [socket, conversationId, user?._id]);
 
   const fetchMessages = async () => {
+    // If no conversationId, this is a new conversation - no messages yet
+    if (!conversationId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
-      const result = await getMessages(conversationId || receiverId);
+      const result = await getMessages(conversationId);
       setMessages(result.data || []);
     } catch (error) {
       console.error("Error fetching messages:", error);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -200,8 +208,10 @@ const ChatScreen = ({ route, navigation }) => {
   };
 
   const renderMessage = ({ item }) => {
-    const isMe = item.sender._id === user?._id || item.sender === user?._id;
-    const messageTime = format(new Date(item.createdAt), "HH:mm");
+    if (!item) return null;
+    const senderId = item.sender?._id || item.sender;
+    const isMe = senderId === user?._id;
+    const messageTime = item.createdAt ? format(new Date(item.createdAt), "HH:mm") : "";
 
     return (
       <View

@@ -149,6 +149,7 @@ const ChatPage = () => {
   };
 
   const formatTime = (dateString) => {
+    if (!dateString) return "";
     return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -156,6 +157,7 @@ const ChatPage = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
@@ -281,7 +283,15 @@ const ChatPage = () => {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-            {messages.map((message, index) => {
+            {messages.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center h-full">
+                <div className="text-center text-gray-500">
+                  <p className="text-lg mb-2">No messages yet</p>
+                  <p className="text-sm">Start the conversation by sending a message</p>
+                </div>
+              </div>
+            ) : (
+            messages.map((message, index) => {
               const isOwn =
                 message.sender?._id === user?._id ||
                 message.sender === user?._id;
@@ -317,7 +327,8 @@ const ChatPage = () => {
                   </div>
                 </div>
               );
-            })}
+            })
+            )}
 
             {isTyping && (
               <div className="flex justify-start">

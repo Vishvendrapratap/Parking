@@ -49,16 +49,27 @@ exports.getMessages = async (req, res) => {
     const { conversationId } = req.params;
     const { page = 1, limit = 50 } = req.query;
 
+    console.log("getMessages called with conversationId:", conversationId, "user:", req.user._id);
+
+    // Return empty array if no valid conversationId
+    if (!conversationId || conversationId === "undefined" || conversationId === "null") {
+      return res.status(200).json({
+        success: true,
+        data: [],
+      });
+    }
+
     // Verify user is part of conversation
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: req.user.id,
+      participants: req.user._id,
     });
 
     if (!conversation) {
-      return res.status(404).json({
-        success: false,
-        message: "Conversation not found",
+      // Return empty array for non-existent conversations (new chat)
+      return res.status(200).json({
+        success: true,
+        data: [],
       });
     }
 

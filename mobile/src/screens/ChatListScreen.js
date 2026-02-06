@@ -160,7 +160,7 @@ const ChatListScreen = ({ navigation }) => {
               {otherUser?.name || "Unknown User"}
             </Text>
             <Text style={styles.time}>
-              {formatTime(item.lastMessage?.createdAt || item.updatedAt)}
+              {(item.lastMessage?.createdAt || item.updatedAt) ? formatTime(item.lastMessage?.createdAt || item.updatedAt) : ""}
             </Text>
           </View>
 
