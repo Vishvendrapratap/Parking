@@ -97,21 +97,23 @@ const LoginScreen = ({ navigation }) => {
         pointerEvents="none"
       />
 
-      {/* Sliding Form */}
-      <Animated.View
-        style={[
-          styles.formContainer,
-          { transform: [{ translateY: slideAnim }] },
-        ]}
+      {/* Sliding Form - KeyboardAvoidingView wraps the entire form */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingContainer}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardView}
+        <Animated.View
+          style={[
+            styles.formContainer,
+            { transform: [{ translateY: slideAnim }] },
+          ]}
         >
           <ScrollView
             showsVerticalScrollIndicator={false}
             bounces={false}
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
           >
             <View style={styles.header}>
               <View style={styles.logoContainer}>
@@ -168,8 +170,8 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </KeyboardAvoidingView>
-      </Animated.View>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -196,11 +198,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "#000",
   },
-  formContainer: {
+  keyboardAvoidingContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  formContainer: {
     backgroundColor: COLORS.card,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
@@ -214,8 +218,8 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 20,
   },
-  keyboardView: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     alignItems: "center",

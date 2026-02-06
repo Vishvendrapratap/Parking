@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Platform,
   Modal,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -297,8 +298,17 @@ const BookingScreen = ({ route, navigation }) => {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Parking Summary */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Parking Summary */}
         <View style={styles.card}>
           <Text style={styles.parkingTitle}>{parking.title}</Text>
           <View style={styles.parkingAddressRow}>
@@ -703,8 +713,9 @@ const BookingScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
+          <View style={styles.bottomSpacer} />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Bottom Action */}
       <View style={styles.bottomAction}>

@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Image,
   Switch,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -429,8 +431,16 @@ const EditListingScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Status Toggle */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Status Toggle */}
         <View style={[styles.statusContainer, !isEditable && styles.disabled]}>
           <Text style={styles.label}>Availability Status</Text>
           <View style={styles.statusToggle}>
@@ -757,7 +767,8 @@ const EditListingScreen = ({ route, navigation }) => {
         )}
 
         <View style={styles.bottomSpacer} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
